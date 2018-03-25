@@ -16,10 +16,10 @@ RUN /bin/bash -l -c "gem install bundler --no-ri --no-rdoc"
 #
 # client/
 #   bin/
-#     solution            #Run your app there
+#     solution             # Run your app there
 #   lib/
-#     app_name.rb          #replace app_name with your own Application name
-#     app_name/            #Classes and so on
+#     app_name.rb          # Replace app_name with your own Application name
+#     app_name/            # Classes and so on
 #   Gemfile
 
 ENV SOLUTION_CODE_ENTRYPOINT=solution
