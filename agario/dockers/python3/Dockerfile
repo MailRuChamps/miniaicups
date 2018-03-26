@@ -1,7 +1,7 @@
 FROM ubuntu:16.04
 MAINTAINER Boris Kolganov <b.kolganov@corp.mail.ru>
 
-RUN apt-get install -y python3
+RUN apt-get install -y python3 & pip3 install -U numpy scipy tensorflow keras scikit-learn pandas
 
 ENV SOLUTION_CODE_ENTRYPOINT=main.py
 ENV SOLUTION_CODE_PATH=/opt/client/solution
