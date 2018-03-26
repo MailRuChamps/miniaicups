@@ -17,7 +17,7 @@ function onTick(parsed) {
 		var mine = parsed.Mine[0];
 		var goal = findFood(parsed.Objects);
 		if (!!goal) {
-            return {X: goal.X, Y: goal.Y};
+			return {X: goal.X, Y: goal.Y};
 		}
 		return {X: 0, Y: 0, Debug: 'No food'};
 	}
