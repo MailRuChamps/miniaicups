@@ -1,7 +1,8 @@
 FROM ubuntu:16.04
 MAINTAINER Boris Kolganov <b.kolganov@corp.mail.ru>
 
-RUN apt-get install -y python3
+RUN apt-get install -y python3 python3-pip
+RUN pip install -U numpy scipy cython scikit-learn
 
 ENV SOLUTION_CODE_ENTRYPOINT=main.py
 ENV SOLUTION_CODE_PATH=/opt/client/solution
