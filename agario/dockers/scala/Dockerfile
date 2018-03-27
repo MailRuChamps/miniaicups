@@ -6,8 +6,8 @@ RUN apt-get update -y && \
     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 && \
     add-apt-repository "deb https://dl.bintray.com/sbt/debian /" && \
     apt-get update -y && \
-    apt-get install -y scala sbt
-    chmod a+rx /root
+    apt-get install -y scala sbt && \
+    rm -rf /var/lib/apt/lists/*
 	
 RUN mkdir -p /opt/client/src/main/scala
 
