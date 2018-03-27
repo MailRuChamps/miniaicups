@@ -2,7 +2,7 @@ FROM ubuntu:16.04
 MAINTAINER Cthulhu <cthulhu.den@gmail.com>
 
 RUN apt-get update -qq && apt-get install -y ghc cabal-install && \
-    cabal update && cabal install -j aeson && \
+    cabal update && cabal install -j aeson classy-prelude && \
     rm -rf /root/.cabal/packages # takes too much space, and we don't need it anymore
 
 ENV COMPILED_FILE_PATH=/opt/client/a.out

@@ -1,13 +1,10 @@
-{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE NoImplicitPrelude, LambdaCase, OverloadedStrings #-}
 
 module Main where
 
+import ClassyPrelude
 import Data.Aeson
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Lazy.Char8 as LBS
-import Data.Text (Text)
-import Control.Monad
-import System.IO
+import qualified System.IO as IO
 
 
 data Coords = Coords Float Float
@@ -23,9 +20,9 @@ instance FromJSON Me where
 data ObjType = Food | OtherStuff Text
 
 instance FromJSON ObjType where
-  parseJSON = withText "Object Type" $ \case
-    "F" -> pure Food
-    t -> pure $ OtherStuff t
+  parseJSON = withText "Object Type" $ pure . \case
+    "F" -> Food
+    t   -> OtherStuff t
 
 data Obj = Obj Coords ObjType
 
@@ -41,29 +38,32 @@ instance FromJSON State where
     State <$> o .: "Mine" <*> o .: "Objects"
 
 
-myStrategy :: State -> Value
-myStrategy (State mines objs) =
-  case mines of
-    []   -> skip "Died"
-    me:_ -> case [coords | Obj coords Food <- objs]  of
-      []         -> skip "No food"
-      (coords:_) -> goto coords
-  where
-    skip :: Text -> Value
-    skip reason = object ["X" .= (0 :: Float), "Y" .= (0 :: Float), "Debug" .= reason]
-    goto (Coords x y) = object ["X" .= x, "Y" .= y]
+data Action = Skip Text | GoTo Coords
 
+instance ToJSON Action where
+  toJSON = \case
+    Skip msg -> object
+      [ "X"     .= (0 :: Float)
+      , "Y"     .= (0 :: Float)
+      , "Debug" .= msg
+      ]
+    GoTo (Coords x y) -> object ["x" .= x, "Y" .= y]
+
+
+myStrategy :: State -> Action
+myStrategy (State mines objs) =
+  case (mines, [coords | Obj coords Food <- objs]) of
+    ([], _)       -> Skip "Died"
+    (_, [])       -> Skip "No food"
+    (_, coords:_) -> GoTo coords
 
 main :: IO ()
 main = do
-  hSetBuffering stdin LineBuffering
-  hSetBuffering stdout LineBuffering
+  IO.hSetBuffering stdin IO.LineBuffering
+  IO.hSetBuffering stdout IO.LineBuffering
 
-  cfg <- unwrapErr . eitherDecodeStrict <$> BS.getLine :: IO Object
-  forever $
-    unwrapErr . eitherDecodeStrict <$> BS.getLine >>=
-      LBS.putStrLn . encode . myStrategy
+  _ <- unwrapErr . eitherDecodeStrict . encodeUtf8 <$> getLine :: IO Object
+  interact $ unlines . fmap (decodeUtf8 . lbsCmd . encodeUtf8) . lines
   where
-    unwrapErr = \case
-      Right v -> v
-      Left e  -> error e
+    unwrapErr = either error id
+    lbsCmd = encode . myStrategy . unwrapErr . eitherDecode
