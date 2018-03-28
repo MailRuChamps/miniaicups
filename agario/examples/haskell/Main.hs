@@ -47,7 +47,7 @@ instance ToJSON Action where
       , "Y"     .= (0 :: Float)
       , "Debug" .= msg
       ]
-    GoTo (Coords x y) -> object ["x" .= x, "Y" .= y]
+    GoTo (Coords x y) -> object ["X" .= x, "Y" .= y]
 
 
 myStrategy :: State -> Action
