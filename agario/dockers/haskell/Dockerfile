@@ -3,7 +3,7 @@ MAINTAINER Cthulhu <cthulhu.den@gmail.com>
 
 ENV PATH=/opt/ghc/bin:$PATH
 
-RUN apt-get update -qq && apt-get install -y software-properties-common python-software-properties && \
+RUN apt-get update -qq && apt-get install -y software-properties-common && \
     add-apt-repository -y ppa:hvr/ghc && \
     apt-get update -qq && apt-get install -y ghc-8.4.1 cabal-install-2.2 && \
     cabal update && cabal install -j aeson classy-prelude && \
