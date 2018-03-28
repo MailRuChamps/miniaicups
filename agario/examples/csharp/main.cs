@@ -12,7 +12,7 @@ public class Strategy
 			var data = Console.ReadLine();
             var parsed = JObject.Parse(data);
 			var command = onTick(parsed);
-			Console.WriteLine(command.ToString());
+			Console.WriteLine(command.ToString(Newtonsoft.Json.Formatting.None));
     	}
     }
 
