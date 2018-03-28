@@ -29,30 +29,34 @@ type Command struct {
 }
 
 func run() {
-	for {
-		reader := bufio.NewReader(os.Stdin)
-		writer := bufio.NewWriter(os.Stdout)
-
-		data, err := reader.ReadString('\n')
-		if err == nil {
-			var parsed State
-			err := json.Unmarshal([]byte(data), &parsed)
+	reader := bufio.NewReader(os.Stdin)
+	writer := bufio.NewWriter(os.Stdout)
+	_, err := reader.ReadString('\n')
+	if err == nil {
+		for {
+			data, err := reader.ReadString('\n')
 			if err == nil {
-				command := onTick(parsed)
-				result, err := json.Marshal(command)
+				var parsed State
+				err := json.Unmarshal([]byte(data), &parsed)
 				if err == nil {
-					writer.WriteString(string(result))
-					writer.WriteString("\n")
+					command := onTick(parsed)
+					result, err := json.Marshal(command)
+					if err == nil {
+						writer.WriteString(string(result))
+						writer.WriteString("\n")
+					} else {
+						writer.WriteString("Can't Marshal\n")
+					}
 				} else {
-					writer.WriteString("Can't Marshal\n")
+					writer.WriteString("Can't Unmarshal\n")
 				}
 			} else {
-				writer.WriteString("Can't Unmarshal\n")
+				writer.WriteString("Can't read string\n")
 			}
-		} else {
-			writer.WriteString("Can't read string\n")
+			writer.Flush()
 		}
-		writer.Flush()
+	} else {
+		writer.WriteString("Can't read config\n")
 	}
 }
 
