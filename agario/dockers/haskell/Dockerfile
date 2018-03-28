@@ -6,7 +6,7 @@ ENV PATH=/opt/ghc/bin:$PATH
 RUN apt-get update -qq && apt-get install -y software-properties-common && \
     add-apt-repository -y ppa:hvr/ghc && \
     apt-get update -qq && apt-get install -y ghc-8.4.1 cabal-install-2.2 && \
-    cabal update && cabal install -j aeson classy-prelude && \
+    cabal update && cabal install -j aeson classy-prelude conduit && \
     rm -rf /root/.cabal/packages # takes too much space, and we don't need it anymore
 
 ENV COMPILED_FILE_PATH=/opt/client/a.out
