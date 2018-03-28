@@ -6,7 +6,12 @@ var iface = readline.createInterface({
     terminal: false
 });
 
+var config = null;
 iface.on('line', function (line) {
+	if (config === null) {
+		config = JSON.parse(line);
+		return;
+	}
 	var parsed = JSON.parse(line);
 	var command = JSON.stringify(onTick(parsed));
 	console.log(command);

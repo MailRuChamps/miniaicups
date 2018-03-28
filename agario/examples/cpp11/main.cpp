@@ -10,15 +10,17 @@ struct Strategy {
 
 	void run() {
 		string data;
+		cin >> data;
+		auto config = json::parse(data);
 		while (true) {
 			cin >> data;
 			auto parsed = json::parse(data);
-			auto command = on_tick(parsed);
+			auto command = on_tick(parsed, config);
 			cout << command.dump() << endl;
 		}
 	}
 
-	json on_tick(const json &data) {
+	json on_tick(const json &data, const json &config) {
 		auto mine = data["Mine"];
 		auto objects = data["Objects"];
 		if (! mine.empty()) {
