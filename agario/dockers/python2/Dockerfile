@@ -1,7 +1,10 @@
 FROM ubuntu:16.04
 MAINTAINER Boris Kolganov <b.kolganov@corp.mail.ru>
 
-RUN apt-get install -y python python-pip && pip install numpy scipy keras tensorflow
+RUN apt-get update &&\
+    apt-get install -y python python-pip &&\
+    pip install numpy scipy keras tensorflow &&\
+    apt-get clean
 
 ENV SOLUTION_CODE_ENTRYPOINT=main.py
 ENV SOLUTION_CODE_PATH=/opt/client/solution
