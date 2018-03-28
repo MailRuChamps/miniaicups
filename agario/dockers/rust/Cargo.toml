@@ -1,0 +1,8 @@
+[package]
+name = "solution"
+version = "0.1.0"
+
+[dependencies]
+serde = "1.0.13"
+serde_json = "1.0.13"
+serde_derive = "1.0.13"
