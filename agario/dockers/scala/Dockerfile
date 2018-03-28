@@ -1,21 +1,13 @@
 FROM ubuntu:16.04
 MAINTAINER Konstantin Aristov <kostya.74.74@gmail.com>
 
-RUN apt-get update -y && \
-    apt-get install -y apt-utils apt-transport-https software-properties-common && \
-    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 && \
-    add-apt-repository "deb https://dl.bintray.com/sbt/debian /" && \
-    apt-get update -y && \
-    apt-get install -y scala sbt && \
-    rm -rf /var/lib/apt/lists/*
-	
-RUN mkdir -p /opt/client/src/main/scala
-
-COPY src /opt/client/src
-COPY build.sbt /opt/client
+RUN wget http://scala-lang.org/files/archive/scala-2.12.5.deb && \
+	dpkg -i scala-2.12.5.deb && \
+    apt-get update && \
+    apt-get install -y scala
 
 ENV SOLUTION_CODE_ENTRYPOINT=Main.scala
-ENV COMPILED_FILE_PATH=/opt/client/
+ENV COMPILED_FILE_PATH=/opt/client/scalaStrategy.jar
 ENV SOLUTION_CODE_PATH=/opt/client/src/main/scala/
-ENV COMPILATION_COMMAND='sbt compile'
-ENV RUN_COMMAND='sbt run'
+ENV COMPILATION_COMMAND='scalac $SOLUTION_CODE_PATH/* -d scalaStrategy.jar'
+ENV RUN_COMMAND='scala $MOUNT_POINT'
