@@ -3,6 +3,7 @@
 module Main where
 
 import ClassyPrelude
+import Conduit
 import Data.Aeson
 import qualified System.IO as IO
 
@@ -63,7 +64,11 @@ main = do
   IO.hSetBuffering stdout IO.LineBuffering
 
   _ <- unwrapErr . eitherDecodeStrict . encodeUtf8 <$> getLine :: IO Object
-  interact $ unlines . fmap (decodeUtf8 . lbsCmd . encodeUtf8) . lines
+  runConduitRes $
+       stdinC .| linesUnboundedAsciiC
+    .| mapC (unwrapErr . eitherDecodeStrict)
+    .| mapC myStrategy
+    .| mapC (toStrict . encode)
+    .| unlinesAsciiC .| stdoutC
   where
     unwrapErr = either error id
-    lbsCmd = encode . myStrategy . unwrapErr . eitherDecode
