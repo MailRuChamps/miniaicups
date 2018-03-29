@@ -6,7 +6,9 @@ RUN add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
     apt-get install -y g++-7 make 
 
 COPY Makefile ./
+COPY ./nlohmann ./nlohmann
 
+ENV SOLUTION_CODE_ENTRYPOINT=main.cpp
 ENV COMPILED_FILE_PATH=/opt/client/a.out
 ENV SOLUTION_CODE_PATH=/opt/client/solution/
 ENV COMPILATION_COMMAND='make 2>&1 > /dev/null'
