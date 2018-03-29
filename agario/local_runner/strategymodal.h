@@ -7,10 +7,20 @@
 
 #include "ui_strategymodal.h"
 #include <QDialog>
+#include <QHash>
 
 namespace Ui {
     class StrategyModal;
 }
+
+struct PlayerGui {
+    QRadioButton* rbn_custom;
+    QRadioButton* rbn_comp;
+    QRadioButton* rbn_mouse;
+    QComboBox* choose_comp;
+    QComboBox* choose_color;
+    QLineEdit* edit_custom;
+};
 
 class StrategyModal : public QDialog
 {
@@ -18,6 +28,7 @@ class StrategyModal : public QDialog
 
 protected:
     Ui::StrategyModal *ui;
+    QHash<int, PlayerGui> gui_of_player;
 
 public:
     explicit StrategyModal(QWidget *parent=NULL) :
@@ -25,7 +36,26 @@ public:
         ui(new Ui::StrategyModal)
     {
         ui->setupUi(this);
+
+#define SM_SETUP_PLAYER_GUI(player_id)                        \
+        do {                                                  \
+            PlayerGui& cur_gui = gui_of_player[player_id];    \
+            cur_gui.rbn_custom = ui->rbn_custom_##player_id;  \
+            cur_gui.rbn_comp = ui->rbn_comp_##player_id;      \
+            cur_gui.rbn_mouse = ui->rbn_mouse_##player_id;    \
+            cur_gui.choose_comp = ui->cbx_comp_##player_id;   \
+            cur_gui.choose_color = ui->cbx_color_##player_id; \
+            cur_gui.edit_custom = ui->edt_prog_##player_id;   \
+        } while (false)
+
+        SM_SETUP_PLAYER_GUI(1);
+        SM_SETUP_PLAYER_GUI(2);
+        SM_SETUP_PLAYER_GUI(3);
+        SM_SETUP_PLAYER_GUI(4);
+
+#undef SM_SETUP_PLAYER_GUI
     }
+
 
     virtual ~StrategyModal() {
         if (ui) delete ui;
@@ -33,13 +63,7 @@ public:
 
 public:
     QString get_color_name(int playerId) const {
-        QComboBox *cbx_color;
-        if (playerId % 4 == 1) cbx_color = ui->cbx_color_1;
-        else if (playerId % 4 == 2) cbx_color = ui->cbx_color_5;
-        else if (playerId % 4 == 3) cbx_color = ui->cbx_color_7;
-        else if (playerId % 4 == 0) cbx_color = ui->cbx_color_6;
-        else return "";
-        return cbx_color->currentText();
+        return gui_of_player[playerId].choose_color->currentText();
     }
 
     Qt::GlobalColor get_color(int playerId) const {
@@ -54,40 +78,17 @@ public:
     }
 
     Strategy* get_strategy(int playerId) const {
-        QRadioButton *rbn_comp, *rbn_custom, *rbn_mouse;
-        QComboBox *cbx_comp;
-        QLineEdit *edt_prog;
-
-        if (playerId % 4 == 1) {
-            rbn_comp = ui->rbn_comp_1; rbn_custom = ui->rbn_custom_1; rbn_mouse = ui->rbn_mouse_1;
-            cbx_comp = ui->cbx_comp_1; edt_prog = ui->edt_prog_1;
-        }
-        else if (playerId % 4 == 2) {
-            rbn_comp = ui->rbn_comp_5; rbn_custom = ui->rbn_custom_5; rbn_mouse = ui->rbn_mouse_5;
-            cbx_comp = ui->cbx_comp_5; edt_prog = ui->edt_prog_5;
-        }
-        else if (playerId % 4 == 3) {
-            rbn_comp = ui->rbn_comp_7; rbn_custom = ui->rbn_custom_7; rbn_mouse = ui->rbn_mouse_7;
-            cbx_comp = ui->cbx_comp_7; edt_prog = ui->edt_prog_7;
-        }
-        else if (playerId % 4 == 0) {
-            rbn_comp = ui->rbn_comp_6; rbn_custom = ui->rbn_custom_6; rbn_mouse = ui->rbn_mouse_6;
-            cbx_comp = ui->cbx_comp_6; edt_prog = ui->edt_prog_6;
-        }
-        else {
-            return NULL;
-        }
-
-        if (rbn_comp->isChecked()) {
-            QString comp = cbx_comp->currentText();
+        const auto& cur_gui = gui_of_player[playerId];
+        if (cur_gui.rbn_comp->isChecked()) {
+            QString comp = cur_gui.choose_comp->currentText();
             if (comp == "Ближайшая еда") { return new Strategy(playerId); }
             return NULL;
         }
-        else if (rbn_mouse->isChecked()) {
+        else if (cur_gui.rbn_mouse->isChecked()) {
             return new ByMouse(playerId);
         }
-        else if (rbn_custom->isChecked()) {
-            QString prog_path = edt_prog->text();
+        else if (cur_gui.rbn_custom->isChecked()) {
+            QString prog_path = cur_gui.edit_custom->text();
             return new Custom(playerId, prog_path);
         }
         return NULL;
