@@ -26,6 +26,7 @@ public:
         solution->start(_path);
         connect(solution, SIGNAL(finished(int)), this, SLOT(on_finished(int)));
         connect(solution, SIGNAL(readyReadStandardError()), this, SLOT(on_error()));
+        is_running = true;
         send_config();
     }
 
