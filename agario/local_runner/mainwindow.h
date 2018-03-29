@@ -133,7 +133,7 @@ public:
         QPainter painter(this);
         painter.setRenderHint(QPainter::Antialiasing);
 
-        painter.translate(ui->viewport->x(), ui->viewport->y());
+        painter.translate(ui->viewport->x(), ui->viewport->y() + menuWidget()->height());
         painter.fillRect(ui->viewport->rect(), QBrush(Qt::white));
         painter.setClipRect(ui->viewport->rect());
 
@@ -161,13 +161,13 @@ public:
 public:
     void mouseMoveEvent(QMouseEvent *event) {
         int x = event->x() - ui->viewport->x();
-        int y = event->y() - ui->viewport->y();
+        int y = event->y() - ui->viewport->y() - menuWidget()->height();
         mechanic->mouseMoveEvent(x, y);
     }
 
     void mousePressEvent(QMouseEvent *event) {
         int x = event->x() - ui->viewport->x();
-        int y = event->y() - ui->viewport->y();
+        int y = event->y() - ui->viewport->y() - menuWidget()->height();
         mechanic->mouseMoveEvent(x, y);
     }
 
