@@ -8,6 +8,7 @@
 #include "ui_strategymodal.h"
 #include <QDialog>
 #include <QHash>
+#include <QSettings>
 
 namespace Ui {
     class StrategyModal;
@@ -54,8 +55,47 @@ public:
         SM_SETUP_PLAYER_GUI(4);
 
 #undef SM_SETUP_PLAYER_GUI
+
+        QSettings settings;
+        if (settings.value("first_time", true).toBool()) {
+            // Default settings are already in the form
+            settings.setValue("first_time", false);
+            save_settings();
+            settings.sync();
+        } else {
+            restore_settings();
+        }
+
+        connect(ui->pushButton, &QPushButton::clicked, this, &StrategyModal::save_settings);
     }
 
+    void restore_settings() {
+        QSettings settings;
+        settings.beginReadArray("players");
+        for (int player = 1; player <= 4; ++player) {
+            settings.setArrayIndex(player);
+            PlayerGui& cur_gui = gui_of_player[player];
+
+            QString strategy_type = settings.value("type").toString();
+            if (strategy_type == "Custom") {
+                cur_gui.rbn_custom->setChecked(true);
+            } else if (strategy_type == "Comp") {
+                cur_gui.rbn_comp->setChecked(true);
+            } else if (strategy_type == "Mouse") {
+                cur_gui.rbn_mouse->setChecked(true);
+            }
+
+            QString custom_path = settings.value("custom_path").toString();
+            cur_gui.edit_custom->setText(custom_path);
+
+            QString builtin_strategy = settings.value("builtin_strategy").toString();
+            cur_gui.choose_comp->setCurrentText(builtin_strategy);
+
+            QString color = settings.value("color").toString();
+            cur_gui.choose_color->setCurrentText(color);
+        }
+        settings.endArray();
+    }
 
     virtual ~StrategyModal() {
         if (ui) delete ui;
@@ -92,6 +132,36 @@ public:
             return new Custom(playerId, prog_path);
         }
         return NULL;
+    }
+
+public slots:
+    void save_settings() {
+        QSettings settings;
+        settings.beginWriteArray("players");
+        for (int player = 1; player <= 4; ++player) {
+            PlayerGui& cur_gui = gui_of_player[player];
+            settings.setArrayIndex(player);
+
+            QString strategy_type;
+            if (cur_gui.rbn_custom->isChecked()) {
+                strategy_type = "Custom";
+            } else if (cur_gui.rbn_comp->isChecked()) {
+                strategy_type = "Comp";
+            } else if (cur_gui.rbn_mouse->isChecked()) {
+                strategy_type = "Mouse";
+            }
+            settings.setValue("type", strategy_type);
+
+            QString custom_path = cur_gui.edit_custom->text();
+            settings.setValue("custom_path", custom_path);
+
+            QString builtin_strategy = cur_gui.choose_comp->currentText();
+            settings.setValue("builtin_strategy", builtin_strategy);
+
+            QString color = cur_gui.choose_color->currentText();
+            settings.setValue("color", color);
+        }
+        settings.endArray();
     }
 };
 
