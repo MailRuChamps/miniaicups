@@ -14,6 +14,7 @@ class Custom : public Strategy
 protected:
     QProcess *solution;
     bool is_running;
+    QMetaObject::Connection finish_connection;
 
 signals:
     void error(QString);
@@ -24,7 +25,7 @@ public:
         solution(new QProcess(this))
     {
         solution->start(_path);
-        connect(solution, SIGNAL(finished(int)), this, SLOT(on_finished(int)));
+        finish_connection = connect(solution, SIGNAL(finished(int)), this, SLOT(on_finished(int)));
         connect(solution, SIGNAL(readyReadStandardError()), this, SLOT(on_error()));
         is_running = true;
         send_config();
@@ -32,6 +33,7 @@ public:
 
     virtual ~Custom() {
         if (solution) {
+            disconnect(finish_connection);
             solution->close();
             delete solution;
         }
