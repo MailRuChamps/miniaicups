@@ -38,15 +38,15 @@ public:
     {
         ui->setupUi(this);
 
-#define SM_SETUP_PLAYER_GUI(player_id)                        \
-        do {                                                  \
-            PlayerGui& cur_gui = gui_of_player[player_id];    \
-            cur_gui.rbn_custom = ui->rbn_custom_##player_id;  \
-            cur_gui.rbn_comp = ui->rbn_comp_##player_id;      \
-            cur_gui.rbn_mouse = ui->rbn_mouse_##player_id;    \
-            cur_gui.choose_comp = ui->cbx_comp_##player_id;   \
-            cur_gui.choose_color = ui->cbx_color_##player_id; \
-            cur_gui.edit_custom = ui->edt_prog_##player_id;   \
+#define SM_SETUP_PLAYER_GUI(player_id)                          \
+        do {                                                    \
+            PlayerGui& cur_gui = gui_of_player[player_id % 4];  \
+            cur_gui.rbn_custom = ui->rbn_custom_##player_id;    \
+            cur_gui.rbn_comp = ui->rbn_comp_##player_id;        \
+            cur_gui.rbn_mouse = ui->rbn_mouse_##player_id;      \
+            cur_gui.choose_comp = ui->cbx_comp_##player_id;     \
+            cur_gui.choose_color = ui->cbx_color_##player_id;   \
+            cur_gui.edit_custom = ui->edt_prog_##player_id;     \
         } while (false)
 
         SM_SETUP_PLAYER_GUI(1);
@@ -74,7 +74,7 @@ public:
         settings.beginReadArray("players");
         for (int player = 1; player <= 4; ++player) {
             settings.setArrayIndex(player - 1);
-            PlayerGui& cur_gui = gui_of_player[player];
+            PlayerGui& cur_gui = gui_of_player[player % 4];
 
             QString strategy_type = settings.value("type").toString();
             if (strategy_type == "Custom") {
@@ -103,7 +103,7 @@ public:
 
 public:
     QString get_color_name(int playerId) const {
-        return gui_of_player[playerId].choose_color->currentText();
+        return gui_of_player[playerId % 4].choose_color->currentText();
     }
 
     Qt::GlobalColor get_color(int playerId) const {
@@ -118,7 +118,7 @@ public:
     }
 
     Strategy* get_strategy(int playerId) const {
-        const auto& cur_gui = gui_of_player[playerId];
+        const auto& cur_gui = gui_of_player[playerId % 4];
         if (cur_gui.rbn_comp->isChecked()) {
             QString comp = cur_gui.choose_comp->currentText();
             if (comp == "Ближайшая еда") { return new Strategy(playerId); }
@@ -139,7 +139,7 @@ public slots:
         QSettings settings;
         settings.beginWriteArray("players");
         for (int player = 1; player <= 4; ++player) {
-            PlayerGui& cur_gui = gui_of_player[player];
+            PlayerGui& cur_gui = gui_of_player[player % 4];
             settings.setArrayIndex(player - 1);
 
             QString strategy_type;
