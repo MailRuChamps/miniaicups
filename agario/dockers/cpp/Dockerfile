@@ -1,7 +1,7 @@
 FROM ubuntu:16.04
 MAINTAINER Boris Kolganov <b.kolganov@corp.mail.ru>
 
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test  && \
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
     apt-get update -y && \
     apt-get install -y g++-7 make 
 
