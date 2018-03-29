@@ -1,8 +1,9 @@
 FROM ubuntu:16.04
 MAINTAINER Boris Kolganov <b.kolganov@corp.mail.ru>
 
-RUN apt-get update -y && \
-    apt-get install -y clang-5.0 make
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test  && \
+    apt-get update -y && \
+    apt-get install -y g++-7 make 
 
 COPY Makefile ./
 
