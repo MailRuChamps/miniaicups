@@ -66,14 +66,14 @@ public:
             restore_settings();
         }
 
-        connect(ui->pushButton, &QPushButton::clicked, this, &StrategyModal::save_settings);
+        connect(this, &QDialog::accepted, this, &StrategyModal::save_settings);
     }
 
     void restore_settings() {
         QSettings settings;
         settings.beginReadArray("players");
         for (int player = 1; player <= 4; ++player) {
-            settings.setArrayIndex(player);
+            settings.setArrayIndex(player - 1);
             PlayerGui& cur_gui = gui_of_player[player];
 
             QString strategy_type = settings.value("type").toString();
@@ -140,7 +140,7 @@ public slots:
         settings.beginWriteArray("players");
         for (int player = 1; player <= 4; ++player) {
             PlayerGui& cur_gui = gui_of_player[player];
-            settings.setArrayIndex(player);
+            settings.setArrayIndex(player - 1);
 
             QString strategy_type;
             if (cur_gui.rbn_custom->isChecked()) {
