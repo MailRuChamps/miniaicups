@@ -111,7 +111,7 @@ const double PLAYER_RADIUS = 8.0;
 const double PLAYER_MASS = 40.0;
 
 const double VIS_FACTOR = 4.0; // vision = radius * VF
-const double VIS_FACTOR_FR = 2.5; // vision = radius * VFF * qSqrt(fragments.count())
+const double VIS_FACTOR_FR = 1.25; // vision = radius * VFF * qSqrt(fragments.count())
 const double VIS_SHIFT = 10.0; // dx = qCos(angle) * VS; dy = qSin(angle) * VS
 const double DRAW_SPEED_FACTOR = 14.0;
 //const double INERTION_FACTOR = 10.0;
