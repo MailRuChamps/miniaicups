@@ -13,7 +13,7 @@ protected:
 public:
     explicit Strategy(int _id) :
         id(_id),
-        motion(0)
+        motion(id % 4)
     {}
 
     virtual ~Strategy() {}
@@ -41,23 +41,19 @@ public:
             }
             return direct;
         }
-        if (motion == 0) {
-            if (mine->getX() == 110 && mine->getY() == 110) { motion = 1; }
-            return Direct(110, 110);
+
+        int waypoints[4][2] = {
+            {110, 110},
+            {550, 110},
+            {550, 550},
+            {110, 550}
+        };
+
+        if (mine->calc_dist(waypoints[motion][0], waypoints[motion][1]) < 5) {
+            motion = (motion + 1) % 4;
         }
-        else if (motion == 1) {
-            if (mine->getX() == 550 && mine->getY() == 110) { motion = 2; }
-            return Direct(550, 110);
-        }
-        else if (motion == 2) {
-            if (mine->getX() == 550 && mine->getY() == 550) { motion = 3; }
-            return Direct(550, 550);
-        }
-        else if (motion == 3) {
-            if (mine->getX() == 110 && mine->getY() == 550) { motion = 0; }
-            return Direct(110, 550);
-        }
-        return Direct(330, 330);
+
+        return Direct(waypoints[motion][0], waypoints[motion][1]);
     }
 };
 
