@@ -115,7 +115,6 @@ const double VIS_FACTOR_FR = 2.5; // vision = radius * VFF * qSqrt(fragments.cou
 const double VIS_SHIFT = 10.0; // dx = qCos(angle) * VS; dy = qSin(angle) * VS
 const double DRAW_SPEED_FACTOR = 14.0;
 //const double INERTION_FACTOR = 10.0;
-const double STOP_LIMIT = 3.0;
 
 //const double SPEED_FACTOR = 25.0; // speed = SF / sqrt(mass)
 //const double RADIUS_FACTOR = 2.0; // radius = RF * sqrt(mass)
