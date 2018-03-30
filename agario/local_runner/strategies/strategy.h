@@ -10,10 +10,14 @@ protected:
     int id;
     int motion;
 
+    int WP[5][2] =
+//    { {110,110},{550,110},{550,550},{110,550},{330,330} };
+    { {165,165},{495,165},{495,495},{165,495},{330,330} };
+
 public:
     explicit Strategy(int _id) :
         id(_id),
-        motion(id % 4)
+        motion(id%4)
     {}
 
     virtual ~Strategy() {}
@@ -42,18 +46,10 @@ public:
             return direct;
         }
 
-        int waypoints[4][2] = {
-            {110, 110},
-            {550, 110},
-            {550, 550},
-            {110, 550}
-        };
+        if (mine->calc_dist(WP[motion][0],WP[motion][1]) < mine->getR())
+            ++motion %= 4;
 
-        if (mine->calc_dist(waypoints[motion][0], waypoints[motion][1]) < 5) {
-            motion = (motion + 1) % 4;
-        }
-
-        return Direct(waypoints[motion][0], waypoints[motion][1]);
+        return Direct(WP[motion][0],WP[motion][1]);
     }
 };
 

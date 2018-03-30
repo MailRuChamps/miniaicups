@@ -82,6 +82,9 @@ public:
         }
         return QPair<double, double>(x, y);
     }
+    QPair<double, double> get_direct() const {
+        return QPair<double, double>(cmd_x, cmd_y);
+    }
 
     double getVR() const {
         return vision_radius;
@@ -122,6 +125,9 @@ public:
             painter.setPen(QPen(QBrush(Qt::red), 1));
             QPair<double, double> norm = get_direct_norm();
             painter.drawLine(ix, iy, norm.first, norm.second);
+            painter.setPen(QPen(QBrush(Qt::yellow), 1));
+            QPair<double, double> cmd = get_direct();
+            painter.drawLine(ix, iy, cmd.first, cmd.second);
         }
     }
 
@@ -413,6 +419,22 @@ public:
             new_speed = max_speed;
         }
         speed = new_speed;
+////        if (dist < STOP_LIMIT) {
+////        if (dist < max_speed) {
+//        if (dist < speed) {
+////            speed = 0;
+
+////            double rB = x + radius, lB = x - radius;
+////            double dB = y + radius, uB = y - radius;
+////            if (rB < max_x && lB > 0) {
+////                x = cmd_x;
+////            }
+////            if (dB < max_y && uB > 0) {
+////                y = cmd_y;
+////            }
+//            cmd_x = x;
+//            cmd_y = y;
+//        }
     }
 
     bool move(int max_x, int max_y) {
