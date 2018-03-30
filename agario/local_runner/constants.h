@@ -12,7 +12,9 @@
 #include <qglobal.h>
 #include <QProcessEnvironment>
 #include <random>
+#include <QSettings>
 
+extern QSettings *ini___;
 
 struct Constants
 {
@@ -64,7 +66,7 @@ public:
 #endif
 
         ins.SUM_RESP_TIMEOUT = env.value("SUM_RESP_TIMEOUT", "500").toInt();
-        ins.TICK_MS = env.value("TICK_MS", "16").toInt();
+        ins.TICK_MS = env.value("TICK_MS", "5").toInt(); // 16 // 25
         ins.BASE_TICK = env.value("BASE_TICK", "50").toInt();
         ins.INERTION_FACTOR = env.value("INERTION_FACTOR", "10.0").toDouble();
         ins.VISCOSITY = env.value("VISCOSITY", "0.25").toDouble();
@@ -84,10 +86,10 @@ public:
     }
 };
 
-const QString LOG_DIR = "/var/tmp/";
-const QString LOG_FILE = "visio_{1}.log";
-const QString DEBUG_FILE = "{1}.log";
-const QString SCORES_FILE = "scores.json";
+const QString LOG_DIR = "";
+const QString LOG_FILE = "debug_{1}.log";
+const QString DEBUG_FILE = "debug_{1}.log";
+//const QString SCORES_FILE = "scores.json";
 
 const QString MAIN_JSON_KEY = "visio";
 const QString DEBUG_JSON_KEY = "debug";
@@ -115,6 +117,7 @@ const double VIS_FACTOR_FR = 2.5; // vision = radius * VFF * qSqrt(fragments.cou
 const double VIS_SHIFT = 10.0; // dx = qCos(angle) * VS; dy = qSin(angle) * VS
 const double DRAW_SPEED_FACTOR = 14.0;
 //const double INERTION_FACTOR = 10.0;
+const double STOP_LIMIT = 3.0;
 
 //const double SPEED_FACTOR = 25.0; // speed = SF / sqrt(mass)
 //const double RADIUS_FACTOR = 2.0; // radius = RF * sqrt(mass)
