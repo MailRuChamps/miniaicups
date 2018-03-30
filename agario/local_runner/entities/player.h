@@ -413,18 +413,6 @@ public:
             new_speed = max_speed;
         }
         speed = new_speed;
-        if (dist < STOP_LIMIT) {
-            speed = 0;
-
-            double rB = x + radius, lB = x - radius;
-            double dB = y + radius, uB = y - radius;
-            if (rB < max_x && lB > 0) {
-                x = cmd_x;
-            }
-            if (dB < max_y && uB > 0) {
-                y = cmd_y;
-            }
-        }
     }
 
     bool move(int max_x, int max_y) {
