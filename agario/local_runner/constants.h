@@ -107,7 +107,7 @@ const double VIRUS_MASS = 40.0;
 
 const int START_PLAYER_SETS = 1;
 const int START_PLAYER_OFFSET = 400;
-const double PLAYER_RADIUS = 8.0;
+const double PLAYER_RADIUS = 12.65;
 const double PLAYER_MASS = 40.0;
 
 const double VIS_FACTOR = 4.0; // vision = radius * VF

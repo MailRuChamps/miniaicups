@@ -8,7 +8,7 @@
 class Player : public Circle
 {
 public:
-    enum State { CREATED, EATEN, EATER, BURST, FUSED, FUSER, SPLIT, EJECT };
+    enum State { CREATED, EATEN, EATER, BURST, FUSED, FUSER, SPLIT, EJECT, EATER_N_SPLIT, EATER_N_EJECT };
     State logical;
     bool is_fast;
     int fuse_timer;
@@ -185,7 +185,13 @@ public:
 
     void eat(Circle *food, bool is_last=false) {
         mass += food->getM();
-        logical = State::EATER;
+        if (logical == State::SPLIT) {
+            logical = State::EATER_N_SPLIT;
+        } else if (logical == State::EATER) {
+            logical = State::EATER_N_EJECT;
+        } else {
+            logical = State::EATER;
+        }
 
         if (food->is_food()) {
             score += SCORE_FOR_FOOD;
@@ -382,6 +388,7 @@ public:
     }
 
     void apply_direct(Direct direct, int max_x, int max_y) {
+        direct.limit();
         cmd_x = direct.x; cmd_y = direct.y;
         if (is_fast) return;
 

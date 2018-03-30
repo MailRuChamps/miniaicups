@@ -17,6 +17,20 @@ public:
     int x, y;
     bool split;
     bool eject;
+
+    void limit() {
+
+        if (this->x > Constants::instance().GAME_WIDTH) {
+            this->x = Constants::instance().GAME_WIDTH;
+        } else if (this->x < 0) {
+            this->x = 0;
+        }
+        if (this->y > Constants::instance().GAME_HEIGHT) {
+            this->y = Constants::instance().GAME_HEIGHT;
+        } else if (this->y < 0) {
+            this->y = 0;
+        }
+    }
 };
 
 
@@ -26,7 +40,7 @@ protected:
     int id;
     double x, y;
     double radius;
-    int mass;
+    double mass;
 
 public:
     explicit Circle(int _id, double _x, double _y, double _radius, double _mass) :

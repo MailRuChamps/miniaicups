@@ -434,7 +434,6 @@ public:
 
     void apply_direct_for(int sId, Direct direct) {
 //        logger->write_direct(tick, sId, direct);
-
         PlayerArray fragments = get_players_by_id(sId);
         int yet_cnt = fragments.length();
 
@@ -649,6 +648,36 @@ public:
                 logger->write_add_cmd(tick, new_eject);
                 eject_array.append(new_eject);
                 id_counter++;
+            } else if (player->logical == Player::EATER_N_SPLIT) {
+                bool changed = player->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
+                if (changed) {
+                    logger->write_change_mass(tick, player);
+                }
+                int yet_cnt = get_fragments_cnt(player->getId());
+                int max_fId = get_max_fragment_id(player->getId());
+                QString old_id = player->id_to_str();
+
+                PlayerArray fragments;
+                if (player->logical == Player::BURST) {
+                    fragments = player->burst_now(max_fId, yet_cnt);
+                }
+                else if (player->logical == Player::SPLIT) {
+                    Player *new_player = player->split_now(max_fId);
+                    fragments.append(new_player);
+                }
+                if (fragments.length() > 0) {
+                    for (Player *frag : fragments) {
+                        logger->write_add_cmd(tick, frag);
+                        append_players.append(frag);
+                    }
+                    logger->write_change_mass_id(tick, old_id, player);
+                }
+
+            } else if (player->logical == Player::EATER_N_EJECT) {
+                bool changed = player->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
+                if (changed) {
+                    logger->write_change_mass(tick, player);
+                }
             }
 
             int score = player->get_score();
