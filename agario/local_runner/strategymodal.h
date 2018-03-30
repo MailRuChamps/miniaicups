@@ -7,6 +7,10 @@
 
 #include "ui_strategymodal.h"
 #include <QDialog>
+#include "config.h"
+#include <string>
+#include <array>
+#include <tuple>
 
 namespace Ui {
     class StrategyModal;
@@ -18,20 +22,66 @@ class StrategyModal : public QDialog
 
 protected:
     Ui::StrategyModal *ui;
-
+    Config& config;
 public:
-    explicit StrategyModal(QWidget *parent=NULL) :
+    explicit StrategyModal(Config& config, QWidget *parent=NULL) :
         QDialog(parent),
-        ui(new Ui::StrategyModal)
+        ui(new Ui::StrategyModal),
+        config(config)
     {
         ui->setupUi(this);
+        connect(ui->pushButton, SIGNAL(pressed()), this, SLOT(saveProperties()));
+        loadProperties();
     }
 
     virtual ~StrategyModal() {
         if (ui) delete ui;
     }
+public slots:
+    inline void saveProperties() {
+        using namespace std;
+        auto botGuiProperties = getBotGuiProperties();
+        auto guiProps = botGuiProperties.begin();
 
+        for (const auto& groupName: playerGroupNames()) {
+            const auto typeSettingPath = QString::fromStdString(groupName + "/TYPE");
+            const auto type = config.getString(typeSettingPath, "");
+
+            if (get<3>(*guiProps)->isChecked()) {
+                config.setString(typeSettingPath, "USER");
+            } else if (get<2>(*guiProps)->isChecked()) {
+                config.setString(typeSettingPath, "START_BOT");
+            } else if (get<1>(*guiProps)->isChecked()) {
+                config.setString(typeSettingPath, "MY_BOT");
+                config.setString(QString::fromStdString(groupName + "/PATH"), get<0>(*guiProps)->text());
+            }
+            ++guiProps;
+        }
+    }
 public:
+    inline void loadProperties() {
+        using namespace std;
+        auto botGuiProperties = getBotGuiProperties();
+        auto guiProps = botGuiProperties.begin();
+
+        for (const auto& groupName: playerGroupNames()) {
+            const auto typeSettingPath = QString::fromStdString(groupName + "/TYPE");
+            const auto type = config.getString(typeSettingPath, "");
+
+            if (type == "USER") {
+                get<3>(*guiProps)->setChecked(true);
+            } else if (type == "START_BOT") {
+                get<2>(*guiProps)->setChecked(true);
+            } else if (type == "MY_BOT") {
+                get<1>(*guiProps)->setChecked(true);
+                get<0>(*guiProps)->setText(
+                    config.getString(QString::fromStdString(groupName + "/PATH"), "")
+                );
+            }
+            ++guiProps;
+        }
+    }
+
     QString get_color_name(int playerId) const {
         QComboBox *cbx_color;
         if (playerId % 4 == 1) cbx_color = ui->cbx_color_1;
@@ -92,6 +142,19 @@ public:
         }
         return NULL;
     }
+private:
+    inline std::array<std::string, 4> playerGroupNames() const {
+        return { "Player1", "Player2", "Player3", "Player4" };
+    }
+
+    inline std::array<std::tuple<QLineEdit*, QRadioButton*, QRadioButton*, QRadioButton*>, 4> getBotGuiProperties() {
+        return {
+                std::make_tuple(ui->edt_prog_1, ui->rbn_custom_1, ui->rbn_comp_1, ui->rbn_mouse_1),
+                std::make_tuple(ui->edt_prog_5, ui->rbn_custom_5, ui->rbn_comp_5, ui->rbn_mouse_5),
+                std::make_tuple(ui->edt_prog_7, ui->rbn_custom_7, ui->rbn_comp_7, ui->rbn_mouse_7),
+                std::make_tuple(ui->edt_prog_6, ui->rbn_custom_6, ui->rbn_comp_6, ui->rbn_mouse_6)
+            };
+    };
 };
 
 #endif // STRATEGYMODAL_H

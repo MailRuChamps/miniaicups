@@ -15,6 +15,8 @@ namespace Ui {
     class MainWindow;
 }
 
+class Config;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -29,11 +31,11 @@ private:
     bool is_paused;
 
 public:
-    explicit MainWindow(QWidget *parent = 0) :
+    explicit MainWindow(Config& config, QWidget *parent = 0) :
         QMainWindow(parent),
         ui(new Ui::MainWindow),
         mechanic(new Mechanic),
-        sm(new StrategyModal),
+        sm(new StrategyModal(config)),
         mbox(new QMessageBox),
         timerId(-1),
         is_paused(false)
