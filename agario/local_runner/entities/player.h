@@ -141,11 +141,11 @@ public:
     }
 
     bool can_see(const Circle *circle) {
-        double qdist = circle->calc_qdist(x, y);
-        if (qdist < vision_radius * vision_radius) {
-            return true;
-        }
-        return false;
+        double xVisionCenter = x + qCos(angle) * VIS_SHIFT;
+        double yVisionCenter = y + qSin(angle) * VIS_SHIFT;
+        double qdist = circle->calc_qdist(xVisionCenter, yVisionCenter);
+
+        return (qdist < (vision_radius + circle->getR()) * (vision_radius + circle->getR()));
     }
 
     void draw_vision(QPainter &painter) const {
