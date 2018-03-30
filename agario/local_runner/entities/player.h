@@ -405,15 +405,7 @@ public:
         speed_x += (nx * max_speed - speed_x) * inertion / mass;
         speed_y += (ny * max_speed - speed_y) * inertion / mass;
 
-        if (speed_y != 0 && speed_x != 0) {
-            if (speed_x > 0) {
-                angle = qAtan(speed_y / qAbs(speed_x));
-            } else {
-                angle = M_PI - qAtan(speed_y / qAbs(speed_x));
-            }
-        } else {
-            angle = (speed_x >= 0)? 0 : M_PI;
-        }
+        angle = qAtan2(speed_y, speed_x);
 
         double new_speed = qSqrt(speed_x*speed_x + speed_y*speed_y);
         if (new_speed > max_speed) {
