@@ -187,7 +187,7 @@ public:
         mass += food->getM();
         if (logical == State::SPLIT) {
             logical = State::EATER_N_SPLIT;
-        } else if (logical == State::EATER) {
+        } else if (logical == State::EJECT) {
             logical = State::EATER_N_EJECT;
         } else {
             logical = State::EATER;

@@ -678,6 +678,10 @@ public:
                 if (changed) {
                     logger->write_change_mass(tick, player);
                 }
+                Ejection *new_eject = player->eject_now(id_counter);
+                logger->write_add_cmd(tick, new_eject);
+                eject_array.append(new_eject);
+                id_counter++;
             }
 
             int score = player->get_score();
