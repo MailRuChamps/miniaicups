@@ -326,6 +326,27 @@ public:
     }
 
     void fusion(Player *frag) {
+        double fragDX = frag->speed * qCos(frag->angle);
+        double fragDY = frag->speed * qSin(frag->angle);
+        double dX = speed * qCos(angle);
+        double dY = speed * qSin(angle);
+        double sumMass = mass + frag->mass;
+
+        double fragInfluence = frag->mass / sumMass;
+        double currInfluence = mass / sumMass;
+
+        // center with both parts influence
+        this->x = this->x * currInfluence + frag->x * fragInfluence;
+        this->y = this->y * currInfluence + frag->y * fragInfluence;
+
+        // new move vector with both parts influence
+        dX = dX * currInfluence + fragDX * fragInfluence;
+        dY = dY * currInfluence + fragDY * fragInfluence;
+
+        // new angle and speed, based on vectors
+        angle = qAtan2(dY, dX);
+        speed = qSqrt(dX * dX + dY * dY);
+
         mass += frag->getM();
         logical = State::FUSER;
     }
