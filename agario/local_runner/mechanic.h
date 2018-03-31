@@ -67,7 +67,7 @@ public:
             logger->clear_file();
         }
 
-        id_counter = 0;
+        id_counter = 1;
         for (Food *food : food_array) {
             if (food) delete food;
         }
@@ -434,6 +434,7 @@ public:
 
     void apply_direct_for(int sId, Direct direct) {
 //        logger->write_direct(tick, sId, direct);
+
         PlayerArray fragments = get_players_by_id(sId);
         int yet_cnt = fragments.length();
 
@@ -745,6 +746,15 @@ public:
 
     QMap<int, int> get_scores() const {
         return player_scores;
+    }
+
+    bool isLastPlayer()
+    {
+        int i = 0;
+        for (Player *player : player_array)
+            if (player->logical != Player::EATEN)
+                i++;
+        return ((i == 1) ? true : false);
     }
 };
 

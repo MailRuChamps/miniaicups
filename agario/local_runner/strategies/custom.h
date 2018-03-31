@@ -14,10 +14,11 @@ class Custom : public Strategy
 protected:
     QProcess *solution;
     bool is_running;
-    QMetaObject::Connection finish_connection;
 
 signals:
     void error(QString);
+    void cmdFromBot(QString);
+//    void customStrategyDied();
 
 public:
     explicit Custom(int _id, const QString &_path) :
@@ -25,7 +26,7 @@ public:
         solution(new QProcess(this))
     {
         solution->start(_path);
-        finish_connection = connect(solution, SIGNAL(finished(int)), this, SLOT(on_finished(int)));
+        connect(solution, SIGNAL(finished(int)), this, SLOT(on_finished(int)));
         connect(solution, SIGNAL(readyReadStandardError()), this, SLOT(on_error()));
         is_running = true;
         send_config();
@@ -38,8 +39,8 @@ public:
             CircleArray ca;
             QString message = prepare_state(pa, ca);
             int sent = solution->write(message.toStdString().c_str());
-            solution->waitForBytesWritten(10000);
-            solution->waitForFinished(10000);
+            solution->waitForBytesWritten(10);
+            solution->waitForFinished(10);
             solution->close();
 
             delete solution;
@@ -70,6 +71,7 @@ public:
                 return Direct(0, 0);
             }
             cmdBytes.append(solution->readLine());
+            emit cmdFromBot(cmdBytes);
         }
 
         QJsonObject json = parse_answer(cmdBytes);
@@ -94,7 +96,7 @@ public:
 public slots:
     void on_finished(int code) {
         is_running = false;
-        emit error("Process finished with code " + QString::number(code));
+//        emit error("Process finished with code " + QString::number(code));
     }
 
     void on_error() {

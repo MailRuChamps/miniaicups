@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>810</width>
-    <height>460</height>
+    <height>515</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,61 +66,17 @@
        <property name="checkable">
         <bool>false</bool>
        </property>
-       <widget class="QWidget" name="gridLayoutWidget">
+       <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
           <x>10</x>
           <y>30</y>
-          <width>351</width>
-          <height>117</height>
+          <width>368</width>
+          <height>164</height>
          </rect>
         </property>
-        <layout class="QGridLayout" name="grid_1">
-         <item row="0" column="1">
-          <widget class="QComboBox" name="cbx_color_1">
-           <property name="font">
-            <font>
-             <pointsize>13</pointsize>
-            </font>
-           </property>
-           <item>
-            <property name="text">
-             <string>Фиолетовый</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Зеленый</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Синий</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Бирюзовый</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QRadioButton" name="rbn_mouse_1">
-           <property name="font">
-            <font>
-             <pointsize>13</pointsize>
-            </font>
-           </property>
-           <property name="text">
-            <string>Управление курсором</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="0">
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="1" column="0">
           <widget class="QLabel" name="lbl_color_1">
            <property name="font">
             <font>
@@ -135,7 +91,19 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="edt_name_1">
+           <property name="font">
+            <font>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>PC1</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
           <widget class="QRadioButton" name="rbn_custom_1">
            <property name="font">
             <font>
@@ -150,7 +118,58 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="edt_prog_1">
+           <property name="font">
+            <font>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>/usr/local/bin</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="cbx_color_1">
+           <property name="font">
+            <font>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="lbl_name_1">
+           <property name="font">
+            <font>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Имя:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QRadioButton" name="rbn_mouse_1">
+           <property name="font">
+            <font>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Управление курсором</string>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
           <widget class="QRadioButton" name="rbn_comp_1">
            <property name="font">
             <font>
@@ -161,11 +180,11 @@
             <string>Компьютер</string>
            </property>
            <property name="checked">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
+         <item row="3" column="1">
           <widget class="QComboBox" name="cbx_comp_1">
            <property name="font">
             <font>
@@ -177,18 +196,6 @@
              <string>Ближайшая еда</string>
             </property>
            </item>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="edt_prog_1">
-           <property name="font">
-            <font>
-             <pointsize>13</pointsize>
-            </font>
-           </property>
-           <property name="text">
-            <string>/usr/local/bin</string>
-           </property>
           </widget>
          </item>
         </layout>
@@ -222,65 +229,45 @@
        <property name="checkable">
         <bool>false</bool>
        </property>
-       <widget class="QWidget" name="gridLayoutWidget_5">
+       <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
           <x>10</x>
           <y>30</y>
-          <width>351</width>
-          <height>117</height>
+          <width>368</width>
+          <height>159</height>
          </rect>
         </property>
-        <layout class="QGridLayout" name="grid_5">
-         <item row="0" column="1">
-          <widget class="QComboBox" name="cbx_color_5">
-           <property name="font">
-            <font>
-             <pointsize>13</pointsize>
-            </font>
-           </property>
-           <property name="currentText">
-            <string>Синий</string>
-           </property>
-           <property name="currentIndex">
-            <number>2</number>
-           </property>
-           <item>
-            <property name="text">
-             <string>Фиолетовый</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Зеленый</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Синий</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Бирюзовый</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QRadioButton" name="rbn_mouse_5">
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="0" column="0">
+          <widget class="QLabel" name="lbl_name_2">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
             </font>
            </property>
            <property name="text">
-            <string>Управление курсором</string>
+            <string>Имя:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
           </widget>
          </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="lbl_color_5">
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="edt_name_2">
+           <property name="font">
+            <font>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>PC2</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="lbl_color_2">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -294,8 +281,23 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QRadioButton" name="rbn_custom_5">
+         <item row="1" column="1">
+          <widget class="QComboBox" name="cbx_color_2">
+           <property name="font">
+            <font>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="currentText">
+            <string/>
+           </property>
+           <property name="currentIndex">
+            <number>-1</number>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QRadioButton" name="rbn_custom_2">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -306,8 +308,20 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QRadioButton" name="rbn_comp_5">
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="edt_prog_2">
+           <property name="font">
+            <font>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>/usr/local/bin</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QRadioButton" name="rbn_comp_2">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -321,8 +335,8 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
-          <widget class="QComboBox" name="cbx_comp_5">
+         <item row="3" column="1">
+          <widget class="QComboBox" name="cbx_comp_2">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -335,15 +349,15 @@
            </item>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="edt_prog_5">
+         <item row="4" column="0">
+          <widget class="QRadioButton" name="rbn_mouse_2">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
             </font>
            </property>
            <property name="text">
-            <string>/usr/local/bin</string>
+            <string>Управление курсором</string>
            </property>
           </widget>
          </item>
@@ -382,65 +396,45 @@
        <property name="checkable">
         <bool>false</bool>
        </property>
-       <widget class="QWidget" name="gridLayoutWidget_2">
+       <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
-          <x>10</x>
+          <x>11</x>
           <y>30</y>
-          <width>351</width>
-          <height>117</height>
+          <width>368</width>
+          <height>159</height>
          </rect>
         </property>
-        <layout class="QGridLayout" name="grid_2">
-         <item row="0" column="1">
-          <widget class="QComboBox" name="cbx_color_7">
-           <property name="font">
-            <font>
-             <pointsize>13</pointsize>
-            </font>
-           </property>
-           <property name="currentText">
-            <string>Зеленый</string>
-           </property>
-           <property name="currentIndex">
-            <number>1</number>
-           </property>
-           <item>
-            <property name="text">
-             <string>Фиолетовый</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Зеленый</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Синий</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Бирюзовый</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QRadioButton" name="rbn_mouse_7">
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="lbl_name_3">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
             </font>
            </property>
            <property name="text">
-            <string>Управление курсором</string>
+            <string>Имя:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
           </widget>
          </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="lbl_color_7">
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="edt_name_3">
+           <property name="font">
+            <font>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>PC3</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="lbl_color_3">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -454,8 +448,23 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QRadioButton" name="rbn_custom_7">
+         <item row="1" column="1">
+          <widget class="QComboBox" name="cbx_color_3">
+           <property name="font">
+            <font>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="currentText">
+            <string/>
+           </property>
+           <property name="currentIndex">
+            <number>-1</number>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QRadioButton" name="rbn_custom_3">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -466,8 +475,20 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QRadioButton" name="rbn_comp_7">
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="edt_prog_3">
+           <property name="font">
+            <font>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>/usr/local/bin</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QRadioButton" name="rbn_comp_3">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -481,8 +502,8 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
-          <widget class="QComboBox" name="cbx_comp_7">
+         <item row="3" column="1">
+          <widget class="QComboBox" name="cbx_comp_3">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -495,15 +516,15 @@
            </item>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="edt_prog_7">
+         <item row="4" column="0">
+          <widget class="QRadioButton" name="rbn_mouse_3">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
             </font>
            </property>
            <property name="text">
-            <string>/usr/local/bin</string>
+            <string>Управление курсором</string>
            </property>
           </widget>
          </item>
@@ -538,65 +559,45 @@
        <property name="checkable">
         <bool>false</bool>
        </property>
-       <widget class="QWidget" name="gridLayoutWidget_6">
+       <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
-          <x>10</x>
+          <x>1</x>
           <y>30</y>
-          <width>351</width>
-          <height>117</height>
+          <width>368</width>
+          <height>159</height>
          </rect>
         </property>
-        <layout class="QGridLayout" name="grid_6">
-         <item row="0" column="1">
-          <widget class="QComboBox" name="cbx_color_6">
-           <property name="font">
-            <font>
-             <pointsize>13</pointsize>
-            </font>
-           </property>
-           <property name="currentText">
-            <string>Бирюзовый</string>
-           </property>
-           <property name="currentIndex">
-            <number>3</number>
-           </property>
-           <item>
-            <property name="text">
-             <string>Фиолетовый</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Зеленый</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Синий</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Бирюзовый</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QRadioButton" name="rbn_mouse_6">
+        <layout class="QGridLayout" name="gridLayout_4">
+         <item row="0" column="0">
+          <widget class="QLabel" name="lbl_name_4">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
             </font>
            </property>
            <property name="text">
-            <string>Управление курсором</string>
+            <string>Имя:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
           </widget>
          </item>
-         <item row="0" column="0">
-          <widget class="QLabel" name="lbl_color_6">
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="edt_name_4">
+           <property name="font">
+            <font>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>PC4</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="lbl_color_4">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -610,8 +611,23 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
-          <widget class="QRadioButton" name="rbn_custom_6">
+         <item row="1" column="1">
+          <widget class="QComboBox" name="cbx_color_4">
+           <property name="font">
+            <font>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="currentText">
+            <string/>
+           </property>
+           <property name="currentIndex">
+            <number>-1</number>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QRadioButton" name="rbn_custom_4">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -622,8 +638,20 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QRadioButton" name="rbn_comp_6">
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="edt_prog_4">
+           <property name="font">
+            <font>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>/usr/local/bin</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QRadioButton" name="rbn_comp_4">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -637,8 +665,8 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
-          <widget class="QComboBox" name="cbx_comp_6">
+         <item row="3" column="1">
+          <widget class="QComboBox" name="cbx_comp_4">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -651,15 +679,15 @@
            </item>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="edt_prog_6">
+         <item row="4" column="0">
+          <widget class="QRadioButton" name="rbn_mouse_4">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
             </font>
            </property>
            <property name="text">
-            <string>/usr/local/bin</string>
+            <string>Управление курсором</string>
            </property>
           </widget>
          </item>
@@ -685,7 +713,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="pbtn_saveSettings">
        <property name="minimumSize">
         <size>
          <width>160</width>
@@ -729,7 +757,7 @@
  <resources/>
  <connections>
   <connection>
-   <sender>pushButton</sender>
+   <sender>pbtn_saveSettings</sender>
    <signal>pressed()</signal>
    <receiver>StrategyModal</receiver>
    <slot>accept()</slot>

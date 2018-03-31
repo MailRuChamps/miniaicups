@@ -13,9 +13,13 @@ TARGET = local_runner
 TEMPLATE = app
 
 
-SOURCES += main.cpp
+SOURCES += \
+    main.cpp \
+    mainwindow.cpp \
+    strategymodal.cpp
 
-HEADERS  += mainwindow.h \
+HEADERS += \
+    mainwindow.h \
     mechanic.h \
     logger.h \
     entities/food.h \
@@ -29,7 +33,8 @@ HEADERS  += mainwindow.h \
     strategymodal.h \
     strategies/custom.h
 
-FORMS    += mainwindow.ui \
+FORMS += \
+    mainwindow.ui \
     strategymodal.ui
 
 LIBS += -lz

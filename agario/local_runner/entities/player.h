@@ -82,6 +82,9 @@ public:
         }
         return QPair<double, double>(x, y);
     }
+    QPair<double, double> get_direct() const {
+        return QPair<double, double>(cmd_x, cmd_y);
+    }
 
     double getVR() const {
         return vision_radius;
@@ -122,6 +125,9 @@ public:
             painter.setPen(QPen(QBrush(Qt::red), 1));
             QPair<double, double> norm = get_direct_norm();
             painter.drawLine(ix, iy, norm.first, norm.second);
+            painter.setPen(QPen(QBrush(Qt::yellow), 1));
+            QPair<double, double> cmd = get_direct();
+            painter.drawLine(ix, iy, cmd.first, cmd.second);
         }
     }
 
