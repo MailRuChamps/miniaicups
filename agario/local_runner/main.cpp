@@ -3,12 +3,12 @@
 
 
 int main(int argc, char *argv[]) {
-    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-    Constants::initialize(env);
-
     QApplication::setOrganizationName("MRG");
     QApplication::setOrganizationDomain("mail.ru");
     QApplication::setApplicationName("AgarLocalRunner");
+
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    Constants::initialize(env);
 
     QApplication a(argc, argv);
     MainWindow window;
