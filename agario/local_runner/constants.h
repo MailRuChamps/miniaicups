@@ -14,6 +14,8 @@
 #include <random>
 #include <QSettings>
 
+// yes ugly
+#define DEFINE_QSETTINGS(VARIABLE_NAME) QSettings VARIABLE_NAME("LocalRunner.ini", QSettings::IniFormat)
 
 struct Constants
 {
@@ -55,7 +57,7 @@ public:
     static Constants &initialize(const QProcessEnvironment &env) {
         Constants& c = instance();
 
-        QSettings settings;
+        DEFINE_QSETTINGS(settings);
         settings.beginGroup("constants");
 
 #define SET_CONSTANT(NAME, DEFAULT, CONVERT) do {                              \

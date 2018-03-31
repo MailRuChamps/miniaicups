@@ -56,7 +56,7 @@ public:
 
 #undef SM_SETUP_PLAYER_GUI
 
-        QSettings settings;
+        DEFINE_QSETTINGS(settings);
         if (settings.value("first_time", true).toBool()) {
             // Default settings are already in the form
             settings.setValue("first_time", false);
@@ -70,7 +70,7 @@ public:
     }
 
     void restore_settings() {
-        QSettings settings;
+        DEFINE_QSETTINGS(settings);
         settings.beginReadArray("players");
         for (int player = 1; player <= 4; ++player) {
             settings.setArrayIndex(player - 1);
@@ -136,7 +136,7 @@ public:
 
 public slots:
     void save_settings() {
-        QSettings settings;
+        DEFINE_QSETTINGS(settings);
         settings.beginWriteArray("players");
         for (int player = 1; player <= 4; ++player) {
             PlayerGui& cur_gui = gui_of_player[player % 4];
