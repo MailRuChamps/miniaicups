@@ -16,37 +16,37 @@
 template <typename T1>
 QString format(const QString &src, T1 num1) {
     QString stackSrc = src;
-    return stackSrc.replace("{1}", QString::number(num1));
+    return stackSrc.replace("{1}", QString::number(num1, 'g', 16));
 }
 template <typename T1, typename T2>
 QString format(const QString &src, T1 num1, T2 num2) {
     QString stackSrc = src;
-    return stackSrc.replace("{1}", QString::number(num1)).replace("{2}", QString::number(num2));
+    return stackSrc.replace("{1}", QString::number(num1, 'g', 16)).replace("{2}", QString::number(num2, 'g', 16));
 }
 template <typename T1, typename T2, typename T3>
 QString format(const QString &src, T1 num1, T2 num2, T3 num3) {
     QString stackSrc = src;
-    return stackSrc.replace("{1}", QString::number(num1)).replace("{2}", QString::number(num2)).replace("{3}", QString::number(num3));
+    return stackSrc.replace("{1}", QString::number(num1, 'g', 16)).replace("{2}", QString::number(num2, 'g', 16)).replace("{3}", QString::number(num3, 'g', 16));
 }
 template <typename T1, typename T2, typename T3, typename T4>
 QString format(const QString &src, T1 num1, T2 num2, T3 num3, T4 num4) {
     QString stackSrc = src;
-    return stackSrc.replace("{1}", QString::number(num1)).replace("{2}", QString::number(num2))
-            .replace("{3}", QString::number(num3)).replace("{4}", QString::number(num4));
+    return stackSrc.replace("{1}", QString::number(num1, 'g', 16)).replace("{2}", QString::number(num2, 'g', 16))
+            .replace("{3}", QString::number(num3, 'g', 16)).replace("{4}", QString::number(num4, 'g', 16));
 }
 template <typename T1, typename T2, typename T3, typename T4, typename T5>
 QString format(const QString &src, T1 num1, T2 num2, T3 num3, T4 num4, T5 num5) {
     QString stackSrc = src;
-    return stackSrc.replace("{1}", QString::number(num1)).replace("{2}", QString::number(num2))
-            .replace("{3}", QString::number(num3)).replace("{4}", QString::number(num4))
-            .replace("{5}", QString::number(num5));
+    return stackSrc.replace("{1}", QString::number(num1, 'g', 16)).replace("{2}", QString::number(num2, 'g', 16))
+            .replace("{3}", QString::number(num3, 'g', 16)).replace("{4}", QString::number(num4, 'g', 16))
+            .replace("{5}", QString::number(num5, 'g', 16));
 }
 template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
 QString format(const QString &src, T1 num1, T2 num2, T3 num3, T4 num4, T5 num5, T6 num6) {
     QString stackSrc = src;
-    return stackSrc.replace("{1}", QString::number(num1)).replace("{2}", QString::number(num2))
-            .replace("{3}", QString::number(num3)).replace("{4}", QString::number(num4))
-            .replace("{5}", QString::number(num5)).replace("{6}", QString::number(num6));
+    return stackSrc.replace("{1}", QString::number(num1, 'g', 16)).replace("{2}", QString::number(num2, 'g', 16))
+            .replace("{3}", QString::number(num3, 'g', 16)).replace("{4}", QString::number(num4, 'g', 16))
+            .replace("{5}", QString::number(num5, 'g', 16)).replace("{6}", QString::number(num6, 'g', 16));
 }
 
 
@@ -176,20 +176,20 @@ public:
     }
 
     void write_add_cmd(int tick, Food *food) {
-        write_cmd(tick, format("AF{1} X{2} Y{3}\n", food->getId(), (int)food->getX(), (int)food->getY()));
+        write_cmd(tick, format("AF{1} X{2} Y{3}\n", food->getId(), food->getX(), food->getY()));
     }
 
     void write_add_cmd(int tick, Virus *virus) {
-        write_cmd(tick, format("AV{1} X{2} Y{3}\n", virus->getId(), (int)virus->getX(), (int)virus->getY()));
+        write_cmd(tick, format("AV{1} X{2} Y{3}\n", virus->getId(), virus->getX(), virus->getY()));
     }
 
     void write_add_cmd(int tick, Player *player) {
         QString cmd = "AP" + player->id_to_str() + " X{1} Y{2} R{3} M{4} C{5} F{6}\n";
-        write_cmd(tick, format(cmd, (int)player->getX(), (int)player->getY(), player->getR(), player->getM(), player->getC(), player->getVR()));
+        write_cmd(tick, format(cmd, player->getX(), player->getY(), player->getR(), player->getM(), player->getC(), player->getVR()));
     }
 
     void write_add_cmd(int tick, Ejection *eject) {
-        write_cmd(tick, format("AE{1} X{2} Y{3}\n", eject->getId(), (int)eject->getX(), (int)eject->getY()));
+        write_cmd(tick, format("AE{1} X{2} Y{3}\n", eject->getId(), eject->getX(), eject->getY()));
     }
 
     void write_direct(int tick, int id, Direct direct) {
@@ -226,20 +226,20 @@ public:
 
     void write_change_pos(int tick, Player *player) {
         QString cmd = "+P" + player->id_to_str() + " X{1} Y{2} A{3}\n";
-        write_cmd(tick, format(cmd, (int)player->getX(), (int)player->getY(), player->getA()));
+        write_cmd(tick, format(cmd, player->getX(), player->getY(), player->getA()));
     }
 
     void write_change_pos(int tick, Ejection *eject) {
-        write_cmd(tick, format("+E{1} X{2} Y{3}\n", eject->getId(), (int)eject->getX(), (int)eject->getY()));
+        write_cmd(tick, format("+E{1} X{2} Y{3}\n", eject->getId(), eject->getX(), eject->getY()));
     }
 
     void write_change_pos(int tick, Virus *virus) {
-        write_cmd(tick, format("+V{1} X{2} Y{3}\n", virus->getId(), (int)virus->getX(), (int)virus->getY()));
+        write_cmd(tick, format("+V{1} X{2} Y{3}\n", virus->getId(), virus->getX(), virus->getY()));
     }
 
     void write_change_mass(int tick, Player *player) {
         QString cmd = "+P" + player->id_to_str() + " X{1} Y{2} R{3} M{4}\n";
-        write_cmd(tick, format(cmd, (int)player->getX(), (int)player->getY(), player->getR(), player->getM()));
+        write_cmd(tick, format(cmd, player->getX(), player->getY(), player->getR(), player->getM()));
     }
 
     void write_change_mass_id(int tick, const QString &old_id, Player *player) {
