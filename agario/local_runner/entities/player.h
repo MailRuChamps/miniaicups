@@ -171,7 +171,7 @@ public:
 
     double can_eat(Circle *food) const {
         if (food->is_player() && food->getId() == id) {
-            return INFINITY;
+            return -INFINITY;
         }
         if (mass > food->getM() * MASS_EAT_FACTOR) { // eat anything
             double dist = food->calc_dist(x, y);
@@ -179,7 +179,7 @@ public:
                 return radius - dist;
             }
         }
-        return INFINITY;
+        return -INFINITY;
     }
 
     void eat(Circle *food, bool is_last=false) {

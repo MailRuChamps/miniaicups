@@ -59,7 +59,7 @@ public:
                 return radius - dist;
             }
         }
-        return INFINITY;
+        return -INFINITY;
     }
 
     void eat(Ejection *eject) {
