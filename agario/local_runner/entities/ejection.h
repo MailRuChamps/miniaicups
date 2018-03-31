@@ -12,15 +12,17 @@ public:
 
 protected:
     int color;
+    int player;
     double speed;
     double angle;
 
 public:
-    explicit Ejection(int _id, double _x, double _y, double _radius, double _mass) :
+    explicit Ejection(int _id, double _x, double _y, double _radius, double _mass, int player) :
         Circle(_id, _x, _y, _radius, _mass),
         logical(State::CREATED),
         speed(0.0),
-        angle(0.0)
+        angle(0.0),
+        player(player)
     {
         color = rand() % 14 + 4;
     }
@@ -33,6 +35,10 @@ public:
 
     double getA() const {
         return angle;
+    }
+
+    virtual bool is_my_eject(Circle *player) const {
+        return this->player == player->getId();
     }
 
     virtual bool is_food() const {

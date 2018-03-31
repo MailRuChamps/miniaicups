@@ -193,7 +193,9 @@ public:
             logical = State::EATER;
         }
 
-        if (food->is_food()) {
+        if (food->is_my_eject(this)) {
+            return;
+        } else if (food->is_food()) {
             score += SCORE_FOR_FOOD;
         }
         else if (food->is_player()) {
@@ -343,7 +345,7 @@ public:
         double ex = x + qCos(angle) * (radius + 1);
         double ey = y + qSin(angle) * (radius + 1);
 
-        Ejection *new_eject = new Ejection(eject_id, ex, ey, EJECT_RADIUS, EJECT_MASS);
+        Ejection *new_eject = new Ejection(eject_id, ex, ey, EJECT_RADIUS, EJECT_MASS, this->id);
         new_eject->set_impulse(EJECT_START_SPEED, angle);
 
         mass -= EJECT_MASS;

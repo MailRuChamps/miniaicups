@@ -78,6 +78,10 @@ public:
         return mass;
     }
 
+    virtual bool is_my_eject(Circle *player) const {
+        return false;
+    }
+
     virtual bool is_food() const {
         return false;
     }
