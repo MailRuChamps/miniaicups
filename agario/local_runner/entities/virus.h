@@ -53,14 +53,13 @@ public:
     }
 
     double can_eat(Ejection *eject) {
-        if (mass > eject->getM() * MASS_EAT_FACTOR) {
-            double qdist = eject->calc_qdist(x, y);
-            double tR = radius - eject->getR() * RAD_EAT_FACTOR;
-            if (qdist < tR * tR) {
-                return qdist;
+        if (mass > eject->getM() * MASS_EAT_FACTOR) { // eat ejection
+            double dist = eject->calc_dist(x, y);
+            if (dist - eject->getR() + (eject->getR() * 2) * DIAM_EAT_FACTOR < radius) {
+                return radius - dist;
             }
         }
-        return INFINITY;
+        return -INFINITY;
     }
 
     void eat(Ejection *eject) {

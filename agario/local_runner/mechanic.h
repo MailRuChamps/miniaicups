@@ -453,11 +453,11 @@ public:
     void who_is_eaten() {
         auto nearest_player = [this] (Circle *circle) {
             Player *nearest_predator = NULL;
-            double nearest_dist = INFINITY;
+            double deeper_dist = -INFINITY;
             for (Player *predator : player_array) {
                 double qdist = predator->can_eat(circle);
-                if (qdist < nearest_dist) {
-                    nearest_dist = qdist;
+                if (qdist > deeper_dist) {
+                    deeper_dist = qdist;
                     nearest_predator = predator;
                 }
             }
@@ -465,11 +465,11 @@ public:
         };
         auto nearest_virus = [this] (Ejection *eject) {
             Virus *nearest_predator = NULL;
-            double nearest_dist = INFINITY;
+            double deeper_dist = -INFINITY;
             for (Virus *predator : virus_array) {
                 double qdist = predator->can_eat(eject);
-                if (qdist < nearest_dist) {
-                    nearest_dist = qdist;
+                if (qdist > deeper_dist) {
+                    deeper_dist = qdist;
                     nearest_predator = predator;
                 }
             }
@@ -516,7 +516,7 @@ public:
         }
     }
 
-    void who_intersected_virus() {
+    void who_intersected_virus() { // TODO: please, somebody fix it
         auto nearest_to = [this] (Virus *virus) {
             double nearest_dist = INFINITY;
             Player *nearest_player = NULL;

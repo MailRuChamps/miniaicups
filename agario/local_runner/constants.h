@@ -119,7 +119,7 @@ const double DRAW_SPEED_FACTOR = 14.0;
 //const double SPEED_FACTOR = 25.0; // speed = SF / sqrt(mass)
 //const double RADIUS_FACTOR = 2.0; // radius = RF * sqrt(mass)
 const double MASS_EAT_FACTOR = 1.20; // mass > food.mass * MEF
-const double RAD_EAT_FACTOR = 0.66; // (radius - food.radius * REF) > dist
+const double DIAM_EAT_FACTOR = 2./3.; // dist - eject->getR() + (eject->getR() * 2) * DIAM_EAT_FACTOR < radius
 
 const double RAD_HURT_FACTOR = 0.66; // (radius * RHF + player.radius) > dist
 const double MIN_BURST_MASS = 60.0; // MBM * 2 < mass
