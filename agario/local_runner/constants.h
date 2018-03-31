@@ -12,6 +12,7 @@
 #include <qglobal.h>
 #include <QProcessEnvironment>
 #include <random>
+#include "config.h"
 
 
 struct Constants
@@ -51,35 +52,47 @@ public:
         return ins;
     }
 
-    static Constants &initialize(const QProcessEnvironment &env) {
+    static Constants &initialize(const QProcessEnvironment &env, const Config& config) {
         Constants &ins = instance();
-        ins.GAME_TICKS = env.value("GAME_TICKS", "75000").toInt();
+
+        const auto getIntProperty = [&] (const QString& propertyKey, const QString& defaultValue) {
+            return config.getInt( propertyKey, env.value(propertyKey, defaultValue).toInt() );
+        };
+        const auto getDoubleProperty = [&] (const QString& propertyKey, const QString& defaultValue) {
+            return config.getDouble( propertyKey, env.value(propertyKey, defaultValue).toDouble() );
+        };
+
+        ins.GAME_TICKS = getIntProperty("GAME_TICKS", "75000");
 
 #if defined LOCAL_RUNNER
-        ins.GAME_WIDTH = env.value("GAME_WIDTH", "660").toInt();
-        ins.GAME_HEIGHT = env.value("GAME_HEIGHT", "660").toInt();
+        ins.GAME_WIDTH = getIntProperty("GAME_WIDTH", "660");
+        ins.GAME_HEIGHT = getIntProperty("GAME_HEIGHT", "660");
 #elif defined CONTAINER
         ins.GAME_WIDTH = env.value("GAME_WIDTH", "990").toInt();
         ins.GAME_HEIGHT = env.value("GAME_HEIGHT", "990").toInt();
 #endif
 
-        ins.SUM_RESP_TIMEOUT = env.value("SUM_RESP_TIMEOUT", "500").toInt();
-        ins.TICK_MS = env.value("TICK_MS", "16").toInt();
-        ins.BASE_TICK = env.value("BASE_TICK", "50").toInt();
-        ins.INERTION_FACTOR = env.value("INERTION_FACTOR", "10.0").toDouble();
-        ins.VISCOSITY = env.value("VISCOSITY", "0.25").toDouble();
-        ins.SPEED_FACTOR = env.value("SPEED_FACTOR", "25.0").toDouble();
-        ins.RADIUS_FACTOR = env.value("RADIUS_FACTOR", "2.0").toDouble();
-        ins.FOOD_MASS = env.value("FOOD_MASS", "1.0").toDouble();
-        ins.VIRUS_RADIUS = env.value("VIRUS_RADIUS", "22.0").toDouble();
-        ins.VIRUS_SPLIT_MASS = env.value("VIRUS_SPLIT_MASS", "80.0").toDouble();
-        ins.MAX_FRAGS_CNT = env.value("MAX_FRAGS_CNT", "10").toInt();
-        ins.TICKS_TIL_FUSION = env.value("TICKS_TIL_FUSION", "250").toInt();
+        ins.SUM_RESP_TIMEOUT = getIntProperty("SUM_RESP_TIMEOUT", "500");
+        ins.TICK_MS = getIntProperty("TICK_MS", "16");
+        ins.BASE_TICK = getIntProperty("BASE_TICK", "50");
+        ins.INERTION_FACTOR = getDoubleProperty("INERTION_FACTOR", "10.0");
+        ins.VISCOSITY = getDoubleProperty("VISCOSITY", "0.25");
+        ins.SPEED_FACTOR = getDoubleProperty("SPEED_FACTOR", "25.0");
+        ins.RADIUS_FACTOR = getDoubleProperty("RADIUS_FACTOR", "2.0");
+        ins.FOOD_MASS = getDoubleProperty("FOOD_MASS", "1.0");
+        ins.VIRUS_RADIUS = getDoubleProperty("VIRUS_RADIUS", "22.0");
+        ins.VIRUS_SPLIT_MASS = getDoubleProperty("VIRUS_SPLIT_MASS", "80.0");
+        ins.MAX_FRAGS_CNT = getIntProperty("MAX_FRAGS_CNT", "10");
+        ins.TICKS_TIL_FUSION = getIntProperty("TICKS_TIL_FUSION", "250");
 
-        QTime time = QTime::currentTime();
-        uint secs = QTime(0,0,0).secsTo(QTime::currentTime());
-        qsrand(secs * 1000 + time.msec());
-        ins.SEED = env.value("SEED", QString::number(qrand())).toULongLong();
+        const auto makeSeedRuntime = [] () {
+            QTime time = QTime::currentTime();
+            uint secs = QTime(0,0,0).secsTo(QTime::currentTime());
+            qsrand(secs * 1000 + time.msec());
+            return QString::number(qrand());
+        };
+        ins.SEED = config.getBigUnsigned( "SEED", env.value("SEED", makeSeedRuntime() ).toULongLong() );
+
         return ins;
     }
 };

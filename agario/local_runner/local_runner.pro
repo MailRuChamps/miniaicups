@@ -27,7 +27,8 @@ HEADERS  += mainwindow.h \
     strategies/bymouse.h \
     entities/ejection.h \
     strategymodal.h \
-    strategies/custom.h
+    strategies/custom.h \
+    config.h
 
 FORMS    += mainwindow.ui \
     strategymodal.ui
