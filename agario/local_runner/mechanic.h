@@ -516,7 +516,7 @@ public:
         }
     }
 
-    void who_intersected_virus() {
+    void who_intersected_virus() { // TODO: must be roworked
         auto nearest_to = [this] (Virus *virus) {
             double nearest_dist = INFINITY;
             Player *nearest_player = NULL;

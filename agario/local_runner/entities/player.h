@@ -96,9 +96,9 @@ public:
 
     void apply_viscosity(double usual_speed) {
         if (is_fast && speed > usual_speed) {
-            speed -= Constants::instance().VISCOSITY;
+            speed = std::max(speed - Constants::instance().VISCOSITY, usual_speed);
         }
-        if (is_fast && speed < usual_speed) {
+        if (is_fast && speed <= usual_speed) {
             is_fast = false;
             speed = usual_speed;
         }
@@ -173,11 +173,10 @@ public:
         if (food->is_player() && food->getId() == id) {
             return INFINITY;
         }
-        if (mass > food->getM() * MASS_EAT_FACTOR) {
-            double qdist = food->calc_qdist(x, y);
-            double tR = radius - food->getR() * RAD_EAT_FACTOR;
-            if (qdist < tR * tR) {
-                return qdist;
+        if (mass > food->getM() * MASS_EAT_FACTOR) { // eat anything
+            double dist = food->calc_dist(x, y);
+            if (dist - food->getR() + (food->getR() * 2) * DIAM_EAT_FACTOR < radius) {
+                return radius - dist;
             }
         }
         return INFINITY;
