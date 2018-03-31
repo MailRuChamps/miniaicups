@@ -32,16 +32,19 @@ public:
     }
 
     virtual ~Custom() {
+        Constants &ins = Constants::instance();
         if (solution) {
             disconnect(finish_connection);
             PlayerArray pa;
             CircleArray ca;
             QString message = prepare_state(pa, ca);
             int sent = solution->write(message.toStdString().c_str());
-            solution->waitForBytesWritten(10000);
-            solution->waitForFinished(10000);
+            solution->waitForBytesWritten(5000);
+            bool success = solution->waitForReadyRead(ins.RESP_TIMEOUT * 1000);
+            if (!success) {
+                solution->waitForFinished(5000);
+            }
             solution->close();
-
             delete solution;
         }
     }
@@ -57,16 +60,16 @@ public:
             emit error("Can't write to process");
             return Direct(0, 0);
         }
-
+        Constants &ins = Constants::instance();
         QByteArray cmdBytes = "";
         while (! cmdBytes.endsWith('\n')) {
-            bool success = solution->waitForReadyRead(RESP_TIMEOUT * 1000);
+            bool success = solution->waitForReadyRead(ins.RESP_TIMEOUT * 1000);
             if (! success) {
                 cmdBytes.append(solution->readAllStandardOutput());
                 cmdBytes.append(solution->readAllStandardError());
                 cmdBytes.append(solution->readAll());
                 qDebug() << cmdBytes;
-                emit error("Can't wait for process answer (5 sec. expired)");
+                emit error("Can't wait for process answer (limit expired)");
                 return Direct(0, 0);
             }
             cmdBytes.append(solution->readLine());

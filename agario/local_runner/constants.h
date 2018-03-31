@@ -30,6 +30,7 @@ public:
     int GAME_WIDTH;             // 660
     int GAME_HEIGHT;            // 660
     int SUM_RESP_TIMEOUT;       // 500 secs
+    int RESP_TIMEOUT;           // 5 sec
 
     int TICK_MS;                // 16 ms
     int BASE_TICK;              // every 50 ticks
@@ -75,6 +76,7 @@ public:
         ins.VIRUS_SPLIT_MASS = env.value("VIRUS_SPLIT_MASS", "80.0").toDouble();
         ins.MAX_FRAGS_CNT = env.value("MAX_FRAGS_CNT", "10").toInt();
         ins.TICKS_TIL_FUSION = env.value("TICKS_TIL_FUSION", "250").toInt();
+        ins.RESP_TIMEOUT = env.value("RESP_TIMEOUT", "5").toInt();
 
         QTime time = QTime::currentTime();
         uint secs = QTime(0,0,0).secsTo(QTime::currentTime());
@@ -163,7 +165,7 @@ const int MAX_DEBUG_LEN = 1000;
 const int MAX_ID_LEN = 100;
 
 const int CONNECT_TIMEOUT = 200; // seconds
-const int RESP_TIMEOUT = 5; // seconds
+//const int RESP_TIMEOUT = 5; // seconds
 //const int SUM_RESP_TIMEOUT = 150; // seconds
 const int PRE_PAUSE = 20; // seconds
 
