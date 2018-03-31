@@ -11,10 +11,10 @@
 
 struct Direct
 {
-    explicit Direct(int _x, int _y) : x(_x), y(_y), split(false), eject(false) {}
+    explicit Direct(double _x, double _y) : x(_x), y(_y), split(false), eject(false) {}
 
 public:
-    int x, y;
+    double x, y;
     bool split;
     bool eject;
 
