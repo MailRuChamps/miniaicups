@@ -34,7 +34,14 @@ public:
     virtual ~Custom() {
         if (solution) {
             disconnect(finish_connection);
+            PlayerArray pa;
+            CircleArray ca;
+            QString message = prepare_state(pa, ca);
+            int sent = solution->write(message.toStdString().c_str());
+            solution->waitForBytesWritten(10000);
+            solution->waitForFinished(10000);
             solution->close();
+
             delete solution;
         }
     }
