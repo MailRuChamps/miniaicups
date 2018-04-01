@@ -38,6 +38,7 @@ public:
             CircleArray ca;
             QString message = prepare_state(pa, ca);
             int sent = solution->write(message.toStdString().c_str());
+            solution->waitForBytesWritten(5000);
             bool success = solution->waitForReadyRead(ins.RESP_TIMEOUT * 1000);
             if (!success) {
                 solution->waitForFinished(5000);
