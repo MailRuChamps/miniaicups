@@ -33,6 +33,7 @@ public:
     }
 
     virtual ~Custom() {
+        Constants &ins = Constants::instance();
         if (solution) {
             PlayerArray pa;
             CircleArray ca;
