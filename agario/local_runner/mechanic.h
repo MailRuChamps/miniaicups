@@ -303,14 +303,6 @@ public:
         }
     }
 
-    void delete_ejection(Ejection *eject) {
-        int rm_index = eject_array.indexOf(eject);
-        if (rm_index != -1) {
-            eject_array.remove(rm_index);
-            if (eject) delete eject;
-        }
-    }
-
     void delete_player(Player *player) {
         int pId = player->getId();
         PlayerArray other_players = get_players_by_id(pId);
@@ -485,24 +477,24 @@ public:
                 }
             }
         }
-        for (Ejection *eject : eject_array) {
-            if (eject->logical != Ejection::EATEN) {
-                Virus *eater = nearest_virus(eject);
-                if (eater != NULL) {
-                    eater->eat(eject);
-                    if (eater->can_split()) {
-                        eater->logical = Virus::SPLIT;
-                    }
-                    eject->logical = Ejection::EATEN;
+
+        for (auto eit = eject_array.begin(); eit != eject_array.end(); ) {
+            auto eject = *eit;
+            if (Virus *eater = nearest_virus(eject)) {
+                eater->eat(eject);
+                if (eater->can_split()) {
+                    eater->logical = Virus::SPLIT;
                 }
-                else {
-                    Player *eater = nearest_player(eject);
-                    if (eater != NULL) {
-                        eater->eat(eject);
-                        eject->logical = Ejection::EATEN;
-                    }
-                }
+            } else if (Player *eater = nearest_player(eject)) {
+                eater->eat(eject);
+            } else {
+                eit++;
+                continue;
             }
+
+            logger->write_kill_cmd(tick, eject);
+            delete eject;
+            eit = eject_array.erase(eit);
         }
         for (Player *player : player_array) {
             if (player->logical != Player::EATEN) {
@@ -577,11 +569,9 @@ public:
     void move_moveables() {
         Constants &ins = Constants::instance();
         for (Ejection *eject : eject_array) {
-            if (eject->logical == Ejection::MOVING) {
-                bool changed = eject->move(ins.GAME_WIDTH, ins.GAME_HEIGHT);
-                if (changed) {
-                    logger->write_change_pos(tick, eject);
-                }
+            bool changed = eject->move(ins.GAME_WIDTH, ins.GAME_HEIGHT);
+            if (changed) {
+                logger->write_change_pos(tick, eject);
             }
         }
         for (Virus *virus : virus_array) {
@@ -617,17 +607,6 @@ public:
     }
 
     void update_by_state() {
-        EjectionArray remove_ejects;
-        for (Ejection *eject : eject_array) {
-            if (eject->logical == Ejection::EATEN) {
-                logger->write_kill_cmd(tick, eject);
-                remove_ejects.append(eject);
-            }
-        }
-        for (Ejection *eject : remove_ejects) {
-            delete_ejection(eject);
-        }
-
         PlayerArray remove_players;
         PlayerArray append_players;
         for (Player *player : player_array) {
