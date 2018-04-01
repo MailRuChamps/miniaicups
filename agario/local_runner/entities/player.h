@@ -293,36 +293,61 @@ public:
         return new_player;
     }
 
-    double tangent_projection(Player *c1, Player *c2, double dist) {
-        if (dist > 0 && c1->speed > 0) {
-            double speed_x = c1->speed * qCos(c1->angle);
-            double speed_y = c1->speed * qSin(c1->angle);
-
-            double norm_x = -(c1->y - c2->y), norm_y = c1->x - c2->x;
-            double scalar = norm_x * speed_x + norm_y * speed_y;
-            double cos_beta = scalar / dist / c1->speed;
-            return qAcos(cos_beta);
-        }
-        return 0.0;
-    }
-
     bool can_fuse(Player *frag) {
         double dist = frag->calc_dist(x, y);
         double nR = radius + frag->getR();
 
-        if (frag->fuse_timer > 0 && dist <= nR && !is_fast) {
-            double beta = tangent_projection(this, frag, dist);
-            if (qAbs(beta) < M_PI / 2) {
-                angle -= beta;
-            }
-//            speed *= qCos(beta);
+        return fuse_timer == 0 && frag->fuse_timer == 0 && dist <= nR;
+    }
+
+    void collisionCalc(Player *other) {
+        if (is_fast || other->is_fast) { // do not collide splits
+            return;
         }
-        if (frag->getM() < mass) {
-            if (frag->fuse_timer == 0 && dist <= nR) {
-                return true;
-            }
+        double dist = this->calc_dist(other->x, other->y);
+        if (dist >= radius + other->radius) {
+            return;
         }
-        return false;
+
+        // vector from centers
+        double collisionVectorX = this->x - other->x;
+        double collisionVectorY = this->y - other->y;
+        // normalize to 1
+        double vectorLen = qSqrt(collisionVectorX * collisionVectorX + collisionVectorY * collisionVectorY);
+        if (vectorLen < 1e-9) { // collision object in same point??
+            return;
+        }
+        collisionVectorX /= vectorLen;
+        collisionVectorY /= vectorLen;
+
+        double collisionForce = 1. - dist / (radius + other->radius);
+        collisionForce *= collisionForce;
+        collisionForce *= COLLISION_POWER;
+
+        double sumMass = getM() + other->getM();
+        // calc influence on us
+        {
+            double currPart = other->getM() / sumMass; // more influence on us if other bigger and vice versa
+
+            double dx = speed * qCos(angle);
+            double dy = speed * qSin(angle);
+            dx += collisionForce * currPart * collisionVectorX;
+            dy += collisionForce * currPart * collisionVectorY;
+            this->speed = qSqrt(dx * dx + dy * dy);
+            this->angle = qAtan2(dy, dx);
+        }
+
+        // calc influence on other
+        {
+            double otherPart = getM() / sumMass;
+
+            double dx = other->speed * qCos(other->angle);
+            double dy = other->speed * qSin(other->angle);
+            dx -= collisionForce * otherPart * collisionVectorX;
+            dy -= collisionForce * otherPart * collisionVectorY;
+            other->speed = qSqrt(dx * dx + dy * dy);
+            other->angle = qAtan2(dy, dx);
+        }
     }
 
     void fusion(Player *frag) {

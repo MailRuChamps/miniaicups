@@ -550,6 +550,9 @@ public:
 
     void who_need_fusion() {
         for (Player *player : player_array) {
+            if (player->logical == Player::FUSED) {
+                continue;
+            }
             PlayerArray fragments = get_players_by_id(player->getId());
             if (fragments.length() == 1) {
 
@@ -589,6 +592,22 @@ public:
                 }
             }
         }
+
+        QSet<int> playerIds;
+        for (Player *player : player_array) {
+            playerIds.insert(player->getId());
+        }
+
+        for (auto sId : playerIds) {
+            PlayerArray fragments = get_players_by_id(sId);
+            for (int i = 0; i != fragments.size(); ++i) {
+                Player *curr = fragments[i];
+                for (int j = i + 1; j < fragments.size(); ++j) {
+                    curr->collisionCalc(fragments[j]);
+                }
+            }
+        }
+
         for (Player *player : player_array) {
             bool changed = player->move(ins.GAME_WIDTH, ins.GAME_HEIGHT);
             if (changed) {
