@@ -304,7 +304,7 @@ public:
         if (is_fast || other->is_fast) { // do not collide splits
             return;
         }
-        if (this->x == other->x || this->y == other->y) { // collision object in same point??
+        if (this->x == other->x && this->y == other->y) { // collision object in same point??
             return;
         }
         double dist = this->calc_dist(other->x, other->y);
