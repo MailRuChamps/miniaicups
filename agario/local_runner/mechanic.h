@@ -593,8 +593,12 @@ public:
             }
         }
 
-        for (Strategy *strategy : strategy_array) {
-            int sId = strategy->getId();
+        QSet<int> playerIds;
+        for (Player *player : player_array) {
+            playerIds.insert(player->getId());
+        }
+
+        for (auto sId : playerIds) {
             PlayerArray fragments = get_players_by_id(sId);
             for (int i = 0; i != fragments.size(); ++i) {
                 Player *curr = fragments[i];
