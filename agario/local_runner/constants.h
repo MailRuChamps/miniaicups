@@ -12,7 +12,10 @@
 #include <qglobal.h>
 #include <QProcessEnvironment>
 #include <random>
+#include <QSettings>
 
+// yes ugly
+#define DEFINE_QSETTINGS(VARIABLE_NAME) QSettings VARIABLE_NAME("LocalRunner.ini", QSettings::IniFormat)
 
 struct Constants
 {
@@ -53,36 +56,61 @@ public:
     }
 
     static Constants &initialize(const QProcessEnvironment &env) {
-        Constants &ins = instance();
-        ins.GAME_TICKS = env.value("GAME_TICKS", "75000").toInt();
+        Constants& c = instance();
 
+        DEFINE_QSETTINGS(settings);
+        settings.beginGroup("constants");
+
+#define SET_CONSTANT(NAME, DEFAULT, CONVERT) do {                              \
+            c.NAME = getSettingValue(#NAME, env, settings, DEFAULT).CONVERT(); \
+        } while(false)
+
+        SET_CONSTANT(GAME_TICKS, "75000", toInt);
 #if defined LOCAL_RUNNER
-        ins.GAME_WIDTH = env.value("GAME_WIDTH", "660").toInt();
-        ins.GAME_HEIGHT = env.value("GAME_HEIGHT", "660").toInt();
+
+        SET_CONSTANT(GAME_WIDTH, "660", toInt);
+        SET_CONSTANT(GAME_HEIGHT, "660", toInt);
 #elif defined CONTAINER
-        ins.GAME_WIDTH = env.value("GAME_WIDTH", "990").toInt();
-        ins.GAME_HEIGHT = env.value("GAME_HEIGHT", "990").toInt();
+        SET_CONSTANT(GAME_WIDTH, "990", toInt);
+        SET_CONSTANT(GAME_HEIGHT, "990", toInt);
 #endif
 
-        ins.SUM_RESP_TIMEOUT = env.value("SUM_RESP_TIMEOUT", "500").toInt();
-        ins.TICK_MS = env.value("TICK_MS", "16").toInt();
-        ins.BASE_TICK = env.value("BASE_TICK", "50").toInt();
-        ins.INERTION_FACTOR = env.value("INERTION_FACTOR", "10.0").toDouble();
-        ins.VISCOSITY = env.value("VISCOSITY", "0.25").toDouble();
-        ins.SPEED_FACTOR = env.value("SPEED_FACTOR", "25.0").toDouble();
-        ins.RADIUS_FACTOR = env.value("RADIUS_FACTOR", "2.0").toDouble();
-        ins.FOOD_MASS = env.value("FOOD_MASS", "1.0").toDouble();
-        ins.VIRUS_RADIUS = env.value("VIRUS_RADIUS", "22.0").toDouble();
-        ins.VIRUS_SPLIT_MASS = env.value("VIRUS_SPLIT_MASS", "80.0").toDouble();
-        ins.MAX_FRAGS_CNT = env.value("MAX_FRAGS_CNT", "10").toInt();
-        ins.TICKS_TIL_FUSION = env.value("TICKS_TIL_FUSION", "250").toInt();
-        ins.RESP_TIMEOUT = env.value("RESP_TIMEOUT", "5").toInt();
+        SET_CONSTANT(SUM_RESP_TIMEOUT, "500", toInt);
+        SET_CONSTANT(TICK_MS, "16", toInt);
+        SET_CONSTANT(BASE_TICK, "50", toInt);
+        SET_CONSTANT(INERTION_FACTOR, "10.0", toDouble);
+        SET_CONSTANT(VISCOSITY, "0.25", toDouble);
+        SET_CONSTANT(SPEED_FACTOR, "25.0", toDouble);
+        SET_CONSTANT(RADIUS_FACTOR, "2.0", toDouble);
+        SET_CONSTANT(FOOD_MASS, "1.0", toDouble);
+        SET_CONSTANT(VIRUS_RADIUS, "22.0", toDouble);
+        SET_CONSTANT(VIRUS_SPLIT_MASS, "80.0", toDouble);
+        SET_CONSTANT(MAX_FRAGS_CNT, "10", toInt);
+        SET_CONSTANT(TICKS_TIL_FUSION, "250", toInt);
+        SET_CONSTANT(RESP_TIMEOUT, "5", toInt);
+
+#undef SET_CONSTANT
+
+        settings.endGroup();
+        settings.sync();
 
         QTime time = QTime::currentTime();
         uint secs = QTime(0,0,0).secsTo(QTime::currentTime());
         qsrand(secs * 1000 + time.msec());
-        ins.SEED = env.value("SEED", QString::number(qrand())).toULongLong();
-        return ins;
+        c.SEED = env.value("SEED", QString::number(qrand())).toULongLong();
+        return c;
+    }
+
+private:
+    static QString getSettingValue(const QString& name,
+                                   const QProcessEnvironment& env,
+                                   QSettings& section,
+                                   const QString& defaultValue)
+    {
+        if (!section.contains(name)) {
+            section.setValue(name, defaultValue);
+        }
+        return env.value(name, section.value(name).toString());
     }
 };
 

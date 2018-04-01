@@ -231,9 +231,9 @@
           <height>117</height>
          </rect>
         </property>
-        <layout class="QGridLayout" name="grid_5">
+        <layout class="QGridLayout" name="grid_2">
          <item row="0" column="1">
-          <widget class="QComboBox" name="cbx_color_5">
+          <widget class="QComboBox" name="cbx_color_2">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -268,7 +268,7 @@
           </widget>
          </item>
          <item row="3" column="0">
-          <widget class="QRadioButton" name="rbn_mouse_5">
+          <widget class="QRadioButton" name="rbn_mouse_2">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -280,7 +280,7 @@
           </widget>
          </item>
          <item row="0" column="0">
-          <widget class="QLabel" name="lbl_color_5">
+          <widget class="QLabel" name="lbl_color_2">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -295,7 +295,7 @@
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QRadioButton" name="rbn_custom_5">
+          <widget class="QRadioButton" name="rbn_custom_2">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -307,7 +307,7 @@
           </widget>
          </item>
          <item row="2" column="0">
-          <widget class="QRadioButton" name="rbn_comp_5">
+          <widget class="QRadioButton" name="rbn_comp_2">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -322,7 +322,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QComboBox" name="cbx_comp_5">
+          <widget class="QComboBox" name="cbx_comp_2">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -336,7 +336,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLineEdit" name="edt_prog_5">
+          <widget class="QLineEdit" name="edt_prog_2">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -391,9 +391,9 @@
           <height>117</height>
          </rect>
         </property>
-        <layout class="QGridLayout" name="grid_2">
+        <layout class="QGridLayout" name="grid_3">
          <item row="0" column="1">
-          <widget class="QComboBox" name="cbx_color_7">
+          <widget class="QComboBox" name="cbx_color_3">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -428,7 +428,7 @@
           </widget>
          </item>
          <item row="3" column="0">
-          <widget class="QRadioButton" name="rbn_mouse_7">
+          <widget class="QRadioButton" name="rbn_mouse_3">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -440,7 +440,7 @@
           </widget>
          </item>
          <item row="0" column="0">
-          <widget class="QLabel" name="lbl_color_7">
+          <widget class="QLabel" name="lbl_color_3">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -455,7 +455,7 @@
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QRadioButton" name="rbn_custom_7">
+          <widget class="QRadioButton" name="rbn_custom_3">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -467,7 +467,7 @@
           </widget>
          </item>
          <item row="2" column="0">
-          <widget class="QRadioButton" name="rbn_comp_7">
+          <widget class="QRadioButton" name="rbn_comp_3">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -482,7 +482,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QComboBox" name="cbx_comp_7">
+          <widget class="QComboBox" name="cbx_comp_3">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -496,7 +496,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLineEdit" name="edt_prog_7">
+          <widget class="QLineEdit" name="edt_prog_3">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -547,9 +547,9 @@
           <height>117</height>
          </rect>
         </property>
-        <layout class="QGridLayout" name="grid_6">
+        <layout class="QGridLayout" name="grid_4">
          <item row="0" column="1">
-          <widget class="QComboBox" name="cbx_color_6">
+          <widget class="QComboBox" name="cbx_color_4">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -584,7 +584,7 @@
           </widget>
          </item>
          <item row="3" column="0">
-          <widget class="QRadioButton" name="rbn_mouse_6">
+          <widget class="QRadioButton" name="rbn_mouse_4">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -596,7 +596,7 @@
           </widget>
          </item>
          <item row="0" column="0">
-          <widget class="QLabel" name="lbl_color_6">
+          <widget class="QLabel" name="lbl_color_4">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -611,7 +611,7 @@
           </widget>
          </item>
          <item row="1" column="0">
-          <widget class="QRadioButton" name="rbn_custom_6">
+          <widget class="QRadioButton" name="rbn_custom_4">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -623,7 +623,7 @@
           </widget>
          </item>
          <item row="2" column="0">
-          <widget class="QRadioButton" name="rbn_comp_6">
+          <widget class="QRadioButton" name="rbn_comp_4">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -638,7 +638,7 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QComboBox" name="cbx_comp_6">
+          <widget class="QComboBox" name="cbx_comp_4">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
@@ -652,7 +652,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLineEdit" name="edt_prog_6">
+          <widget class="QLineEdit" name="edt_prog_4">
            <property name="font">
             <font>
              <pointsize>13</pointsize>
