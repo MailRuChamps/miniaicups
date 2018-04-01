@@ -287,14 +287,6 @@ public:
         });
     }
 
-    void delete_food(Food *food) {
-        int rm_index = food_array.indexOf(food);
-        if (rm_index != -1) {
-            food_array.remove(rm_index);
-            if (food) delete food;
-        }
-    }
-
     void delete_virus(Virus *virus) {
         int rm_index = virus_array.indexOf(virus);
         if (rm_index != -1) {
@@ -468,13 +460,14 @@ public:
             return nearest_predator;
         };
 
-        for (Food *food : food_array) {
-            if (food->logical != Food::EATEN) {
-                Player *eater = nearest_player(food);
-                if (eater != NULL) {
-                    eater->eat(food);
-                    food->logical = Food::EATEN;
-                }
+        for (auto fit = food_array.begin(); fit != food_array.end();) {
+            if (Player *eater = nearest_player(*fit)) {
+                eater->eat(*fit);
+                logger->write_kill_cmd(tick, *fit);
+                delete *fit;
+                fit = food_array.erase(fit);
+            } else {
+                fit++;
             }
         }
 
@@ -714,17 +707,6 @@ public:
         }
         for (Virus *virus : remove_viruses) {
             delete_virus(virus);
-        }
-
-        FoodArray remove_food;
-        for (Food *food : food_array) {
-            if (food->logical == Food::EATEN) {
-                logger->write_kill_cmd(tick, food);
-                remove_food.append(food);
-            }
-        }
-        for (Food *food : remove_food) {
-            delete_food(food);
         }
     }
 
