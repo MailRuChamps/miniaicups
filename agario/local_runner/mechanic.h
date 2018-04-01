@@ -287,14 +287,6 @@ public:
         });
     }
 
-    void delete_virus(Virus *virus) {
-        int rm_index = virus_array.indexOf(virus);
-        if (rm_index != -1) {
-            virus_array.remove(rm_index);
-            if (virus) delete virus;
-        }
-    }
-
     void delete_player(Player *player) {
         int pId = player->getId();
         PlayerArray other_players = get_players_by_id(pId);
@@ -475,9 +467,6 @@ public:
             auto eject = *eit;
             if (Virus *eater = nearest_virus(eject)) {
                 eater->eat(eject);
-                if (eater->can_split()) {
-                    eater->logical = Virus::SPLIT;
-                }
             } else if (Player *eater = nearest_player(eject)) {
                 eater->eat(eject);
             } else {
@@ -522,13 +511,14 @@ public:
             return nearest_player;
         };
 
-        for (Virus *virus : virus_array) {
-            if (virus->logical == Virus::CREATED || virus->logical == Virus::MOVING) {
-                Player *nearest_player = nearest_to(virus);
-                if (nearest_player) {
-                    nearest_player->burst_on(virus);
-                    virus->logical = Virus::HURT;
-                }
+        for (auto vit = virus_array.begin(); vit != virus_array.end(); ) {
+            if (Player *nearest_player = nearest_to(*vit)) {
+                nearest_player->burst_on(*vit);
+                logger->write_kill_cmd(tick, *vit);
+                delete *vit;
+                vit = virus_array.erase(vit);
+            } else {
+                vit++;
             }
         }
     }
@@ -568,11 +558,9 @@ public:
             }
         }
         for (Virus *virus : virus_array) {
-            if (virus->logical == Virus::MOVING) {
-                bool changed = virus->move(ins.GAME_WIDTH, ins.GAME_HEIGHT);
-                if (changed) {
-                    logger->write_change_pos(tick, virus);
-                }
+            bool changed = virus->move(ins.GAME_WIDTH, ins.GAME_HEIGHT);
+            if (changed) {
+                logger->write_change_pos(tick, virus);
             }
         }
 
@@ -689,25 +677,16 @@ public:
             delete_player(player);
         }
 
-        VirusArray remove_viruses;
+        VirusArray append_viruses;
         for (Virus *virus : virus_array) {
-            if (virus->logical == Virus::HURT) {
-                logger->write_kill_cmd(tick, virus);
-                remove_viruses.append(virus);
-            }
-            else if (virus->logical == Virus::EATER) {
-                virus->logical = Virus::CREATED;
-            }
-            else if (virus->logical == Virus::SPLIT) {
+            if (virus->can_split()) {
                 Virus *new_virus = virus->split_now(id_counter);
                 logger->write_add_cmd(tick, new_virus);
-                virus_array.append(new_virus);
+                append_viruses.append(new_virus);
                 id_counter++;
             }
         }
-        for (Virus *virus : remove_viruses) {
-            delete_virus(virus);
-        }
+        virus_array.append(append_viruses);
     }
 
     void shrink_players() {

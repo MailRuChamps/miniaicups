@@ -7,10 +7,6 @@
 
 class Virus : public Circle
 {
-public:
-    enum State { CREATED, HURT, EATER, MOVING, SPLIT };
-    State logical;
-
 protected:
     double speed;
     double angle, split_angle;
@@ -18,7 +14,6 @@ protected:
 public:
     explicit Virus(int _id, double _x, double _y, double _radius, double _mass) :
         Circle(_id, _x, _y, _radius, _mass),
-        logical(State::CREATED),
         speed(0.0),
         angle(0.0),
         split_angle(0.0)
@@ -65,16 +60,10 @@ public:
     void eat(Ejection *eject) {
         mass += eject->getM();
         split_angle = eject->getA();
-        logical = State::EATER;
     }
 
     bool can_split() {
-        if (logical == State::CREATED || logical == State::MOVING || logical == State::EATER) {
-            if (mass > Constants::instance().VIRUS_SPLIT_MASS) {
-                return true;
-            }
-        }
-        return false;
+        return mass > Constants::instance().VIRUS_SPLIT_MASS;
     }
 
     Virus *split_now(int new_id) {
@@ -84,7 +73,6 @@ public:
         new_virus->set_impulse(new_speed, new_angle);
 
         mass = VIRUS_MASS;
-        logical = State::CREATED;
         return new_virus;
     }
 
@@ -92,10 +80,12 @@ public:
     void set_impulse(double _speed, double _angle) {
         speed = qAbs(_speed);
         angle = _angle;
-        logical = State::MOVING;
     }
 
     bool move(int max_x, int max_y) {
+        if (speed == 0.0) {
+            return false;
+        }
         double rB = x + radius, lB = x - radius;
         double dB = y + radius, uB = y - radius;
 
@@ -112,14 +102,7 @@ public:
             changed = true;
         }
 
-        double visc = Constants::instance().VISCOSITY;
-        if (speed > visc) {
-            speed -= visc;
-        }
-        else {
-            speed = 0.0;
-            logical = State::CREATED;
-        }
+        speed = std::max(0.0, speed - Constants::instance().VISCOSITY);
         return changed;
     }
 
