@@ -304,9 +304,6 @@ public:
         if (is_fast || other->is_fast) { // do not collide splits
             return;
         }
-        if (this->x == other->x && this->y == other->y) { // collision object in same point??
-            return;
-        }
         double dist = this->calc_dist(other->x, other->y);
         if (dist >= radius + other->radius) {
             return;
@@ -317,6 +314,9 @@ public:
         double collisionVectorY = this->y - other->y;
         // normalize to 1
         double vectorLen = qSqrt(collisionVectorX * collisionVectorX + collisionVectorY * collisionVectorY);
+        if (vectorLen < 1e-9) { // collision object in same point??
+            return;
+        }
         collisionVectorX /= vectorLen;
         collisionVectorY /= vectorLen;
 
