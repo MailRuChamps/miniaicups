@@ -14,10 +14,11 @@ class Custom : public Strategy
 protected:
     QProcess *solution;
     bool is_running;
-    QMetaObject::Connection finish_connection;
 
 signals:
     void error(QString);
+    void cmdFromBot(double, double, bool, bool, QString);
+//    void customStrategyDied();
 
 public:
     explicit Custom(int _id, const QString &_path) :
@@ -25,7 +26,7 @@ public:
         solution(new QProcess(this))
     {
         solution->start(_path);
-        finish_connection = connect(solution, SIGNAL(finished(int)), this, SLOT(on_finished(int)));
+        connect(solution, SIGNAL(finished(int)), this, SLOT(on_finished(int)));
         connect(solution, SIGNAL(readyReadStandardError()), this, SLOT(on_error()));
         is_running = true;
         send_config();
@@ -34,7 +35,6 @@ public:
     virtual ~Custom() {
         Constants &ins = Constants::instance();
         if (solution) {
-            disconnect(finish_connection);
             PlayerArray pa;
             CircleArray ca;
             QString message = prepare_state(pa, ca);
@@ -85,19 +85,27 @@ public:
         double x = json.value("X").toDouble(0.0);
         double y = json.value("Y").toDouble(0.0);
         Direct result(x, y);
+        static bool split = false, eject = false;
         if (keys.contains("Split")) {
             result.split = json.value("Split").toBool(false);
+            split = result.split;
         }
         if (keys.contains("Eject")) {
             result.eject = json.value("Eject").toBool(false);
+            eject = result.eject;
         }
+        QString debug;
+        if (keys.contains("Debug")) {
+            debug = json.value("Debug").toString();
+        }
+        emit cmdFromBot(x, y, split, eject, debug);
         return result;
     }
 
 public slots:
     void on_finished(int code) {
         is_running = false;
-        emit error("Process finished with code " + QString::number(code));
+//        emit error("Process finished with code " + QString::number(code));
     }
 
     void on_error() {

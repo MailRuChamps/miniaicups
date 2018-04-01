@@ -1,2 +1,12 @@
 .DS_Store
+
+Makefile*
+
 *.pro.user
+*.qmake.stash
+*.log
+*.exe
+*.o
+moc_*.*
+ui_*.*
+*.ini
