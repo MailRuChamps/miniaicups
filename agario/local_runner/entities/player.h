@@ -320,7 +320,9 @@ public:
         collisionVectorX /= vectorLen;
         collisionVectorY /= vectorLen;
 
-        double collisionForce = qSqrt(1. - dist / (radius + other->radius)) * COLLISION_POWER;
+        double collisionForce = 1. - dist / (radius + other->radius);
+        collisionForce *= collisionForce;
+        collisionForce *= COLLISION_POWER;
 
         double sumMass = getM() + other->getM();
         // calc influence on us
