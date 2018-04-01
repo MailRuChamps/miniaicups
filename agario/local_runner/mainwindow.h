@@ -54,6 +54,7 @@ public:
         connect(ui->cbx_fog, SIGNAL(stateChanged(int)), this, SLOT(update()));
 
         connect(ui->action_1, SIGNAL(triggered(bool)), sm, SLOT(show()));
+        connect(ui->btn_strategies_settings, &QPushButton::clicked, sm, &QDialog::show);
     }
 
     ~MainWindow() {
