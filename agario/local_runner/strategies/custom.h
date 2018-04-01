@@ -17,7 +17,7 @@ protected:
 
 signals:
     void error(QString);
-    void cmdFromBot(QString);
+    void cmdFromBot(double, double, bool, bool, QString);
 //    void customStrategyDied();
 
 public:
@@ -34,7 +34,6 @@ public:
 
     virtual ~Custom() {
         if (solution) {
-            disconnect(finish_connection);
             PlayerArray pa;
             CircleArray ca;
             QString message = prepare_state(pa, ca);
@@ -71,7 +70,6 @@ public:
                 return Direct(0, 0);
             }
             cmdBytes.append(solution->readLine());
-            emit cmdFromBot(cmdBytes);
         }
 
         QJsonObject json = parse_answer(cmdBytes);
@@ -84,12 +82,20 @@ public:
         double x = json.value("X").toDouble(0.0);
         double y = json.value("Y").toDouble(0.0);
         Direct result(x, y);
+        static bool split = false, eject = false;
         if (keys.contains("Split")) {
             result.split = json.value("Split").toBool(false);
+            split = result.split;
         }
         if (keys.contains("Eject")) {
             result.eject = json.value("Eject").toBool(false);
+            eject = result.eject;
         }
+        QString debug;
+        if (keys.contains("Debug")) {
+            debug = json.value("Debug").toString();
+        }
+        emit cmdFromBot(x, y, split, eject, debug);
         return result;
     }
 

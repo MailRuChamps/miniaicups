@@ -77,6 +77,7 @@ public slots:
 
         clear_game();
     }
+    void slotShowBotCommand(double, double, bool, bool, const QString &debug);
 
 public:
     void paintEvent(QPaintEvent*) {

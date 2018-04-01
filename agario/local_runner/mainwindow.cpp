@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include <time.h>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -41,8 +42,7 @@ void MainWindow::init_game()
     if (timerId > 0) return;
     isAutoPauseEachTick = ::ini___->value("autoPauseEachTick" ).toBool();
 
-    //time(&T);
-    T = 45632;
+    time(&T);
     ui->txt_seed->setText(QString::number(T));
 
     sm->readSettingsFromIni();
@@ -59,12 +59,23 @@ void MainWindow::init_game()
         Custom *custom = dynamic_cast<Custom*>(strategy);
         if (custom != NULL) {
             connect(custom, SIGNAL(error(QString)), this, SLOT(on_error(QString)));
-            connect(custom, SIGNAL(cmdFromBot(QString)), ui->lbl_com, SLOT(setText(QString)));
-//            connect(custom, SIGNAL(customStrategyDied()), this, SLOT(clear_game()));
+            connect(custom, SIGNAL(cmdFromBot(double,double,bool,bool,QString)),
+                    this,   SLOT(slotShowBotCommand(double,double,bool,bool,QString)));
         }
         return strategy;
     });
     this->update();
+}
+void MainWindow::slotShowBotCommand(double X, double Y, bool isS, bool isE, const QString &str)
+{
+    static double x = 0.0, y = 0.0;
+    static QString debug = "Panic";
+    static bool isSplit = false, isEject = false;
+    if (x != X) { x = X; ui->lbl_comX->setText(QString::number(x)); }
+    if (y != Y) { y = Y; ui->lbl_comY->setText(QString::number(y)); }
+    if (debug != str)   { debug = str; ui->lbl_comDebug->setText(debug); }
+    if (isSplit != isS) { isSplit = isS; ui->lbl_comSplit->setText(isS ? "Split" : ""); }
+    if (isEject != isE) { isEject = isE; ui->lbl_comEject->setText(isE ? "Eject" : ""); }
 }
 
 void MainWindow::timerEvent(QTimerEvent *event)
