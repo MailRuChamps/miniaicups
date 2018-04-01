@@ -95,6 +95,7 @@ public:
         objData.insert("Y", QJsonValue(y));
         objData.insert("T", QJsonValue("E"));
         objData.insert("Id", QJsonValue(QString::number(id)));
+        objData.insert("pId", QJsonValue(player));
         return objData;
     }
 };
