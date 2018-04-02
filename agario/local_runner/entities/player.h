@@ -92,12 +92,13 @@ public:
     }
 
     void apply_viscosity(double usual_speed) {
-        if (is_fast && speed > usual_speed) {
-            speed = std::max(speed - Constants::instance().VISCOSITY, usual_speed);
-        }
-        if (is_fast && speed <= usual_speed) {
-            is_fast = false;
+        // если на этом тике не снизим скорость достаточно - летим дальше
+        if (speed - Constants::instance().VISCOSITY > usual_speed) {
+            speed -= Constants::instance().VISCOSITY;
+        } else {
+            // иначе выставляем максимальную скорость и выходим из режима полёта
             speed = usual_speed;
+            is_fast = false;
         }
     }
 
@@ -449,6 +450,8 @@ public:
             changed = true;
         }
         else {
+            // долетаем до стенки
+            x = qMax(0, qMin(max_x, x + dx));
             // зануляем проекцию скорости по dx
             double speed_y = speed * qSin(angle);
             speed = qAbs(speed_y);
@@ -459,6 +462,8 @@ public:
             changed = true;
         }
         else {
+            // долетаем до стенки
+            y = qMax(0, qMin(max_y, y + dy));
             // зануляем проекцию скорости по dy
             double speed_x = speed * qCos(angle);
             speed = qAbs(speed_x);
