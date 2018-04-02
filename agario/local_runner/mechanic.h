@@ -33,6 +33,7 @@ private:
 
     PlayerArray player_array;
     StrategyArray strategy_array;
+    QMap<int, Direct> strategy_directs;
     QMap<int, int> player_scores;
 
     std::mt19937_64 rand;
@@ -121,7 +122,10 @@ public:
 #ifdef LOCAL_RUNNER
         apply_strategies();
 #endif
+        tick++;
         move_moveables();
+        player_ejects();
+        player_splits();
 
         if (tick % SHRINK_EVERY_TICK == 0) {
             shrink_players();
@@ -143,8 +147,8 @@ public:
         if (tick % Constants::instance().BASE_TICK == 0) {
             write_base_tick();
         }
-        tick++;
-        return tick-1;
+        strategy_directs.clear();
+        return tick;
     }
 
     bool known() const {
@@ -388,24 +392,56 @@ public:
 
         for (Player *frag : fragments) {
             frag->apply_direct(direct, Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
+
             logger->write_direct_for(tick, frag);
+        }
 
-            if (direct.split && frag->can_split(yet_cnt)) {
-                int max_fId = get_max_fragment_id(frag->getId());
-                QString old_id = frag->id_to_str();
+        strategy_directs.insert(sId, direct);
+    }
 
-                Player *new_frag= frag->split_now(max_fId);
-                player_array.push_back(new_frag);
-                yet_cnt++;
-
-                logger->write_add_cmd(tick, new_frag);
-                logger->write_change_mass_id(tick, old_id, frag);
+    void player_splits() {
+        for (auto it = strategy_directs.begin(); it != strategy_directs.end(); it++) {
+            int sId = it.key();
+            Direct direct = it.value();
+            if(!direct.split) {
+                continue;
             }
-            if (direct.eject && frag->can_eject()) {
-                Ejection *new_eject = frag->eject_now(id_counter);
-                logger->write_add_cmd(tick, new_eject);
-                eject_array.append(new_eject);
-                id_counter++;
+            PlayerArray fragments = get_players_by_id(sId);
+            int yet_cnt = fragments.length();
+
+            for (Player *frag : fragments) {
+                if (frag->can_split(yet_cnt)) {
+                    int max_fId = get_max_fragment_id(frag->getId());
+                    QString old_id = frag->id_to_str();
+
+                    Player *new_frag= frag->split_now(max_fId);
+                    player_array.push_back(new_frag);
+                    yet_cnt++;
+
+                    logger->write_add_cmd(tick, new_frag);
+                    logger->write_change_mass_id(tick, old_id, frag);
+                }
+            }
+        }
+    }
+
+    void player_ejects() {
+        for (auto it = strategy_directs.begin(); it != strategy_directs.end(); it++) {
+            int sId = it.key();
+            Direct direct = it.value();
+            if(!direct.eject) {
+                continue;
+            }
+            PlayerArray fragments = get_players_by_id(sId);
+
+            for (Player *frag : fragments) {
+                if (frag->can_eject()) {
+                    Ejection *new_eject = frag->eject_now(id_counter);
+                    eject_array.append(new_eject);
+                    id_counter++;
+
+                    logger->write_add_cmd(tick, new_eject);
+                }
             }
         }
     }
