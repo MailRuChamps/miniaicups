@@ -444,12 +444,21 @@ public:
         double dx = speed * qCos(angle);
         double dy = speed * qSin(angle);
 
+        // мне кажется, что это changed надо удалить
+        // редкая ситуация, когда игрок стоит на месте.
+        // исключая speed == 0.0, если будут доделаны мёртвые игроки
+        bool changed = false;
         if (rB + dx < max_x && lB + dx > 0) {
             x += dx;
+            changed = true;
         }
         else {
             // долетаем до стенки
-            x = qMax(radius, qMin(max_x - radius, x + dx));
+            double new_x = qMax(radius, qMin(max_x - radius, x + dx));
+            if (new_x != x) {
+                changed = true;
+                x = new_x;
+            }
             // зануляем проекцию скорости по dx
             double speed_y = speed * qSin(angle);
             speed = qAbs(speed_y);
@@ -457,10 +466,15 @@ public:
         }
         if (dB + dy < max_y && uB + dy > 0) {
             y += dy;
+            changed = true;
         }
         else {
             // долетаем до стенки
-            y = qMax(radius, qMin(max_y - radius, y + dy));
+            double new_y = qMax(radius, qMin(max_y - radius, y + dy));
+            if (new_y != y) {
+                changed = true;
+                y = new_y;
+            }
             // зануляем проекцию скорости по dy
             double speed_x = speed * qCos(angle);
             speed = qAbs(speed_x);
@@ -474,7 +488,7 @@ public:
         if (fuse_timer > 0) {
             fuse_timer--;
         }
-        return true;
+        return changed;
     }
 
     bool clear_fragments() {
