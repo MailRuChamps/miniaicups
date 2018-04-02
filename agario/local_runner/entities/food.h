@@ -6,17 +6,12 @@
 
 class Food : public Circle
 {
-public:
-    enum State { CREATED, EATEN };
-    State logical;
-
 protected:
     int color;
 
 public:
     explicit Food(int _id, double _x, double _y, double _radius, double _mass) :
-        Circle(_id, _x, _y, _radius, _mass),
-        logical(State::CREATED)
+        Circle(_id, _x, _y, _radius, _mass)
     {
         color = rand() % 14 + 4;
     }
