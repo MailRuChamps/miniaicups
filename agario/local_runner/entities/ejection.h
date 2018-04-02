@@ -64,19 +64,26 @@ public:
         double dx = speed * qCos(angle);
         double dy = speed * qSin(angle);
 
+        bool changed = false;
         if (rB + dx < max_x && lB + dx > 0) {
             x += dx;
+            changed = true;
         } else {
-            x = qMax(radius, qMin(max_x - radius, x + dx));
+            double new_x = qMax(radius, qMin(max_x - radius, x + dx));
+            changed |= (x != new_x);
+            x = new_x;
         }
         if (dB + dy < max_y && uB + dy > 0) {
             y += dy;
+            changed = true;
         } else {
-            y = qMax(radius, qMin(max_y - radius, y + dy));
+            double new_y = qMax(radius, qMin(max_y - radius, y + dy));
+            changed |= (y != new_y);
+            y = new_y;
         }
 
         speed = qMax(0.0, speed - Constants::instance().VISCOSITY);
-        return true;
+        return changed;
     }
 
 public:
