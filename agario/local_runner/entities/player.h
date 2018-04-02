@@ -387,8 +387,8 @@ public:
     }
 
     Ejection *eject_now(int eject_id) {
-        double ex = x + qCos(angle) * (radius + 1);
-        double ey = y + qSin(angle) * (radius + 1);
+        double ex = x + qCos(angle) * (radius-EJECT_RADIUS*2/3);
+        double ey = y + qSin(angle) * (radius-EJECT_RADIUS*2/3);
 
         Ejection *new_eject = new Ejection(eject_id, ex, ey, EJECT_RADIUS, EJECT_MASS, this->id);
         new_eject->set_impulse(EJECT_START_SPEED, angle);
