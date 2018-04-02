@@ -117,7 +117,7 @@ private:
     }
 };
 
-const QString LOG_DIR = "/var/tmp/";
+const QString LOG_DIR = "";
 const QString LOG_FILE = "visio_{1}.log";
 const QString DEBUG_FILE = "{1}.log";
 const QString SCORES_FILE = "scores.json";
