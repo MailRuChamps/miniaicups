@@ -1,11 +1,16 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "circle.h"
+#include "drawncircle.h"
 #include "ejection.h"
 
+#include <QGraphicsScene>
+#include <QGraphicsEllipseItem>
+#include <QGraphicsTextItem>
+#include <QGraphicsLineItem>
+#include <QScopedPointer>
 
-class Player : public Circle
+class Player : public DrawnCircle
 {
 public:
     bool is_fast;
@@ -21,7 +26,7 @@ protected:
 
 public:
     explicit Player(int _id, double _x, double _y, double _radius, double _mass, const int fId=0) :
-        Circle(_id, _x, _y, _radius, _mass),
+        DrawnCircle(_id, _x, _y, _radius, _mass),
         is_fast(false),
         speed(0), angle(0),
         fragmentId(fId),
@@ -33,9 +38,70 @@ public:
         if (fId > 0) {
             fuse_timer = Constants::instance().TICKS_TIL_FUSION;
         }
+
+        m_item.reset(new QGraphicsEllipseItem());
+        m_textItem.reset(new QGraphicsTextItem());
+        m_velocityLine.reset(new QGraphicsLineItem());
+        m_commandLine.reset(new QGraphicsLineItem());
+        m_visionLine.reset(new QGraphicsEllipseItem());
+
+        m_item->setPen(QPen(QBrush(Qt::black), 1));
+        m_item->setBrush(Qt::GlobalColor(color));
+        m_textItem->setDefaultTextColor(Qt::black);
+        m_velocityLine->setPen(QPen(QBrush(Qt::green), 1));
+        m_commandLine->setPen(QPen(QBrush(Qt::red), 1));
+        m_visionLine->setPen(QPen(QBrush(Qt::black), 1, Qt::DashLine));
+
+        m_velocityLine->hide();
+        m_commandLine->hide();
+        m_visionLine->hide();
+
+        updateItems();
     }
 
-    virtual ~Player() {}
+    virtual void addItemsToScene() override {
+        m_scene->addItem(m_item.data());
+        m_scene->addItem(m_textItem.data());
+        m_scene->addItem(m_velocityLine.data());
+        m_scene->addItem(m_commandLine.data());
+        m_scene->addItem(m_visionLine.data());
+    }
+
+    void removeItemsFromScene() override {
+        m_scene->removeItem(m_item.data());
+        m_scene->removeItem(m_textItem.data());
+        m_scene->removeItem(m_velocityLine.data());
+        m_scene->removeItem(m_commandLine.data());
+        m_scene->removeItem(m_visionLine.data());
+    }
+
+    QGraphicsItem* velocityLine() {
+        return m_velocityLine.data();
+    }
+
+    const QGraphicsItem* velocityLine() const {
+        return m_velocityLine.data();
+    }
+
+    QGraphicsItem* commandLine() {
+        return m_commandLine.data();
+    }
+
+    const QGraphicsItem* commandLine() const {
+        return m_commandLine.data();
+    }
+
+    QGraphicsItem* visionLine() {
+        return m_visionLine.data();
+    }
+
+    const QGraphicsItem* visionLine() const {
+        return m_visionLine.data();
+    }
+
+    virtual ~Player() {
+        removeItemsFromScene();
+    }
 
     QString id_to_str() const {
         if (fragmentId > 0) {
@@ -58,6 +124,7 @@ public:
 
     void set_color(int _color) {
         color = _color;
+        m_item->setBrush(Qt::GlobalColor(color));
     }
 
     virtual bool is_player() const {
@@ -70,14 +137,14 @@ public:
         return _score;
     }
 
-    QPair<double, double> get_direct_norm() const {
+    QPointF get_direct_norm() const {
         double dx = cmd_x - x, dy = cmd_y - y;
         double dist = qSqrt(dx * dx + dy * dy);
         if (dist > 0) {
             double factor = 50 / dist;
-            return QPair<double, double>(x + dx * factor, y + dy * factor);
+            return QPointF(x + dx * factor, y + dy * factor);
         }
-        return QPair<double, double>(x, y);
+        return QPointF(x, y);
     }
 
     double getVR() const {
@@ -89,6 +156,7 @@ public:
         speed = qAbs(new_speed);
         angle = new_angle;
         is_fast = true;
+        updateItems();
     }
 
     void apply_viscosity(double usual_speed) {
@@ -99,27 +167,31 @@ public:
             is_fast = false;
             speed = usual_speed;
         }
+        updateItems();
     }
 
-    void draw(QPainter &painter, bool show_speed=false, bool show_cmd=false) const {
-        painter.setPen(QPen(QBrush(Qt::black), 1));
-        painter.setBrush(Qt::GlobalColor(color));
+    virtual void updateItems() override {
+        QPointF center(x, y);
+
+        m_item->setRect(x - radius, y - radius, 2 * radius, 2 * radius);
+
+        m_textItem->setPlainText(QString::number(mass));
+        QRectF textRect = m_textItem->boundingRect();
+        QPointF textVec = textRect.bottomRight() - textRect.topLeft();
+        m_textItem->setPos(center - textVec / 2);
+
+        QPointF speedVec = QPointF(qCos(angle), qSin(angle)) * speed * DRAW_SPEED_FACTOR;
+        m_velocityLine->setLine(QLineF(center, center + speedVec));
+
+        QPointF norm = get_direct_norm();
+        m_commandLine->setLine(QLineF(center, norm));
 
         int ix = int(x), iy = int(y), ir = int(radius);
-        painter.drawEllipse(QPoint(ix, iy), ir, ir);
-        painter.drawText(ix - 4, iy + 4, QString::number(mass));
+        int ivr = int(vision_radius);
 
-        if (show_speed) {
-            painter.setPen(QPen(QBrush(Qt::green), 1));
-            int speed_x = ix + speed * qCos(angle) * DRAW_SPEED_FACTOR;
-            int speed_y = iy + speed * qSin(angle) * DRAW_SPEED_FACTOR;
-            painter.drawLine(ix, iy, speed_x, speed_y);
-        }
-        if (show_cmd) {
-            painter.setPen(QPen(QBrush(Qt::red), 1));
-            QPair<double, double> norm = get_direct_norm();
-            painter.drawLine(ix, iy, norm.first, norm.second);
-        }
+        QPointF shifted = center + QPointF(qCos(angle), qSin(angle)) * VIS_SHIFT;
+        QPointF vision(vision_radius, vision_radius);
+        m_visionLine->setRect(QRectF(shifted - vision, shifted + vision));
     }
 
     bool update_vision(int frag_cnt) {
@@ -132,38 +204,18 @@ public:
         }
         if (vision_radius != new_vision) {
             vision_radius = new_vision;
+            updateItems();
             return true;
         }
         return false;
     }
 
-    bool can_see(const Circle *circle) {
+    bool can_see(const Circle *circle) const {
         double xVisionCenter = x + qCos(angle) * VIS_SHIFT;
         double yVisionCenter = y + qSin(angle) * VIS_SHIFT;
         double qdist = circle->calc_qdist(xVisionCenter, yVisionCenter);
 
         return (qdist < (vision_radius + circle->getR()) * (vision_radius + circle->getR()));
-    }
-
-    void draw_vision(QPainter &painter) const {
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(Qt::lightGray);
-        int ix = int(x), iy = int(y);
-        int ivr = int(vision_radius);
-
-        int xShift = int(qCos(angle) * VIS_SHIFT), yShift = int(qSin(angle) * VIS_SHIFT);
-        int arcX = ix + xShift, arcY = iy + yShift;
-        painter.drawEllipse(QPoint(arcX, arcY), ivr, ivr);
-    }
-
-    void draw_vision_line(QPainter &painter) const {
-        painter.setPen(QPen(QBrush(Qt::black), 1, Qt::DashLine));
-        int ix = int(x), iy = int(y), ir = int(radius);
-        int ivr = int(vision_radius);
-
-        int xShift = int(qCos(angle) * VIS_SHIFT), yShift = int(qSin(angle) * VIS_SHIFT);
-        int arcX = ix - ivr + xShift, arcY = iy - ivr + yShift;
-        painter.drawArc(arcX, arcY, ivr * 2, ivr * 2, 0, 360 * 16);
     }
 
     double can_eat(Circle *food) const {
@@ -181,6 +233,7 @@ public:
 
     void eat(Circle *food, bool is_last=false) {
         mass += food->getM();
+        updateItems();
 
         if (food->is_my_eject(this)) {
             return;
@@ -192,7 +245,7 @@ public:
         }
     }
 
-    bool can_burst(int yet_cnt) {
+    bool can_burst(int yet_cnt) const {
         if (mass < MIN_BURST_MASS * 2) {
             return false;
         }
@@ -221,6 +274,15 @@ public:
         }
         mass += BURST_BONUS;
         score += SCORE_FOR_BURST;
+        updateItems();
+    }
+
+    void copyPropertiesTo(Player* other) const {
+        other->set_color(color);
+        other->velocityLine()->setVisible(velocityLine()->isVisible());
+        other->commandLine()->setVisible(commandLine()->isVisible());
+        other->visionLine()->setVisible(visionLine()->isVisible());
+        other->setScene(m_scene);
     }
 
     QVector<Player*> burst_now(int max_fId, int yet_cnt) {
@@ -237,7 +299,7 @@ public:
         for (int I = 0; I < new_frags_cnt; I++) {
             int new_fId = max_fId + I + 1;
             Player *new_fragment = new Player(id, x, y, new_radius, new_mass, new_fId);
-            new_fragment->set_color(color);
+            copyPropertiesTo(new_fragment);
             fragments.append(new_fragment);
 
             double burst_angle = angle - BURST_ANGLE_SPECTRUM / 2 + I * BURST_ANGLE_SPECTRUM / new_frags_cnt;
@@ -249,10 +311,11 @@ public:
         mass = new_mass;
         radius = new_radius;
         fuse_timer = Constants::instance().TICKS_TIL_FUSION;
+        updateItems();
         return fragments;
     }
 
-    bool can_split(int yet_cnt) {
+    bool can_split(int yet_cnt) const {
         if (yet_cnt + 1 <= Constants::instance().MAX_FRAGS_CNT) {
             if (mass > MIN_SPLIT_MASS) {
                 return true;
@@ -266,18 +329,20 @@ public:
         double new_radius = Constants::instance().RADIUS_FACTOR * qSqrt(new_mass);
 
         Player *new_player = new Player(id, x, y, new_radius, new_mass, max_fId + 1);
-        new_player->set_color(color);
         new_player->set_impulse(SPLIT_START_SPEED, angle);
+        copyPropertiesTo(new_player);
 
         fragmentId = max_fId + 2;
         fuse_timer = Constants::instance().TICKS_TIL_FUSION;
         mass = new_mass;
         radius = new_radius;
 
+        updateItems();
+
         return new_player;
     }
 
-    bool can_fuse(Player *frag) {
+    bool can_fuse(const Player *frag) const {
         double dist = frag->calc_dist(x, y);
         double nR = radius + frag->getR();
 
@@ -332,6 +397,9 @@ public:
             other->speed = qSqrt(dx * dx + dy * dy);
             other->angle = qAtan2(dy, dx);
         }
+
+        updateItems();
+        other->updateItems();
     }
 
     void fusion(Player *frag) {
@@ -357,9 +425,10 @@ public:
         speed = qSqrt(dX * dX + dY * dY);
 
         mass += frag->getM();
+        updateItems();
     }
 
-    bool can_eject() {
+    bool can_eject() const {
         return mass > MIN_EJECT_MASS;
     }
 
@@ -369,10 +438,12 @@ public:
 
         Ejection *new_eject = new Ejection(eject_id, ex, ey, EJECT_RADIUS, EJECT_MASS, this->id);
         new_eject->set_impulse(EJECT_START_SPEED, angle);
+        new_eject->setScene(m_scene);
 
         mass -= EJECT_MASS;
         radius = Constants::instance().RADIUS_FACTOR * qSqrt(mass);
         score += SCORE_FOR_EJECT;
+        updateItems();
         return new_eject;
     }
 
@@ -406,6 +477,10 @@ public:
             changed = true;
         }
 
+        if (changed) {
+            updateItems();
+        }
+
         return changed;
     }
 
@@ -434,6 +509,7 @@ public:
             new_speed = max_speed;
         }
         speed = new_speed;
+        updateItems();
     }
 
     bool move(int max_x, int max_y) {
@@ -472,6 +548,9 @@ public:
         if (fuse_timer > 0) {
             fuse_timer--;
         }
+        if (changed) {
+            updateItems();
+        }
         return changed;
     }
 
@@ -483,13 +562,14 @@ public:
         return true;
     }
 
-    bool can_shrink() {
+    bool can_shrink() const {
         return mass > MIN_SHRINK_MASS;
     }
 
     void shrink_now() {
         mass -= ((mass - MIN_SHRINK_MASS) * SHRINK_FACTOR);
         radius = Constants::instance().RADIUS_FACTOR * qSqrt(mass);
+        updateItems();
     }
 
 public:
@@ -512,6 +592,13 @@ public:
         }
         return objData;
     }
+
+private:
+    QScopedPointer<QGraphicsEllipseItem> m_item;
+    QScopedPointer<QGraphicsTextItem> m_textItem;
+    QScopedPointer<QGraphicsLineItem> m_velocityLine;
+    QScopedPointer<QGraphicsLineItem> m_commandLine;
+    QScopedPointer<QGraphicsEllipseItem> m_visionLine;
 };
 
 typedef QVector<Player*> PlayerArray;

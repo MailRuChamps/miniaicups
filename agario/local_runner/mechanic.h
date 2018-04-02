@@ -4,6 +4,7 @@
 #include <functional>
 #include <QObject>
 #include <QMap>
+#include <QGraphicsScene>
 
 #include "logger.h"
 #include "entities/food.h"
@@ -38,6 +39,12 @@ private:
 
     std::mt19937_64 rand;
 
+    bool m_isFogsVisible = false;
+    bool m_isSpeedVisible = false;
+    bool m_isCommandVisible = false;
+
+    QGraphicsScene* m_scene = nullptr;
+
 public:
     explicit Mechanic() :
         tick(0),
@@ -48,6 +55,22 @@ public:
     virtual ~Mechanic() {
         clear_objects(false);
         if (logger) delete logger;
+    }
+
+    void setScene(QGraphicsScene* scene) {
+        m_scene = scene;
+        for (DrawnCircle* circle: food_array) {
+            circle->setScene(m_scene);
+        }
+        for (DrawnCircle* circle: eject_array) {
+            circle->setScene(m_scene);
+        }
+        for (DrawnCircle* circle: virus_array) {
+            circle->setScene(m_scene);
+        }
+        for (DrawnCircle* circle: player_array) {
+            circle->setScene(m_scene);
+        }
     }
 
 public:
@@ -94,28 +117,10 @@ public:
         strategy_array.clear();
     }
 
-    void paintEvent(QPainter &painter, bool show_speed, bool show_fogs, bool show_cmd) {
-        if (show_fogs) {
-            for (Player *player : player_array) {
-                player->draw_vision_line(painter);
-            }
-        }
-
-        for (Food *food : food_array) {
-            food->draw(painter);
-        }
-        for (Ejection *eject : eject_array) {
-            eject->draw(painter);
-        }
-        std::sort(player_array.begin(), player_array.end(), [] (Player *lhs, Player *rhs) {
-            return lhs->getR() < rhs->getR();
-        });
-        for (Player *player : player_array) {
-            player->draw(painter, show_speed, show_cmd);
-        }
-        for (Virus *virus : virus_array) {
-            virus->draw(painter);
-        }
+    void setPlayerLinesVisibility(Player* player) {
+        player->visionLine()->setVisible(m_isFogsVisible);
+        player->velocityLine()->setVisible(m_isSpeedVisible);
+        player->commandLine()->setVisible(m_isCommandVisible);
     }
 
     int tickEvent() {
@@ -174,11 +179,11 @@ public:
         return false;
     }
 
-    void mouseMoveEvent(int x, int y) {
+    void onMouse(QPointF pos) {
         for (Strategy *strategy : strategy_array) {
             ByMouse *by_mouse = dynamic_cast<ByMouse*>(strategy);
             if (by_mouse != NULL) {
-                by_mouse->set_mouse(x, y);
+                by_mouse->set_mouse(pos.x(), pos.y());
             }
         }
     }
@@ -246,6 +251,7 @@ public:
     void add_food(int sets_cnt) {
         add_circular(sets_cnt, FOOD_RADIUS, [=] (double _x, double _y) {
             Food *new_food = new Food(id_counter, _x, _y, FOOD_RADIUS, Constants::instance().FOOD_MASS);
+            new_food->setScene(m_scene);
             food_array.append(new_food);
             id_counter++;
             if (tick % Constants::instance().BASE_TICK != 0) {
@@ -261,6 +267,7 @@ public:
                 return;
             }
             Virus *new_virus = new Virus(id_counter, _x, _y, rad, VIRUS_MASS);
+            new_virus->setScene(m_scene);
             virus_array.append(new_virus);
             id_counter++;
             if (tick % Constants::instance().BASE_TICK != 0) {
@@ -276,6 +283,8 @@ public:
                 return;
             }
             Player *new_player = new Player(id_counter, _x, _y, PLAYER_RADIUS, PLAYER_MASS);
+            setPlayerLinesVisibility(new_player);
+            new_player->setScene(m_scene);
             player_array.append(new_player);
             new_player->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
 
@@ -676,6 +685,29 @@ public:
     QMap<int, int> get_scores() const {
         return player_scores;
     }
+
+public slots:
+    void setFogsVisible(bool isVisible) {
+        m_isFogsVisible = isVisible;
+        for (Player* player: player_array) {
+            player->visionLine()->setVisible(isVisible);
+        }
+    }
+
+    void setSpeedVisible(bool isVisible) {
+        m_isSpeedVisible = isVisible;
+        for (Player* player: player_array) {
+            player->velocityLine()->setVisible(isVisible);
+        }
+    }
+
+    void setCommandVisible(bool isVisible) {
+        m_isCommandVisible = isVisible;
+        for (Player* player: player_array) {
+            player->commandLine()->setVisible(isVisible);
+        }
+    }
+
 };
 
 #endif // MECHANIC_H

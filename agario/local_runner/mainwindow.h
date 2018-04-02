@@ -10,6 +10,7 @@
 #include "strategymodal.h"
 #include "mechanic.h"
 #include "ui_mainwindow.h"
+#include "gamescene.h"
 
 namespace Ui {
     class MainWindow;
@@ -45,13 +46,22 @@ public:
         long T; time(&T);
         ui->txt_seed->setText(QString::number(T));
 
+        const auto& c = Constants::instance();
+        auto* scene = new GameScene(ui->gv);
+        scene->setSceneRect(0, 0, c.GAME_WIDTH, c.GAME_HEIGHT);
+        scene->setMechanic(mechanic);
+        ui->gv->setScene(scene);
+
         connect(ui->btn_start, SIGNAL(pressed()), this, SLOT(init_game()));
         connect(ui->btn_stop, SIGNAL(pressed()), this, SLOT(clear_game()));
         connect(ui->btn_pause, SIGNAL(pressed()), this, SLOT(pause_game()));
 
-        connect(ui->cbx_forces, SIGNAL(stateChanged(int)), this, SLOT(update()));
-        connect(ui->cbx_speed, SIGNAL(stateChanged(int)), this, SLOT(update()));
-        connect(ui->cbx_fog, SIGNAL(stateChanged(int)), this, SLOT(update()));
+        connect(ui->cbx_forces, SIGNAL(toggled(bool)), mechanic, SLOT(setCommandVisible(bool)));
+        connect(ui->cbx_speed, SIGNAL(toggled(bool)), mechanic, SLOT(setSpeedVisible(bool)));
+        connect(ui->cbx_fog, SIGNAL(toggled(bool)), mechanic, SLOT(setFogsVisible(bool)));
+        mechanic->setCommandVisible(ui->cbx_forces->isChecked());
+        mechanic->setSpeedVisible(ui->cbx_speed->isChecked());
+        mechanic->setFogsVisible(ui->cbx_fog->isChecked());
 
         connect(ui->action_1, SIGNAL(triggered(bool)), sm, SLOT(show()));
         connect(ui->btn_strategies_settings, &QPushButton::clicked, sm, &QDialog::show);
@@ -85,7 +95,6 @@ public slots:
             }
             return strategy;
         });
-        this->update();
     }
 
     void on_error(QString msg) {
@@ -105,7 +114,6 @@ public slots:
         ui->txt_ticks->setText("");
         ui->leaders->clear();
         mechanic->clear_objects(false);
-        this->update();
     }
 
     void pause_game() {
@@ -130,25 +138,10 @@ public slots:
     }
 
 public:
-    void paintEvent(QPaintEvent*) {
-        QPainter painter(this);
-        painter.setRenderHint(QPainter::Antialiasing);
-
-        painter.translate(ui->viewport->x(), ui->viewport->y());
-        painter.fillRect(ui->viewport->rect(), QBrush(Qt::white));
-        painter.setClipRect(ui->viewport->rect());
-
-        bool show_speed = ui->cbx_speed->isChecked();
-        bool show_cmd = ui->cbx_forces->isChecked();
-        bool show_fogs = ui->cbx_fog->isChecked();
-        mechanic->paintEvent(painter, show_speed, show_fogs, show_cmd);
-    }
-
     void timerEvent(QTimerEvent *event) {
         if (event->timerId() == timerId && !is_paused) {
             int tick = mechanic->tickEvent();
             ui->txt_ticks->setText(QString::number(tick));
-            this->update();
 
             if (tick % Constants::instance().BASE_TICK == 0 && tick != 0) {
                 show_leaders();
@@ -157,23 +150,6 @@ public:
                 finish_game();
             }
         }
-    }
-
-public:
-    void mouseMoveEvent(QMouseEvent *event) {
-        int x = event->x() - ui->viewport->x();
-        int y = event->y() - ui->viewport->y();
-        mechanic->mouseMoveEvent(x, y);
-    }
-
-    void mousePressEvent(QMouseEvent *event) {
-        int x = event->x() - ui->viewport->x();
-        int y = event->y() - ui->viewport->y();
-        mechanic->mouseMoveEvent(x, y);
-    }
-
-    void keyPressEvent(QKeyEvent *event) {
-        mechanic->keyPressEvent(event);
     }
 
     void show_leaders() {

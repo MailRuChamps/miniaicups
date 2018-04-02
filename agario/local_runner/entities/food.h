@@ -1,22 +1,41 @@
 #ifndef FOOD_H
 #define FOOD_H
 
-#include "circle.h"
+#include "drawncircle.h"
 
+#include <QScopedPointer>
+#include <QGraphicsEllipseItem>
+#include <QGraphicsScene>
 
-class Food : public Circle
+class Food : public DrawnCircle
 {
 protected:
     int color;
 
 public:
     explicit Food(int _id, double _x, double _y, double _radius, double _mass) :
-        Circle(_id, _x, _y, _radius, _mass)
+        DrawnCircle(_id, _x, _y, _radius, _mass)
     {
         color = rand() % 14 + 4;
+
+        m_item.reset(new QGraphicsEllipseItem());
+        m_item->setPen(QPen(QBrush(Qt::black), 1));
+        m_item->setBrush(Qt::GlobalColor(color));
+
+        updateItems();
     }
 
-    virtual ~Food() {}
+    virtual void addItemsToScene() override {
+        m_scene->addItem(m_item.data());
+    }
+
+    void removeItemsFromScene() override {
+        m_scene->removeItem(m_item.data());
+    }
+
+    virtual ~Food() {
+        removeItemsFromScene();
+    }
 
     int getC() const {
         return color;
@@ -26,12 +45,8 @@ public:
         return true;
     }
 
-    void draw(QPainter &painter) const {
-        painter.setPen(QPen(QBrush(Qt::black), 1));
-        painter.setBrush(Qt::GlobalColor(color));
-
-        int ix = int(x), iy = int(y), ir = int(radius);
-        painter.drawEllipse(QPoint(ix, iy), ir, ir);
+    virtual void updateItems() override {
+        m_item->setRect(x - radius, y - radius, 2 * radius, 2 * radius);
     }
 
 public:
@@ -42,6 +57,9 @@ public:
         objData.insert("T", QJsonValue("F"));
         return objData;
     }
+
+private:
+    QScopedPointer<QGraphicsEllipseItem> m_item;
 };
 
 typedef QVector<Food*> FoodArray;

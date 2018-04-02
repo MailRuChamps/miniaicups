@@ -207,8 +207,8 @@ public:
 
     void write_direct_for(int tick, Player *player) {
         QString cmd = "C" + player->id_to_str() + " X{1} Y{2}\n";
-        QPair<double, double> norm = player->get_direct_norm();
-        write_cmd(tick, format(cmd, norm.first, norm.second));
+        QPointF norm = player->get_direct_norm();
+        write_cmd(tick, format(cmd, norm.x(), norm.y()));
     }
 
     void write_fog_for(int tick, Player *player) {

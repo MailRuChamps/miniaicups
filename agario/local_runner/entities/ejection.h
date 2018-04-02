@@ -3,8 +3,11 @@
 
 #include "circle.h"
 
+#include <QScopedPointer>
+#include <QGraphicsScene>
+#include <QGraphicsEllipseItem>
 
-class Ejection : public Circle
+class Ejection : public DrawnCircle
 {
 protected:
     int color;
@@ -14,15 +17,31 @@ protected:
 
 public:
     explicit Ejection(int _id, double _x, double _y, double _radius, double _mass, int player) :
-        Circle(_id, _x, _y, _radius, _mass),
+        DrawnCircle(_id, _x, _y, _radius, _mass),
         speed(0.0),
         angle(0.0),
         player(player)
     {
         color = rand() % 14 + 4;
+
+        m_item.reset(new QGraphicsEllipseItem());
+        m_item->setPen(QPen(QBrush(Qt::black), 1));
+        m_item->setBrush(Qt::GlobalColor(color));
+
+        updateItems();
     }
 
-    virtual ~Ejection() {}
+    virtual void addItemsToScene() override {
+        m_scene->addItem(m_item.data());
+    }
+
+    void removeItemsFromScene() override {
+        m_scene->removeItem(m_item.data());
+    }
+
+    virtual ~Ejection() {
+        removeItemsFromScene();
+    }
 
     int getC() const {
         return color;
@@ -40,12 +59,8 @@ public:
         return true;
     }
 
-    void draw(QPainter &painter) const {
-        painter.setPen(QPen(QBrush(Qt::black), 1));
-        painter.setBrush(Qt::GlobalColor(color));
-
-        int ix = int(x), iy = int(y), ir = int(radius);
-        painter.drawEllipse(QPoint(ix, iy), ir, ir);
+    virtual void updateItems() override {
+        m_item->setRect(x - radius, y - radius, 2 * radius, 2 * radius);
     }
 
 public:
@@ -75,6 +90,11 @@ public:
         }
 
         speed = std::max(0.0, speed - Constants::instance().VISCOSITY);
+
+        if (changed) {
+            updateItems();
+        }
+
         return changed;
     }
 
@@ -88,6 +108,9 @@ public:
         objData.insert("pId", QJsonValue(player));
         return objData;
     }
+
+private:
+    QScopedPointer<QGraphicsEllipseItem> m_item;
 };
 
 typedef QVector<Ejection*> EjectionArray;

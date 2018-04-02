@@ -13,11 +13,15 @@ TARGET = local_runner
 TEMPLATE = app
 
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    gamescene.cpp   \
+    entities/drawncircle.cpp
+
 
 HEADERS  += mainwindow.h \
     mechanic.h \
     logger.h \
+    entities/drawncircle.h \
     entities/food.h \
     entities/circle.h \
     constants.h \
@@ -27,7 +31,8 @@ HEADERS  += mainwindow.h \
     strategies/bymouse.h \
     entities/ejection.h \
     strategymodal.h \
-    strategies/custom.h
+    strategies/custom.h \
+    gamescene.h
 
 FORMS    += mainwindow.ui \
     strategymodal.ui

@@ -4,8 +4,12 @@
 #include "circle.h"
 #include "ejection.h"
 
+#include <QGraphicsLineItem>
 
-class Virus : public Circle
+#include <memory>
+#include <vector>
+
+class Virus : public DrawnCircle
 {
 protected:
     double speed;
@@ -13,25 +17,45 @@ protected:
 
 public:
     explicit Virus(int _id, double _x, double _y, double _radius, double _mass) :
-        Circle(_id, _x, _y, _radius, _mass),
+        DrawnCircle(_id, _x, _y, _radius, _mass),
         speed(0.0),
         angle(0.0),
         split_angle(0.0)
-    {}
+    {
+        m_items.resize(12);
+        for (int i = 0; i < 12; ++i) {
+            m_items[i].reset(new QGraphicsLineItem());
+            m_items[i]->setPen(QPen(QBrush(Qt::black), 1));
+        }
+        updateItems();
+    }
 
-    virtual ~Virus() {}
+    virtual void addItemsToScene() override {
+        for (auto& item: m_items) {
+            m_scene->addItem(item.get());
+        }
+    }
+
+    void removeItemsFromScene() override {
+        for (auto& item: m_items) {
+            m_scene->removeItem(item.get());
+        }
+    }
+
+    virtual ~Virus() {
+        removeItemsFromScene();
+    }
 
     virtual bool is_virus() const {
         return true;
     }
 
-    void draw(QPainter &painter) const {
-        painter.setPen(QPen(QBrush(Qt::black), 1));
-
-        for (double angle = 0; angle < M_PI; angle += M_PI / 12) {
-            double dx = qCos(angle) * radius;
-            double dy = qSin(angle) * radius;
-            painter.drawLine(x - dx, y - dy, x + dx, y + dy);
+    virtual void updateItems() override {
+        QPointF center(x, y);
+        for (int i = 0; i < 12; ++i) {
+            double angle = M_PI * i / 12;
+            QPointF delta = QPointF(qCos(angle), qSin(angle)) * radius;
+            m_items[i]->setLine(QLineF(center - delta, center + delta));
         }
     }
 
@@ -115,6 +139,9 @@ public:
         objData.insert("Id", QJsonValue(QString::number(id)));
         return objData;
     }
+
+private:
+    std::vector<std::unique_ptr<QGraphicsLineItem>> m_items;
 };
 
 typedef QVector<Virus*> VirusArray;
