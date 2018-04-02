@@ -444,9 +444,6 @@ public:
         double dx = speed * qCos(angle);
         double dy = speed * qSin(angle);
 
-        // мне кажется, что это changed надо удалить
-        // редкая ситуация, когда игрок стоит на месте.
-        // исключая speed == 0.0, если будут доделаны мёртвые игроки
         bool changed = false;
         if (rB + dx < max_x && lB + dx > 0) {
             x += dx;
