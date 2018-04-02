@@ -444,14 +444,12 @@ public:
         double dx = speed * qCos(angle);
         double dy = speed * qSin(angle);
 
-        bool changed = false;
         if (rB + dx < max_x && lB + dx > 0) {
             x += dx;
-            changed = true;
         }
         else {
             // долетаем до стенки
-            x = qMax(.0, qMin((double)max_x, x + dx));
+            x = qMax(radius, qMin(max_x - radius, x + dx));
             // зануляем проекцию скорости по dx
             double speed_y = speed * qSin(angle);
             speed = qAbs(speed_y);
@@ -459,11 +457,10 @@ public:
         }
         if (dB + dy < max_y && uB + dy > 0) {
             y += dy;
-            changed = true;
         }
         else {
             // долетаем до стенки
-            y = qMax(.0, qMin((double)max_y, y + dy));
+            y = qMax(radius, qMin(max_y - radius, y + dy));
             // зануляем проекцию скорости по dy
             double speed_x = speed * qCos(angle);
             speed = qAbs(speed_x);
@@ -477,7 +474,7 @@ public:
         if (fuse_timer > 0) {
             fuse_timer--;
         }
-        return changed;
+        return true;
     }
 
     bool clear_fragments() {
