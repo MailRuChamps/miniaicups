@@ -559,30 +559,56 @@ public:
     }
 
     void fuse_players() {
-        QSet<Player*> fused_players;
+        QSet<int> playerIds;
         for (Player *player : player_array) {
-            if(fused_players.contains(player)) {
-                continue;
-            }
-            PlayerArray fragments = get_players_by_id(player->getId());
+            playerIds.insert(player->getId());
+        }
+
+        PlayerArray fused_players;
+        for (int id : playerIds) {
+            PlayerArray fragments = get_players_by_id(id);
             if (fragments.length() == 1) {
+                Player *player = fragments[0];
                 QString old_id = player->id_to_str();
                 bool changed = player->clear_fragments();
                 if (changed) {
                     logger->write_change_id(tick, old_id, player);
                 }
+                continue;
             }
-
-            for (Player *frag : fragments) {
-                if (player != frag && !fused_players.contains(frag)) {
-                    if (player->can_fuse(frag)) {
-                        player->fusion(frag);
-                        fused_players.insert(frag);
+            // приведём в предсказуемый порядок
+            std::sort(fragments.begin(), fragments.end(),
+                      [](const Player *a, const Player *b) -> bool {
+                          if (a->getM() == b->getM()) {
+                              return a->get_fId() < b->get_fId();
+                          } else {
+                              return a->getM() > b->getM();
+                          }
+                      });
+            bool new_fusion_check = true; // проверим всех. Если слияние произошло - перепроверим ещё разок, чтобы все могли слиться в один тик
+            while (new_fusion_check) {
+                new_fusion_check = false;
+                for (size_t i = 0; i != fragments.size(); ++i) {
+                    Player *player = fragments[i];
+                    if (fused_players.contains(player)) {
+                        continue;
+                    }
+                    for (size_t j = i + 1; j < fragments.size(); ++j) {
+                        Player *frag = fragments[j];
+                        if (fused_players.contains(frag)) {
+                            continue;
+                        }
+                        if (player->can_fuse(frag)) {
+                            player->fusion(frag);
+                            player->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT); // need for future fusing
+                            fused_players.push_back(frag);
+                            new_fusion_check = true;
+                        }
                     }
                 }
             }
         }
-        for(Player *p : fused_players) {
+        for (Player *p : fused_players) {
             logger->write_kill_cmd(tick, p);
             delete p;
             player_array.removeAll(p);
