@@ -429,7 +429,7 @@ public:
         for (auto it = strategy_directs.begin(); it != strategy_directs.end(); it++) {
             int sId = it.key();
             Direct direct = it.value();
-            if(!direct.eject) {
+            if(direct.split || !direct.eject) {
                 continue;
             }
             PlayerArray fragments = get_players_by_id(sId);
