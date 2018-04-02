@@ -346,18 +346,21 @@ public:
         for (Player *fragment : for_them) {
             for (Food *food : food_array) {
                 if (fragment->can_see(food)) {
-                    visibles.append((Circle *) food);
+                    if (visibles.indexOf((Circle *) food) == -1)
+                        visibles.append((Circle *) food);
                 }
             }
             for (Ejection *eject : eject_array) {
                 if (fragment->can_see(eject)) {
-                    visibles.append((Circle *) eject);
+                    if (visibles.indexOf((Circle *) eject) == -1)
+                        visibles.append((Circle *) eject);
                 }
             }
             for (Player *player : player_array) {
                 if (for_them.indexOf(player) == -1) {
                     if (fragment->can_see(player)) {
-                        visibles.append((Circle *) player);
+                        if (visibles.indexOf((Circle *) player) == -1)
+                            visibles.append((Circle *) player);
                     }
                 }
             }
