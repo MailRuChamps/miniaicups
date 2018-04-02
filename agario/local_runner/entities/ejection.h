@@ -6,10 +6,6 @@
 
 class Ejection : public Circle
 {
-public:
-    enum State { CREATED, EATEN, MOVING };
-    State logical;
-
 protected:
     int color;
     int player;
@@ -19,7 +15,6 @@ protected:
 public:
     explicit Ejection(int _id, double _x, double _y, double _radius, double _mass, int player) :
         Circle(_id, _x, _y, _radius, _mass),
-        logical(State::CREATED),
         speed(0.0),
         angle(0.0),
         player(player)
@@ -57,10 +52,12 @@ public:
     void set_impulse(double _speed, double _angle) {
         speed = qAbs(_speed);
         angle = _angle;
-        logical = State::MOVING;
     }
 
     bool move(int max_x, int max_y) {
+        if (speed == 0.0) {
+            return false;
+        }
         double rB = x + radius, lB = x - radius;
         double dB = y + radius, uB = y - radius;
 
@@ -77,14 +74,7 @@ public:
             changed = true;
         }
 
-        double visc = Constants::instance().VISCOSITY;
-        if (speed > visc) {
-            speed -= visc;
-        }
-        else {
-            speed = 0.0;
-            logical = State::CREATED;
-        }
+        speed = std::max(0.0, speed - Constants::instance().VISCOSITY);
         return changed;
     }
 
@@ -95,6 +85,7 @@ public:
         objData.insert("Y", QJsonValue(y));
         objData.insert("T", QJsonValue("E"));
         objData.insert("Id", QJsonValue(QString::number(id)));
+        objData.insert("pId", QJsonValue(player));
         return objData;
     }
 };

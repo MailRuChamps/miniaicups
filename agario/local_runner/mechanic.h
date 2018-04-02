@@ -33,6 +33,7 @@ private:
 
     PlayerArray player_array;
     StrategyArray strategy_array;
+    QMap<int, Direct> strategy_directs;
     QMap<int, int> player_scores;
 
     std::mt19937_64 rand;
@@ -118,21 +119,24 @@ public:
     }
 
     int tickEvent() {
-
 #ifdef LOCAL_RUNNER
         apply_strategies();
 #endif
-
         tick++;
+        move_moveables();
+        player_ejects();
+        player_splits();
+
         if (tick % SHRINK_EVERY_TICK == 0) {
             shrink_players();
         }
-        who_is_eaten();
-        who_need_fusion();
-        who_intersected_virus();
+        eat_all();
+        fuse_players();
+        burst_on_viruses();
 
-        update_by_state();
-        move_moveables();
+        update_players_radius();
+        update_scores();
+        split_viruses();
 
         if (tick % ADD_FOOD_DELAY == 0 && food_array.length() < MAX_GAME_FOOD) {
             add_food(ADD_FOOD_SETS);
@@ -143,6 +147,7 @@ public:
         if (tick % Constants::instance().BASE_TICK == 0) {
             write_base_tick();
         }
+        strategy_directs.clear();
         return tick;
     }
 
@@ -287,49 +292,6 @@ public:
         });
     }
 
-    void delete_food(Food *food) {
-        int rm_index = food_array.indexOf(food);
-        if (rm_index != -1) {
-            food_array.remove(rm_index);
-            if (food) delete food;
-        }
-    }
-
-    void delete_virus(Virus *virus) {
-        int rm_index = virus_array.indexOf(virus);
-        if (rm_index != -1) {
-            virus_array.remove(rm_index);
-            if (virus) delete virus;
-        }
-    }
-
-    void delete_ejection(Ejection *eject) {
-        int rm_index = eject_array.indexOf(eject);
-        if (rm_index != -1) {
-            eject_array.remove(rm_index);
-            if (eject) delete eject;
-        }
-    }
-
-    void delete_player(Player *player) {
-        int pId = player->getId();
-        PlayerArray other_players = get_players_by_id(pId);
-
-        Strategy *strategy = get_strategy_by_id(pId);
-        if (strategy != NULL && other_players.length() == 1) {
-            int rm_index = strategy_array.indexOf(strategy);
-            if (rm_index != -1) {
-                strategy_array.remove(rm_index);
-                if (strategy) delete strategy;
-            }
-        }
-        int rm_index = player_array.indexOf(player);
-        if (rm_index != -1) {
-            player_array.remove(rm_index);
-            if (player) delete player;
-        }
-    }
-
 public:
     PlayerArray get_players_by_id(int pId) const {
         PlayerArray result;
@@ -411,24 +373,15 @@ public:
         for (Strategy *strategy : strategy_array) {
             int sId = strategy->getId();
             PlayerArray fragments = get_players_by_id(sId);
+            if (fragments.empty()) {
+                continue;
+            }
             CircleArray visibles = get_visibles(fragments);
 
             Direct direct = strategy->tickEvent(fragments, visibles);
 //            logger->write_direct(tick, sId, direct);
 
-            int yet_cnt = fragments.length();
-            for (Player *frag : fragments) {
-                frag->apply_direct(direct, Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
-                logger->write_direct_for(tick, frag);
-
-                if (direct.split && frag->can_split(yet_cnt)) {
-                    frag->logical = Player::SPLIT;
-                    yet_cnt++;
-                }
-                if (direct.eject && frag->can_eject()) {
-                    frag->logical = Player::EJECT;
-                }
-            }
+            apply_direct_for(sId, direct);
         }
     }
 
@@ -439,18 +392,61 @@ public:
 
         for (Player *frag : fragments) {
             frag->apply_direct(direct, Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
-            logger->write_direct_for(tick, frag);
 
-            if (direct.split && frag->can_split(yet_cnt)) {
-                frag->logical = Player::SPLIT;
+            logger->write_direct_for(tick, frag);
+        }
+
+        strategy_directs.insert(sId, direct);
+    }
+
+    void player_splits() {
+        for (auto it = strategy_directs.begin(); it != strategy_directs.end(); it++) {
+            int sId = it.key();
+            Direct direct = it.value();
+            if(!direct.split) {
+                continue;
             }
-            if (direct.eject && frag->can_eject()) {
-                frag->logical = Player::EJECT;
+            PlayerArray fragments = get_players_by_id(sId);
+            int yet_cnt = fragments.length();
+
+            for (Player *frag : fragments) {
+                if (frag->can_split(yet_cnt)) {
+                    int max_fId = get_max_fragment_id(frag->getId());
+                    QString old_id = frag->id_to_str();
+
+                    Player *new_frag= frag->split_now(max_fId);
+                    player_array.push_back(new_frag);
+                    yet_cnt++;
+
+                    logger->write_add_cmd(tick, new_frag);
+                    logger->write_change_mass_id(tick, old_id, frag);
+                }
             }
         }
     }
 
-    void who_is_eaten() {
+    void player_ejects() {
+        for (auto it = strategy_directs.begin(); it != strategy_directs.end(); it++) {
+            int sId = it.key();
+            Direct direct = it.value();
+            if(direct.split || !direct.eject) {
+                continue;
+            }
+            PlayerArray fragments = get_players_by_id(sId);
+
+            for (Player *frag : fragments) {
+                if (frag->can_eject()) {
+                    Ejection *new_eject = frag->eject_now(id_counter);
+                    eject_array.append(new_eject);
+                    id_counter++;
+
+                    logger->write_add_cmd(tick, new_eject);
+                }
+            }
+        }
+    }
+
+    void eat_all() {
         auto nearest_player = [this] (Circle *circle) {
             Player *nearest_predator = NULL;
             double deeper_dist = -INFINITY;
@@ -476,86 +472,100 @@ public:
             return nearest_predator;
         };
 
-        for (Food *food : food_array) {
-            if (food->logical != Food::EATEN) {
-                Player *eater = nearest_player(food);
-                if (eater != NULL) {
-                    eater->eat(food);
-                    food->logical = Food::EATEN;
-                }
+        for (auto fit = food_array.begin(); fit != food_array.end();) {
+            if (Player *eater = nearest_player(*fit)) {
+                eater->eat(*fit);
+                logger->write_kill_cmd(tick, *fit);
+                delete *fit;
+                fit = food_array.erase(fit);
+            } else {
+                fit++;
             }
         }
-        for (Ejection *eject : eject_array) {
-            if (eject->logical != Ejection::EATEN) {
-                Virus *eater = nearest_virus(eject);
-                if (eater != NULL) {
-                    eater->eat(eject);
-                    if (eater->can_split()) {
-                        eater->logical = Virus::SPLIT;
-                    }
-                    eject->logical = Ejection::EATEN;
-                }
-                else {
-                    Player *eater = nearest_player(eject);
-                    if (eater != NULL) {
-                        eater->eat(eject);
-                        eject->logical = Ejection::EATEN;
-                    }
-                }
+
+        for (auto eit = eject_array.begin(); eit != eject_array.end(); ) {
+            auto eject = *eit;
+            if (Virus *eater = nearest_virus(eject)) {
+                eater->eat(eject);
+            } else if (Player *eater = nearest_player(eject)) {
+                eater->eat(eject);
+            } else {
+                eit++;
+                continue;
             }
+
+            logger->write_kill_cmd(tick, eject);
+            delete eject;
+            eit = eject_array.erase(eit);
         }
-        for (Player *player : player_array) {
-            if (player->logical != Player::EATEN) {
-                Player *eater = nearest_player(player);
-                if (eater != NULL) {
-                    bool is_last = get_fragments_cnt(player->getId()) == 1;
-                    eater->eat(player, is_last);
-                    player->logical = Player::EATEN;
-                }
+
+        for (auto pit = player_array.begin(); pit != player_array.end(); ) {
+            if(Player *eater = nearest_player(*pit)) {
+                bool is_last = get_fragments_cnt((*pit)->getId()) == 1;
+                eater->eat(*pit, is_last);
+                logger->write_kill_cmd(tick, *pit);
+                delete *pit;
+                pit = player_array.erase(pit);
+            } else {
+                pit++;
             }
         }
     }
 
-    void who_intersected_virus() { // TODO: please, somebody fix it
-        auto nearest_to = [this] (Virus *virus) {
+    void burst_on_viruses() { // TODO: improve target selection
+        PlayerArray targets = player_array;
+
+        auto nearest_to = [this, &targets] (Virus *virus) {
             double nearest_dist = INFINITY;
             Player *nearest_player = NULL;
 
             for (Player *player : player_array) {
-                if (player->logical == Player::CREATED) {
-                    double qdist = virus->can_hurt(player);
-                    if (qdist < nearest_dist) {
-
-                        int yet_cnt = get_fragments_cnt(player->getId());
-                        if (player->can_burst(yet_cnt)) {
-                            nearest_dist = qdist;
-                            nearest_player = player;
-                        }
+                double qdist = virus->can_hurt(player);
+                if (qdist < nearest_dist) {
+                    int yet_cnt = get_fragments_cnt(player->getId());
+                    if (player->can_burst(yet_cnt)) {
+                        nearest_dist = qdist;
+                        nearest_player = player;
                     }
                 }
             }
             return nearest_player;
         };
 
-        for (Virus *virus : virus_array) {
-            if (virus->logical == Virus::CREATED || virus->logical == Virus::MOVING) {
-                Player *nearest_player = nearest_to(virus);
-                if (nearest_player) {
-                    nearest_player->burst_on(virus);
-                    virus->logical = Virus::HURT;
+
+
+        for (auto vit = virus_array.begin(); vit != virus_array.end(); ) {
+            if (Player *player = nearest_to(*vit)) {
+                int yet_cnt = get_fragments_cnt(player->getId());
+                int max_fId = get_max_fragment_id(player->getId());
+                QString old_id = player->id_to_str();
+
+                player->burst_on(*vit);
+                PlayerArray fragments = player->burst_now(max_fId, yet_cnt);
+                player_array.append(fragments);
+                targets.removeAll(player);
+
+                for (Player *frag : fragments) {
+                    logger->write_add_cmd(tick, frag);
                 }
+                logger->write_change_mass_id(tick, old_id, player);
+                logger->write_kill_cmd(tick, *vit);
+                delete *vit;
+                vit = virus_array.erase(vit);
+            } else {
+                vit++;
             }
         }
     }
 
-    void who_need_fusion() {
+    void fuse_players() {
+        QSet<Player*> fused_players;
         for (Player *player : player_array) {
-            if (player->logical == Player::FUSED) {
+            if(fused_players.contains(player)) {
                 continue;
             }
             PlayerArray fragments = get_players_by_id(player->getId());
             if (fragments.length() == 1) {
-
                 QString old_id = player->id_to_str();
                 bool changed = player->clear_fragments();
                 if (changed) {
@@ -564,32 +574,33 @@ public:
             }
 
             for (Player *frag : fragments) {
-                if (player != frag && frag->logical != Player::FUSED) {
+                if (player != frag && !fused_players.contains(frag)) {
                     if (player->can_fuse(frag)) {
                         player->fusion(frag);
-                        frag->logical = Player::FUSED;
+                        fused_players.insert(frag);
                     }
                 }
             }
+        }
+        for(Player *p : fused_players) {
+            logger->write_kill_cmd(tick, p);
+            delete p;
+            player_array.removeAll(p);
         }
     }
 
     void move_moveables() {
         Constants &ins = Constants::instance();
         for (Ejection *eject : eject_array) {
-            if (eject->logical == Ejection::MOVING) {
-                bool changed = eject->move(ins.GAME_WIDTH, ins.GAME_HEIGHT);
-                if (changed) {
-                    logger->write_change_pos(tick, eject);
-                }
+            bool changed = eject->move(ins.GAME_WIDTH, ins.GAME_HEIGHT);
+            if (changed) {
+                logger->write_change_pos(tick, eject);
             }
         }
         for (Virus *virus : virus_array) {
-            if (virus->logical == Virus::MOVING) {
-                bool changed = virus->move(ins.GAME_WIDTH, ins.GAME_HEIGHT);
-                if (changed) {
-                    logger->write_change_pos(tick, virus);
-                }
+            bool changed = virus->move(ins.GAME_WIDTH, ins.GAME_HEIGHT);
+            if (changed) {
+                logger->write_change_pos(tick, virus);
             }
         }
 
@@ -616,93 +627,17 @@ public:
         }
     }
 
-    void update_by_state() {
-        EjectionArray remove_ejects;
-        for (Ejection *eject : eject_array) {
-            if (eject->logical == Ejection::EATEN) {
-                logger->write_kill_cmd(tick, eject);
-                remove_ejects.append(eject);
-            }
-        }
-        for (Ejection *eject : remove_ejects) {
-            delete_ejection(eject);
-        }
-
-        PlayerArray remove_players;
-        PlayerArray append_players;
+    void update_players_radius() {
         for (Player *player : player_array) {
-            if (player->logical == Player::EATER || player->logical == Player::FUSER) {
-                bool changed = player->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
-                if (changed) {
-                    logger->write_change_mass(tick, player);
-                }
+            bool changed = player->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
+            if (changed) {
+                logger->write_change_mass(tick, player);
             }
-            else if (player->logical == Player::EATEN || player->logical == Player::FUSED) {
-                logger->write_kill_cmd(tick, player);
-                remove_players.append(player);
-            }
-            else if (player->logical == Player::BURST || player->logical == Player::SPLIT) {
-                int yet_cnt = get_fragments_cnt(player->getId());
-                int max_fId = get_max_fragment_id(player->getId());
-                QString old_id = player->id_to_str();
+        }
+    }
 
-                PlayerArray fragments;
-                if (player->logical == Player::BURST) {
-                    fragments = player->burst_now(max_fId, yet_cnt);
-                }
-                else if (player->logical == Player::SPLIT) {
-                    Player *new_player = player->split_now(max_fId);
-                    fragments.append(new_player);
-                }
-                if (fragments.length() > 0) {
-                    for (Player *frag : fragments) {
-                        logger->write_add_cmd(tick, frag);
-                        append_players.append(frag);
-                    }
-                    logger->write_change_mass_id(tick, old_id, player);
-                }
-            }
-            else if (player->logical == Player::EJECT) {
-                Ejection *new_eject = player->eject_now(id_counter);
-                logger->write_add_cmd(tick, new_eject);
-                eject_array.append(new_eject);
-                id_counter++;
-            } else if (player->logical == Player::EATER_N_SPLIT) {
-                bool changed = player->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
-                if (changed) {
-                    logger->write_change_mass(tick, player);
-                }
-                int yet_cnt = get_fragments_cnt(player->getId());
-                int max_fId = get_max_fragment_id(player->getId());
-                QString old_id = player->id_to_str();
-
-                PlayerArray fragments;
-                if (player->logical == Player::BURST) {
-                    fragments = player->burst_now(max_fId, yet_cnt);
-                }
-                else if (player->logical == Player::SPLIT) {
-                    Player *new_player = player->split_now(max_fId);
-                    fragments.append(new_player);
-                }
-                if (fragments.length() > 0) {
-                    for (Player *frag : fragments) {
-                        logger->write_add_cmd(tick, frag);
-                        append_players.append(frag);
-                    }
-                    logger->write_change_mass_id(tick, old_id, player);
-                }
-
-            } else if (player->logical == Player::EATER_N_EJECT) {
-                bool changed = player->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
-                if (changed) {
-                    logger->write_change_mass(tick, player);
-                }
-                Ejection *new_eject = player->eject_now(id_counter);
-                logger->write_add_cmd(tick, new_eject);
-                eject_array.append(new_eject);
-                id_counter++;
-            }
-
+    void update_scores() {
+        for (Player *player : player_array) {
             int score = player->get_score();
             if (score > 0) {
                 int pId = player->getId();
@@ -710,43 +645,19 @@ public:
                 logger->write_player_score(tick, pId, player_scores[pId]);
             }
         }
-        for (Player *player : append_players) {
-            player_array.append(player);
-        }
-        for (Player *player : remove_players) {
-            delete_player(player);
-        }
+    }
 
-        VirusArray remove_viruses;
+    void split_viruses() {
+        VirusArray append_viruses;
         for (Virus *virus : virus_array) {
-            if (virus->logical == Virus::HURT) {
-                logger->write_kill_cmd(tick, virus);
-                remove_viruses.append(virus);
-            }
-            else if (virus->logical == Virus::EATER) {
-                virus->logical = Virus::CREATED;
-            }
-            else if (virus->logical == Virus::SPLIT) {
+            if (virus->can_split()) {
                 Virus *new_virus = virus->split_now(id_counter);
                 logger->write_add_cmd(tick, new_virus);
-                virus_array.append(new_virus);
+                append_viruses.append(new_virus);
                 id_counter++;
             }
         }
-        for (Virus *virus : remove_viruses) {
-            delete_virus(virus);
-        }
-
-        FoodArray remove_food;
-        for (Food *food : food_array) {
-            if (food->logical == Food::EATEN) {
-                logger->write_kill_cmd(tick, food);
-                remove_food.append(food);
-            }
-        }
-        for (Food *food : remove_food) {
-            delete_food(food);
-        }
+        virus_array.append(append_viruses);
     }
 
     void shrink_players() {

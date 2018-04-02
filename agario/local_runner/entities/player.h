@@ -8,8 +8,6 @@
 class Player : public Circle
 {
 public:
-    enum State { CREATED, EATEN, EATER, BURST, FUSED, FUSER, SPLIT, EJECT, EATER_N_SPLIT, EATER_N_EJECT };
-    State logical;
     bool is_fast;
     int fuse_timer;
 
@@ -24,7 +22,6 @@ protected:
 public:
     explicit Player(int _id, double _x, double _y, double _radius, double _mass, const int fId=0) :
         Circle(_id, _x, _y, _radius, _mass),
-        logical(State::CREATED),
         is_fast(false),
         speed(0), angle(0),
         fragmentId(fId),
@@ -184,13 +181,6 @@ public:
 
     void eat(Circle *food, bool is_last=false) {
         mass += food->getM();
-        if (logical == State::SPLIT) {
-            logical = State::EATER_N_SPLIT;
-        } else if (logical == State::EJECT) {
-            logical = State::EATER_N_EJECT;
-        } else {
-            logical = State::EATER;
-        }
 
         if (food->is_my_eject(this)) {
             return;
@@ -231,7 +221,6 @@ public:
         }
         mass += BURST_BONUS;
         score += SCORE_FOR_BURST;
-        logical = State::BURST;
     }
 
     QVector<Player*> burst_now(int max_fId, int yet_cnt) {
@@ -255,7 +244,6 @@ public:
             new_fragment->set_impulse(BURST_START_SPEED, burst_angle);
         }
         set_impulse(BURST_START_SPEED, angle + BURST_ANGLE_SPECTRUM / 2);
-        logical = State::CREATED;
 
         fragmentId = max_fId + new_frags_cnt + 1;
         mass = new_mass;
@@ -265,9 +253,6 @@ public:
     }
 
     bool can_split(int yet_cnt) {
-        if (logical != State::CREATED) {
-            return false;
-        }
         if (yet_cnt + 1 <= Constants::instance().MAX_FRAGS_CNT) {
             if (mass > MIN_SPLIT_MASS) {
                 return true;
@@ -289,7 +274,6 @@ public:
         mass = new_mass;
         radius = new_radius;
 
-        logical = State::CREATED;
         return new_player;
     }
 
@@ -373,17 +357,10 @@ public:
         speed = qSqrt(dX * dX + dY * dY);
 
         mass += frag->getM();
-        logical = State::FUSER;
     }
 
     bool can_eject() {
-        if (logical != State::CREATED) {
-            return false;
-        }
-        if (mass > MIN_EJECT_MASS) {
-            return true;
-        }
-        return false;
+        return mass > MIN_EJECT_MASS;
     }
 
     Ejection *eject_now(int eject_id) {
@@ -395,7 +372,6 @@ public:
 
         mass -= EJECT_MASS;
         radius = Constants::instance().RADIUS_FACTOR * qSqrt(mass);
-        logical = State::CREATED;
         score += SCORE_FOR_EJECT;
         return new_eject;
     }
@@ -430,7 +406,6 @@ public:
             changed = true;
         }
 
-        logical = State::CREATED;
         return changed;
     }
 
@@ -509,12 +484,7 @@ public:
     }
 
     bool can_shrink() {
-        if (mass > MIN_SHRINK_MASS) {
-            if (logical == State::CREATED) {
-                return true;
-            }
-        }
-        return false;
+        return mass > MIN_SHRINK_MASS;
     }
 
     void shrink_now() {
