@@ -203,7 +203,7 @@ const QString RESP_EXPIRED = "Ожидание ответа превышено!"
 const QString SUM_RESP_EXPIRED = "Суммарное ожидание клиента превышено. Клиент будет отключён!";
 const QString CLIENT_DISCONNECTED = "Решение отключилось от механики до окончания!";
 
-const int MAX_GAME_FOOD = 500;
+const int MAX_GAME_FOOD = 2000;
 const int MAX_GAME_VIRUS = 20;
 
 
