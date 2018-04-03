@@ -564,18 +564,9 @@ public:
             playerIds.insert(player->getId());
         }
 
-        QSet<Player*> fused_players;
+        PlayerArray fused_players;
         for (int id : playerIds) {
             PlayerArray fragments = get_players_by_id(id);
-            if (fragments.length() == 1) {
-                Player *player = fragments[0];
-                QString old_id = player->id_to_str();
-                bool changed = player->clear_fragments();
-                if (changed) {
-                    logger->write_change_id(tick, old_id, player);
-                }
-                continue;
-            }
             // приведём в предсказуемый порядок
             std::sort(fragments.begin(), fragments.end(),
                       [](const Player *a, const Player *b) -> bool {
@@ -588,24 +579,37 @@ public:
             bool new_fusion_check = true; // проверим всех. Если слияние произошло - перепроверим ещё разок, чтобы все могли слиться в один тик
             while (new_fusion_check) {
                 new_fusion_check = false;
-                for (size_t i = 0; i != fragments.size(); ++i) {
-                    Player *player = fragments[i];
-                    if (fused_players.contains(player)) {
-                        continue;
-                    }
-                    for (size_t j = i + 1; j < fragments.size(); ++j) {
-                        Player *frag = fragments[j];
-                        if (fused_players.contains(frag)) {
-                            continue;
-                        }
+                for (auto it = fragments.begin(); it != fragments.end(); ++it) {
+                    auto &player = *it;
+                    for (auto it2 = std::next(it); it2 != fragments.end(); ) {
+                        auto &frag = *it2;
                         if (player->can_fuse(frag)) {
                             player->fusion(frag);
-                            player->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT); // need for future fusing
-                            fused_players.insert(frag);
+                            fused_players.push_back(frag);
                             new_fusion_check = true;
+                            it2 = fragments.erase(it2);
+                        } else {
+                            ++it2;
                         }
                     }
                 }
+                if (new_fusion_check) {
+                    for (auto it = fragments.begin(); it != fragments.end(); ++it) {
+                        bool changed = (*it)->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT); // need for future fusing
+                        if (changed) {
+                            logger->write_change_mass(tick, *it);
+                        }
+                    }
+                }
+            }
+            if (fragments.length() == 1) {
+                Player *player = fragments[0];
+                QString old_id = player->id_to_str();
+                bool changed = player->clear_fragments();
+                if (changed) {
+                    logger->write_change_id(tick, old_id, player);
+                }
+                continue;
             }
         }
         for (Player *p : fused_players) {
