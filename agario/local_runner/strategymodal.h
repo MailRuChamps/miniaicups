@@ -5,48 +5,35 @@
 #include "strategies/bymouse.h"
 #include "strategies/custom.h"
 
-#include "ui_strategymodal.h"
-#include <QDialog>
 #include <QHash>
 #include <QSettings>
 
-namespace Ui {
-    class StrategyModal;
-}
-
 struct PlayerGui {
-    QRadioButton* rbn_custom;
-    QRadioButton* rbn_comp;
-    QRadioButton* rbn_mouse;
-    QComboBox* choose_comp;
-    QComboBox* choose_color;
-    QLineEdit* edit_custom;
+    bool rbn_custom;
+    bool rbn_comp;
+    bool rbn_mouse;
+    QString choose_comp;
+    QString choose_color;
+    QString edit_custom;
 };
 
-class StrategyModal : public QDialog
+class StrategyModal
 {
-    Q_OBJECT
-
 protected:
-    Ui::StrategyModal *ui;
     QHash<int, PlayerGui> gui_of_player;
 
 public:
-    explicit StrategyModal(QWidget *parent=NULL) :
-        QDialog(parent),
-        ui(new Ui::StrategyModal)
+    explicit StrategyModal()
     {
-        ui->setupUi(this);
 
 #define SM_SETUP_PLAYER_GUI(player_id)                          \
         do {                                                    \
-            PlayerGui& cur_gui = gui_of_player[player_id % 4];  \
-            cur_gui.rbn_custom = ui->rbn_custom_##player_id;    \
-            cur_gui.rbn_comp = ui->rbn_comp_##player_id;        \
-            cur_gui.rbn_mouse = ui->rbn_mouse_##player_id;      \
-            cur_gui.choose_comp = ui->cbx_comp_##player_id;     \
-            cur_gui.choose_color = ui->cbx_color_##player_id;   \
-            cur_gui.edit_custom = ui->edt_prog_##player_id;     \
+            PlayerGui& cur_gui  = gui_of_player[player_id % 4]; \
+            cur_gui.rbn_custom  = false;                        \
+            cur_gui.rbn_comp    = false;                         \
+            cur_gui.choose_comp = "Ближайшая еда";              \
+            cur_gui.choose_color= "Красный";                    \
+            cur_gui.edit_custom = "";                           \
         } while (false)
 
         SM_SETUP_PLAYER_GUI(1);
@@ -65,8 +52,6 @@ public:
         } else {
             restore_settings();
         }
-
-        connect(this, &QDialog::accepted, this, &StrategyModal::save_settings);
     }
 
     void restore_settings() {
@@ -77,33 +62,28 @@ public:
             PlayerGui& cur_gui = gui_of_player[player % 4];
 
             QString strategy_type = settings.value("type").toString();
-            if (strategy_type == "Custom") {
-                cur_gui.rbn_custom->setChecked(true);
-            } else if (strategy_type == "Comp") {
-                cur_gui.rbn_comp->setChecked(true);
-            } else if (strategy_type == "Mouse") {
-                cur_gui.rbn_mouse->setChecked(true);
-            }
+            if (strategy_type == "Custom")
+            { cur_gui.rbn_custom = true; }
+            else if (strategy_type == "Comp")
+            { cur_gui.rbn_comp = true; }
 
             QString custom_path = settings.value("custom_path").toString();
-            cur_gui.edit_custom->setText(custom_path);
+            cur_gui.edit_custom = custom_path;
 
             QString builtin_strategy = settings.value("builtin_strategy").toString();
-            cur_gui.choose_comp->setCurrentText(builtin_strategy);
+            cur_gui.choose_comp = builtin_strategy;
 
             QString color = settings.value("color").toString();
-            cur_gui.choose_color->setCurrentText(color);
+            cur_gui.choose_color = color;
         }
         settings.endArray();
     }
 
-    virtual ~StrategyModal() {
-        if (ui) delete ui;
-    }
+    virtual ~StrategyModal() { }
 
 public:
     QString get_color_name(int playerId) const {
-        return gui_of_player[playerId % 4].choose_color->currentText();
+        return gui_of_player[playerId % 4].choose_color;
     }
 
     Qt::GlobalColor get_color(int playerId) const {
@@ -119,22 +99,18 @@ public:
 
     Strategy* get_strategy(int playerId) const {
         const auto& cur_gui = gui_of_player[playerId % 4];
-        if (cur_gui.rbn_comp->isChecked()) {
-            QString comp = cur_gui.choose_comp->currentText();
+        if (cur_gui.rbn_comp) {
+            QString comp = cur_gui.choose_comp;
             if (comp == "Ближайшая еда") { return new Strategy(playerId); }
             return NULL;
         }
-        else if (cur_gui.rbn_mouse->isChecked()) {
-            return new ByMouse(playerId);
-        }
-        else if (cur_gui.rbn_custom->isChecked()) {
-            QString prog_path = cur_gui.edit_custom->text();
+        else if (cur_gui.rbn_custom) {
+            QString prog_path = cur_gui.edit_custom;
             return new Custom(playerId, prog_path);
         }
         return NULL;
     }
 
-public slots:
     void save_settings() {
         DEFINE_QSETTINGS(settings);
         settings.beginWriteArray("players");
@@ -143,22 +119,17 @@ public slots:
             settings.setArrayIndex(player - 1);
 
             QString strategy_type;
-            if (cur_gui.rbn_custom->isChecked()) {
-                strategy_type = "Custom";
-            } else if (cur_gui.rbn_comp->isChecked()) {
-                strategy_type = "Comp";
-            } else if (cur_gui.rbn_mouse->isChecked()) {
-                strategy_type = "Mouse";
-            }
+            if (cur_gui.rbn_custom) { strategy_type = "Custom"; }
+            else if (cur_gui.rbn_comp) { strategy_type = "Comp"; }
             settings.setValue("type", strategy_type);
 
-            QString custom_path = cur_gui.edit_custom->text();
+            QString custom_path = cur_gui.edit_custom;
             settings.setValue("custom_path", custom_path);
 
-            QString builtin_strategy = cur_gui.choose_comp->currentText();
+            QString builtin_strategy = cur_gui.choose_comp;
             settings.setValue("builtin_strategy", builtin_strategy);
 
-            QString color = cur_gui.choose_color->currentText();
+            QString color = cur_gui.choose_color;
             settings.setValue("color", color);
         }
         settings.endArray();

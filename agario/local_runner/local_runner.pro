@@ -1,21 +1,12 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2018-02-13T16:55:01
-#
-#-------------------------------------------------
-
-QT       += core gui network
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       += core
 
 CONFIG += c++11 warn_off
-TARGET = local_runner
+TARGET = local_runner_console
 TEMPLATE = app
-
 
 SOURCES += main.cpp
 
-HEADERS  += mainwindow.h \
+HEADERS  += \
     mechanic.h \
     logger.h \
     entities/food.h \
@@ -24,12 +15,7 @@ HEADERS  += mainwindow.h \
     entities/virus.h \
     entities/player.h \
     strategies/strategy.h \
-    strategies/bymouse.h \
     entities/ejection.h \
     strategymodal.h \
-    strategies/custom.h
-
-FORMS    += mainwindow.ui \
-    strategymodal.ui
-
-LIBS += -lz
+    strategies/custom.h \
+    mainclass.h

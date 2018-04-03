@@ -68,7 +68,7 @@ public:
             logger->clear_file();
         }
 
-        id_counter = 0;
+        id_counter = 1;
         for (Food *food : food_array) {
             if (food) delete food;
         }
@@ -174,23 +174,23 @@ public:
         return false;
     }
 
-    void mouseMoveEvent(int x, int y) {
-        for (Strategy *strategy : strategy_array) {
-            ByMouse *by_mouse = dynamic_cast<ByMouse*>(strategy);
-            if (by_mouse != NULL) {
-                by_mouse->set_mouse(x, y);
-            }
-        }
-    }
-
-    void keyPressEvent(QKeyEvent *event) {
-        for (Strategy *strategy : strategy_array) {
-            ByMouse *by_mouse = dynamic_cast<ByMouse*>(strategy);
-            if (by_mouse != NULL) {
-                by_mouse->set_key(event);
-            }
-        }
-    }
+//    void mouseMoveEvent(int x, int y) {
+//        for (Strategy *strategy : strategy_array) {
+//            ByMouse *by_mouse = dynamic_cast<ByMouse*>(strategy);
+//            if (by_mouse != NULL) {
+//                by_mouse->set_mouse(x, y);
+//            }
+//        }
+//    }
+//
+//    void keyPressEvent(QKeyEvent *event) {
+//        for (Strategy *strategy : strategy_array) {
+//            ByMouse *by_mouse = dynamic_cast<ByMouse*>(strategy);
+//            if (by_mouse != NULL) {
+//                by_mouse->set_key(event);
+//            }
+//        }
+//    }
 
 public:
     void write_base_tick() {
@@ -346,18 +346,21 @@ public:
         for (Player *fragment : for_them) {
             for (Food *food : food_array) {
                 if (fragment->can_see(food)) {
-                    visibles.append((Circle *) food);
+                    if (visibles.indexOf((Circle *) food) == -1)
+                        visibles.append((Circle *) food);
                 }
             }
             for (Ejection *eject : eject_array) {
                 if (fragment->can_see(eject)) {
-                    visibles.append((Circle *) eject);
+                    if (visibles.indexOf((Circle *) eject) == -1)
+                        visibles.append((Circle *) eject);
                 }
             }
             for (Player *player : player_array) {
                 if (for_them.indexOf(player) == -1) {
                     if (fragment->can_see(player)) {
-                        visibles.append((Circle *) player);
+                        if (visibles.indexOf((Circle *) player) == -1)
+                            visibles.append((Circle *) player);
                     }
                 }
             }

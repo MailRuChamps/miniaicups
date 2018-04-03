@@ -15,7 +15,10 @@
 #include <QSettings>
 
 // yes ugly
-#define DEFINE_QSETTINGS(VARIABLE_NAME) QSettings VARIABLE_NAME("LocalRunner.ini", QSettings::IniFormat)
+#define DEFINE_QSETTINGS(VARIABLE_NAME)                                   \
+        QSettings VARIABLE_NAME("LocalRunner.ini", QSettings::IniFormat); \
+        VARIABLE_NAME.setIniCodec("Utf-8");
+
 
 struct Constants
 {
@@ -114,7 +117,7 @@ private:
     }
 };
 
-const QString LOG_DIR = "/var/tmp/";
+const QString LOG_DIR = "";
 const QString LOG_FILE = "visio_{1}.log";
 const QString DEBUG_FILE = "{1}.log";
 const QString SCORES_FILE = "scores.json";

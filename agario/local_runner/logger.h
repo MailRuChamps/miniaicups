@@ -140,49 +140,49 @@ public:
         f_Stream << content.toUtf8();
         file.close();
 
-        if (need_compress) {
-            QByteArray compressed;
-            if (compress(content.toUtf8(), compressed)) {
-                QFile archive(get_path() + ".gz");
-                if (archive.open(QIODevice::WriteOnly)) {
-                    archive.write(compressed);
-                    archive.close();
-                }
-            }
-        }
+//        if (need_compress) {
+//            QByteArray compressed;
+//            if (compress(content.toUtf8(), compressed)) {
+//                QFile archive(get_path() + ".gz");
+//                if (archive.open(QIODevice::WriteOnly)) {
+//                    archive.write(compressed);
+//                    archive.close();
+//                }
+//            }
+//        }
         content.clear();
     }
 
-    bool compress(const QByteArray &content, QByteArray &result) {
-        const std::string &data = content.toStdString();
+//    bool compress(const QByteArray &content, QByteArray &result) {
+//        const std::string &data = content.toStdString();
 
-        unsigned char out[CHUNK];
-        z_stream strm;
-        strm.zalloc = Z_NULL;
-        strm.zfree = Z_NULL;
-        strm.opaque = Z_NULL;
-        if (deflateInit2(&strm, -1, Z_DEFLATED, 15 | 16, 8, Z_DEFAULT_STRATEGY) != Z_OK) {
-            return false;
-        }
-        strm.next_in = (unsigned char*)data.c_str();
-        strm.avail_in = data.size();
-        do {
-            int have;
-            strm.avail_out = CHUNK;
-            strm.next_out = out;
-            if (deflate(&strm, Z_FINISH) == Z_STREAM_ERROR) {
-                return false;
-            }
-            have = CHUNK - strm.avail_out;
-            result.append((char*)out, have);
-        }
-        while (strm.avail_out == 0);
+//        unsigned char out[CHUNK];
+//        z_stream strm;
+//        strm.zalloc = Z_NULL;
+//        strm.zfree = Z_NULL;
+//        strm.opaque = Z_NULL;
+//        if (deflateInit2(&strm, -1, Z_DEFLATED, 15 | 16, 8, Z_DEFAULT_STRATEGY) != Z_OK) {
+//            return false;
+//        }
+//        strm.next_in = (unsigned char*)data.c_str();
+//        strm.avail_in = data.size();
+//        do {
+//            int have;
+//            strm.avail_out = CHUNK;
+//            strm.next_out = out;
+//            if (deflate(&strm, Z_FINISH) == Z_STREAM_ERROR) {
+//                return false;
+//            }
+//            have = CHUNK - strm.avail_out;
+//            result.append((char*)out, have);
+//        }
+//        while (strm.avail_out == 0);
 
-        if (deflateEnd(&strm) != Z_OK) {
-            return false;
-        }
-        return true;
-    }
+//        if (deflateEnd(&strm) != Z_OK) {
+//            return false;
+//        }
+//        return true;
+//    }
 
     void write_add_cmd(int tick, Food *food) {
         write_cmd(tick, format("AF{1} X{2} Y{3}\n", food->getId(), food->getX(), food->getY()));
