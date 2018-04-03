@@ -1,9 +1,6 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-// #define CONTAINER
-#define LOCAL_RUNNER
-
 #include <QString>
 #include <QVector>
 #include <QDebug>
@@ -70,12 +67,13 @@ public:
 
         SET_CONSTANT(GAME_WIDTH, "660", toInt);
         SET_CONSTANT(GAME_HEIGHT, "660", toInt);
-#elif defined CONTAINER
+        SET_CONSTANT(SUM_RESP_TIMEOUT, "500", toInt);
+#elif defined SERVER_RUNNER
         SET_CONSTANT(GAME_WIDTH, "990", toInt);
         SET_CONSTANT(GAME_HEIGHT, "990", toInt);
+        SET_CONSTANT(SUM_RESP_TIMEOUT, "150", toInt);
 #endif
 
-        SET_CONSTANT(SUM_RESP_TIMEOUT, "500", toInt);
         SET_CONSTANT(TICK_MS, "16", toInt);
         SET_CONSTANT(BASE_TICK, "50", toInt);
         SET_CONSTANT(INERTION_FACTOR, "10.0", toDouble);

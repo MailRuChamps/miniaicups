@@ -1,8 +1,10 @@
+DEFINES += SERVER_RUNNER
+
 QT += core network gui
 
 CONFIG += c++11 warn_off
 
-TARGET = mechanic
+TARGET = server_runner
 CONFIG += console
 CONFIG -= app_bundle
 
@@ -21,7 +23,7 @@ HEADERS  += mechanic.h \
     tcp_server.h \
     tcp_connect.h
 
-SOURCES += main.cpp
+SOURCES += server_runner.cpp
 
 DISTFILES += \
     ../Dockerfile
