@@ -4,6 +4,7 @@
 #include <functional>
 #include <QObject>
 #include <QMap>
+#include <list>
 
 #include "logger.h"
 #include "entities/food.h"
@@ -566,9 +567,9 @@ public:
 
         PlayerArray fused_players;
         for (int id : playerIds) {
-            PlayerArray fragments = get_players_by_id(id);
+            PlayerArray playerFragments = get_players_by_id(id);
             // приведём в предсказуемый порядок
-            std::sort(fragments.begin(), fragments.end(),
+            std::sort(playerFragments.begin(), playerFragments.end(),
                       [](const Player *a, const Player *b) -> bool {
                           if (a->getM() == b->getM()) {
                               return a->get_fId() < b->get_fId();
@@ -576,6 +577,8 @@ public:
                               return a->getM() > b->getM();
                           }
                       });
+            // перепаковываем в std::list, чтобы не словить UB с итераторами на строчке it2 = fragments.erase(it2);
+            std::list<Player*> fragments(playerFragments.begin(), playerFragments.end());
             bool new_fusion_check = true; // проверим всех. Если слияние произошло - перепроверим ещё разок, чтобы все могли слиться в один тик
             while (new_fusion_check) {
                 new_fusion_check = false;
@@ -602,8 +605,8 @@ public:
                     }
                 }
             }
-            if (fragments.length() == 1) {
-                Player *player = fragments[0];
+            if (fragments.size() == 1) {
+                Player *player = fragments.front();
                 QString old_id = player->id_to_str();
                 bool changed = player->clear_fragments();
                 if (changed) {
