@@ -1,7 +1,7 @@
 defmodule ElixirStrategy.Mixfile do
   use Mix.Project
 
-  @path if System.get_env("SOLUTION_CODE_PATH"), do: System.get_env("SOLUTION_CODE_PATH"), else: "."
+  @path if System.get_env("COMPILED_FILE_PATH"), do: System.get_env("COMPILED_FILE_PATH"), else: "."
   @name if System.get_env("SOLUTION_CODE_ENTRYPOINT"), do: System.get_env("SOLUTION_CODE_ENTRYPOINT"), else: "strategy"
 
   def project do
