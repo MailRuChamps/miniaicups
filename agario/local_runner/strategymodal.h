@@ -30,7 +30,7 @@ public:
         do {                                                    \
             PlayerGui& cur_gui  = gui_of_player[player_id % 4]; \
             cur_gui.rbn_custom  = false;                        \
-            cur_gui.rbn_comp    = false;                         \
+            cur_gui.rbn_comp    = false;                        \
             cur_gui.choose_comp = "Ближайшая еда";              \
             cur_gui.choose_color= "Красный";                    \
             cur_gui.edit_custom = "";                           \
@@ -49,9 +49,8 @@ public:
             settings.setValue("first_time", false);
             save_settings();
             settings.sync();
-        } else {
-            restore_settings();
         }
+        restore_settings();
     }
 
     void restore_settings() {
@@ -118,10 +117,7 @@ public:
             PlayerGui& cur_gui = gui_of_player[player % 4];
             settings.setArrayIndex(player - 1);
 
-            QString strategy_type;
-            if (cur_gui.rbn_custom) { strategy_type = "Custom"; }
-            else if (cur_gui.rbn_comp) { strategy_type = "Comp"; }
-            settings.setValue("type", strategy_type);
+            settings.setValue("type", "Comp");
 
             QString custom_path = cur_gui.edit_custom;
             settings.setValue("custom_path", custom_path);
@@ -133,6 +129,11 @@ public:
             settings.setValue("color", color);
         }
         settings.endArray();
+        settings.beginGroup("valid_params");
+            settings.setValue("Comp", "Стратегия предлагаемая организаторами");
+            settings.setValue("Custom", "Ваша стратегия, наделённая ИИ");
+        settings.endGroup();
+
     }
 };
 
