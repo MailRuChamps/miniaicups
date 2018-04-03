@@ -11,13 +11,7 @@ RUN set -xe \
   && apt-get update \
   && apt-get install -y elixir
 
-COPY mix.exs ./
-COPY main.ex ./lib
-
-RUN mix local.hex --force
-RUN mix deps.get
-
-ENV COMPILED_FILE_PATH=/opt/client/main
-ENV SOLUTION_CODE_ENTRYPOINT=elixir_strategy
+ENV SOLUTION_CODE_PATH=/opt/client/solution
+ENV SOLUTION_CODE_ENTRYPOINT=strategy
 ENV COMPILATION_COMMAND='mix escript.build'
-ENV RUN_COMMAND='elixir_strategy'
+ENV RUN_COMMAND='escript $SOLUTION_CODE_PATH/$SOLUTION_CODE_ENTRYPOINT'
