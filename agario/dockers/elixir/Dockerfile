@@ -12,6 +12,6 @@ RUN set -xe \
   && apt-get install -y elixir
 
 ENV COMPILED_FILE_PATH=/opt/client/strategy
-ENV SOLUTION_CODE_ENTRYPOINT=strategy
+ENV SOLUTION_CODE_ENTRYPOINT=elixir_strategy.ex
 ENV COMPILATION_COMMAND='mix escript.build'
-ENV RUN_COMMAND='escript "$MOUNT_POINT"'
+ENV RUN_COMMAND='/usr/bin/escript "$MOUNT_POINT"'
