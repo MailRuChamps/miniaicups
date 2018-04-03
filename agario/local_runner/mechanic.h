@@ -564,7 +564,7 @@ public:
             playerIds.insert(player->getId());
         }
 
-        PlayerArray fused_players;
+        QSet<Player*> fused_players;
         for (int id : playerIds) {
             PlayerArray fragments = get_players_by_id(id);
             if (fragments.length() == 1) {
@@ -601,7 +601,7 @@ public:
                         if (player->can_fuse(frag)) {
                             player->fusion(frag);
                             player->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT); // need for future fusing
-                            fused_players.push_back(frag);
+                            fused_players.insert(frag);
                             new_fusion_check = true;
                         }
                     }
