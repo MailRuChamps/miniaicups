@@ -70,5 +70,3 @@ ENV COMPILED_FILE_PATH=/opt/client/main
 ENV SOLUTION_CODE_ENTRYPOINT=elixir_strategy
 ENV COMPILATION_COMMAND='mix escript.build'
 ENV RUN_COMMAND='elixir_strategy'
-
-CMD ["elixir_strategy"]
