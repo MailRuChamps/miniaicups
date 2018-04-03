@@ -94,30 +94,6 @@ public:
         strategy_array.clear();
     }
 
-    void paintEvent(QPainter &painter, bool show_speed, bool show_fogs, bool show_cmd) {
-        if (show_fogs) {
-            for (Player *player : player_array) {
-                player->draw_vision_line(painter);
-            }
-        }
-
-        for (Food *food : food_array) {
-            food->draw(painter);
-        }
-        for (Ejection *eject : eject_array) {
-            eject->draw(painter);
-        }
-        std::sort(player_array.begin(), player_array.end(), [] (Player *lhs, Player *rhs) {
-            return lhs->getR() < rhs->getR();
-        });
-        for (Player *player : player_array) {
-            player->draw(painter, show_speed, show_cmd);
-        }
-        for (Virus *virus : virus_array) {
-            virus->draw(painter);
-        }
-    }
-
     int tickEvent() {
 #ifdef LOCAL_RUNNER
         apply_strategies();
@@ -148,6 +124,7 @@ public:
             write_base_tick();
         }
         strategy_directs.clear();
+
         return tick;
     }
 
@@ -172,24 +149,6 @@ public:
             return true;
         }
         return false;
-    }
-
-    void mouseMoveEvent(int x, int y) {
-        for (Strategy *strategy : strategy_array) {
-            ByMouse *by_mouse = dynamic_cast<ByMouse*>(strategy);
-            if (by_mouse != NULL) {
-                by_mouse->set_mouse(x, y);
-            }
-        }
-    }
-
-    void keyPressEvent(QKeyEvent *event) {
-        for (Strategy *strategy : strategy_array) {
-            ByMouse *by_mouse = dynamic_cast<ByMouse*>(strategy);
-            if (by_mouse != NULL) {
-                by_mouse->set_key(event);
-            }
-        }
     }
 
 public:

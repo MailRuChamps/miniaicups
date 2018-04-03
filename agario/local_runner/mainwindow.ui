@@ -6,16 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>903</width>
-    <height>706</height>
+    <width>894</width>
+    <height>678</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_3">
-    <item>
+   <layout class="QFormLayout" name="formLayout">
+    <item row="0" column="0">
      <widget class="QFrame" name="viewport">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -43,7 +43,7 @@
       </property>
      </widget>
     </item>
-    <item>
+    <item row="0" column="1">
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <widget class="QLineEdit" name="txt_seed">
@@ -75,6 +75,13 @@
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btn_strategies_settings">
+        <property name="text">
+         <string>Настроить стратегии</string>
         </property>
        </widget>
       </item>
@@ -180,12 +187,18 @@
         <property name="text">
          <string>Команды стратегий</string>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
        <widget class="QCheckBox" name="cbx_fog">
         <property name="text">
          <string>Области видимости</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -197,12 +210,12 @@
        </widget>
       </item>
       <item>
-       <widget class="QListWidget" name="leaders"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="btn_strategies_settings">
-        <property name="text">
-         <string>Настроить стратегии</string>
+       <widget class="QListWidget" name="leaders">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>75</height>
+         </size>
         </property>
        </widget>
       </item>
@@ -266,28 +279,6 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>903</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menu_strategies">
-    <property name="title">
-     <string>Стратегии</string>
-    </property>
-    <addaction name="action_1"/>
-   </widget>
-   <addaction name="menu_strategies"/>
-  </widget>
-  <action name="action_1">
-   <property name="text">
-    <string>Настроить</string>
-   </property>
-  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
