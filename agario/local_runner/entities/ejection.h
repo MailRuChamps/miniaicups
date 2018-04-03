@@ -58,23 +58,18 @@ public:
         if (speed == 0.0) {
             return false;
         }
-        double rB = x + radius, lB = x - radius;
-        double dB = y + radius, uB = y - radius;
-
         double dx = speed * qCos(angle);
         double dy = speed * qSin(angle);
 
-        bool changed = false;
-        if (rB + dx < max_x && lB + dx > 0) {
-            x += dx;
-            changed = true;
-        }
-        if (dB + dy < max_y && uB + dy > 0) {
-            y += dy;
-            changed = true;
-        }
+        double new_x = qMax(radius, qMin(max_x - radius, x + dx));
+        bool changed = (x != new_x);
+        x = new_x;
 
-        speed = std::max(0.0, speed - Constants::instance().VISCOSITY);
+        double new_y = qMax(radius, qMin(max_y - radius, y + dy));
+        changed |= (y != new_y);
+        y = new_y;
+
+        speed = qMax(0.0, speed - Constants::instance().VISCOSITY);
         return changed;
     }
 

@@ -451,7 +451,9 @@ public:
         }
         else {
             // долетаем до стенки
-            x = qMax(.0, qMin((double)max_x, x + dx));
+            double new_x = qMax(radius, qMin(max_x - radius, x + dx));
+            changed |= (x != new_x);
+            x = new_x;
             // зануляем проекцию скорости по dx
             double speed_y = speed * qSin(angle);
             speed = qAbs(speed_y);
@@ -463,7 +465,9 @@ public:
         }
         else {
             // долетаем до стенки
-            y = qMax(.0, qMin((double)max_y, y + dy));
+            double new_y = qMax(radius, qMin(max_y - radius, y + dy));
+            changed |= (y != new_y);
+            y = new_y;
             // зануляем проекцию скорости по dy
             double speed_x = speed * qCos(angle);
             speed = qAbs(speed_x);
