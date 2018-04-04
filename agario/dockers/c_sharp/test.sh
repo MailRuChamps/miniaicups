@@ -6,7 +6,7 @@ BUILD_INTO_DIR=$(echo "$(cd "../../examples"; pwd)")
 docker build -t cups/csharp:latest ./
 
 #Run compiler
-timeout --foreground 5s docker run \
+docker run \
     -e MOUNT_POINT=/opt/client/csharpStrategy  \
     -e SOLUTION_CODE_PATH='/opt/client/'  \
     -v $CODE_DIR:/opt/client/code  \
@@ -14,7 +14,7 @@ timeout --foreground 5s docker run \
     cups/csharp  \
     bash -c "eval \$COMPILATION_COMMAND"
 
-#Run aoo
+#Run app
 timeout --foreground 5s docker run -i  \
     -e MOUNT_POINT=/opt/client/csharpStrategy  \
     -e SOLUTION_CODE_PATH='/opt/client/'  \
