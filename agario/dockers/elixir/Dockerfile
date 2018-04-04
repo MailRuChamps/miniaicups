@@ -1,17 +1,24 @@
 FROM ubuntu:16.04
-MAINTAINER Alexey Bolshakov <ua3mqj@gmail.com>
+LABEL authors="Alexey Bolshakov <ua3mqj@gmail.com>, Sergey Samokhvalov <onlyforthesky@gmail.com>"
 
-RUN set -xe \
+COPY default/. /opt/client/default
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
+
+RUN (echo 'deb http://packages.erlang-solutions.com/ubuntu xenial contrib' >> /etc/apt/sources.list) \
+  && (apt-key adv --fetch-keys  http://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc) \
   && apt-get update \
-  && apt-get install -y wget \
-  && wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb \
-  && dpkg -i erlang-solutions_1.0_all.deb \
-  && wget https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc \
-  && apt-key add erlang_solutions.asc \
-  && apt-get update \
-  && apt-get install -y elixir
+  && apt-get install -y wget elixir \
+  && cd /opt/client/default \
+  && mix local.hex --force \
+  && mix deps.get
+
 
 ENV COMPILED_FILE_PATH=/opt/client/strategy
-ENV SOLUTION_CODE_ENTRYPOINT=elixir_strategy.ex
-ENV COMPILATION_COMMAND='mix escript.build'
+ENV SOLUTION_CODE_PATH=/opt/client/solution/lib
+ENV SOLUTION_CODE_ENTRYPOINT=strategy.ex
+
+ENV MIX_ENV=prod
+ENV COMPILATION_COMMAND='cd /opt/client/solution/ && if [ ! -f "mix.exs" ]; then cp -r ../default/* .; fi  && mix escript.build 2>&1 >/dev/null'
 ENV RUN_COMMAND='/usr/bin/escript "$MOUNT_POINT"'
