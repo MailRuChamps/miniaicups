@@ -4,6 +4,8 @@
 #include <functional>
 #include <QObject>
 #include <QMap>
+#include <list>
+#include <array>
 
 #include "logger.h"
 #include "entities/food.h"
@@ -59,8 +61,7 @@ public:
         seq.generate(simple_seeds.begin(), simple_seeds.end());
         srand(simple_seeds[0]); // на всякий случай, если вдруг где-то когда-то будет использоваться обычный rand().
                                 // он используется, например, в умолчальной стратегии
-
-        logger->init_file(QString::number(simple_seeds[0]));
+        logger->init_file(QString::number(simple_seeds[0]), LOG_FILE, false);
 
         add_player(START_PLAYER_SETS, get_strategy);
         add_food(START_FOOD_SETS);
@@ -349,28 +350,34 @@ public:
             }
         }
 
+        auto can_see = [&for_them](Circle* c){
+            for (Player *fragment : for_them) {
+                if (fragment->can_see(c)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
         CircleArray visibles;
-        for (Player *fragment : for_them) {
-            for (Food *food : food_array) {
-                if (fragment->can_see(food)) {
-                    visibles.append((Circle *) food);
-                }
+        for (Food *food : food_array) {
+            if (can_see(food)) {
+                visibles.append(food);
             }
-            for (Ejection *eject : eject_array) {
-                if (fragment->can_see(eject)) {
-                    visibles.append((Circle *) eject);
-                }
+        }
+        for (Ejection *eject : eject_array) {
+            if (can_see(eject)) {
+                visibles.append(eject);
             }
-            for (Player *player : player_array) {
-                if (for_them.indexOf(player) == -1) {
-                    if (fragment->can_see(player)) {
-                        visibles.append((Circle *) player);
-                    }
-                }
+        }
+        auto pId = for_them.empty() ? -1 : for_them.front()->getId();
+        for (Player *player : player_array) {
+            if (player->getId() != pId && can_see(player)) {
+                visibles.append(player);
             }
         }
         for (Virus *virus : virus_array) {
-            visibles.append((Circle *) virus);
+            visibles.append(virus);
         }
         return visibles;
     }
@@ -566,30 +573,62 @@ public:
     }
 
     void fuse_players() {
-        QSet<Player*> fused_players;
+        QSet<int> playerIds;
         for (Player *player : player_array) {
-            if(fused_players.contains(player)) {
-                continue;
+            playerIds.insert(player->getId());
+        }
+
+        PlayerArray fused_players;
+        for (int id : playerIds) {
+            PlayerArray playerFragments = get_players_by_id(id);
+            // приведём в предсказуемый порядок
+            std::sort(playerFragments.begin(), playerFragments.end(),
+                      [](const Player *a, const Player *b) -> bool {
+                          if (a->getM() == b->getM()) {
+                              return a->get_fId() < b->get_fId();
+                          } else {
+                              return a->getM() > b->getM();
+                          }
+                      });
+            // перепаковываем в std::list, чтобы не словить UB с итераторами на строчке it2 = fragments.erase(it2);
+            std::list<Player*> fragments(playerFragments.begin(), playerFragments.end());
+            bool new_fusion_check = true; // проверим всех. Если слияние произошло - перепроверим ещё разок, чтобы все могли слиться в один тик
+            while (new_fusion_check) {
+                new_fusion_check = false;
+                for (auto it = fragments.begin(); it != fragments.end(); ++it) {
+                    auto &player = *it;
+                    for (auto it2 = std::next(it); it2 != fragments.end(); ) {
+                        auto &frag = *it2;
+                        if (player->can_fuse(frag)) {
+                            player->fusion(frag);
+                            fused_players.push_back(frag);
+                            new_fusion_check = true;
+                            it2 = fragments.erase(it2);
+                        } else {
+                            ++it2;
+                        }
+                    }
+                }
+                if (new_fusion_check) {
+                    for (auto it = fragments.begin(); it != fragments.end(); ++it) {
+                        bool changed = (*it)->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT); // need for future fusing
+                        if (changed) {
+                            logger->write_change_mass(tick, *it);
+                        }
+                    }
+                }
             }
-            PlayerArray fragments = get_players_by_id(player->getId());
-            if (fragments.length() == 1) {
+            if (fragments.size() == 1) {
+                Player *player = fragments.front();
                 QString old_id = player->id_to_str();
                 bool changed = player->clear_fragments();
                 if (changed) {
                     logger->write_change_id(tick, old_id, player);
                 }
-            }
-
-            for (Player *frag : fragments) {
-                if (player != frag && !fused_players.contains(frag)) {
-                    if (player->can_fuse(frag)) {
-                        player->fusion(frag);
-                        fused_players.insert(frag);
-                    }
-                }
+                continue;
             }
         }
-        for(Player *p : fused_players) {
+        for (Player *p : fused_players) {
             logger->write_kill_cmd(tick, p);
             delete p;
             player_array.removeAll(p);

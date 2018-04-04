@@ -82,9 +82,9 @@ public:
         }
     }
 
-    void init_file(QString part, bool debug=false) {
-        QString f = (!debug)? LOG_FILE : DEBUG_FILE;
-        file_name = f.replace("{1}", part);
+    void init_file(QString part, QString basename, bool debug=true) {
+//        QString f = (!debug)? LOG_FILE : DEBUG_FILE;
+        file_name = basename.replace("{1}", part);
         QString path = LOG_DIR + file_name;
         file.setFileName(path);
         clear_file();
@@ -294,6 +294,14 @@ public:
         QString oldLine = format("OD T{1} G{2} B{3}\n", Constants::instance().TICK_MS, Constants::instance().GAME_TICKS, Constants::instance().BASE_TICK);
         QString newLine = format("OD T{1} G{2} B{3}\n", Constants::instance().TICK_MS, ticks, Constants::instance().BASE_TICK);
         content.replace(oldLine, newLine);
+    }
+
+    void write_raw(int tick, QString raw) {
+        write_cmd(tick, raw);
+    }
+
+    void write_raw_with_old_tick(QString raw) {
+        write_cmd(current_tick, raw);
     }
 
 private:

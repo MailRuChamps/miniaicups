@@ -154,7 +154,7 @@ public slots:
             if (! client->is_canceled) {
                 PlayerArray fragments = mechanic->get_players_by_id(client->getId());
                 CircleArray visibles = mechanic->get_visibles(fragments);
-                client->send_state(fragments, visibles);
+                client->send_state(fragments, visibles, current_tick);
             }
         }
         ready_cnt = 0;
@@ -214,6 +214,7 @@ public slots:
         for (ClientWrapper *client : clients) {
             client->is_canceled = true;
             client->get_logger()->flush();
+            client->get_dump_logger()->flush();
         }
         Logger *ml = mechanic->get_logger();
         ml->rewrite_game_ticks(current_tick);
@@ -268,6 +269,14 @@ public slots:
             jsonDebug.insert("is_private", QJsonValue(true));
             jsonDebug.insert("location", QJsonValue(cl->get_path() + ".gz"));
             jsonDebugAll.append(jsonDebug);
+
+            cl = client->get_dump_logger();
+            QJsonObject jsonDumpDebug;
+            jsonDebug.insert("filename", QJsonValue(cl->get_file_name() + ".gz"));
+            jsonDebug.insert("is_private", QJsonValue(true));
+            jsonDebug.insert("location", QJsonValue(cl->get_path() + ".gz"));
+            jsonDebugAll.append(jsonDebug);
+
         }
         Logger *ml = mechanic->get_logger();
         QJsonObject jsonResult;

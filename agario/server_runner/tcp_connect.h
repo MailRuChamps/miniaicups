@@ -18,6 +18,7 @@ class ClientWrapper : public QObject
 protected:
     QTcpSocket *socket;
     Logger *logger;
+    Logger *dump_logger;
     QString solution_id;
     int player_id;
     bool is_ready;
@@ -45,6 +46,7 @@ public:
     explicit ClientWrapper(QTcpSocket *_socket) :
         socket(_socket),
         logger(new Logger),
+        dump_logger(new Logger),
         is_ready(false),
         wait_timeout(0),
         waiting(false),
@@ -134,7 +136,8 @@ public slots:
             }
 
             solution_id = json.value("solution_id").toString();
-            logger->init_file(solution_id, true);
+            logger->init_file(solution_id, DEBUG_FILE);
+            dump_logger->init_file(solution_id, DUMP_FILE);
             is_ready = true;
             emit ready();
         }
@@ -145,6 +148,8 @@ public slots:
                 return;
             }
             got_data.clear();
+            QJsonDocument doc(json);
+            dump_logger->write_raw_with_old_tick(doc.toJson(QJsonDocument::Compact)+ "\n");
             QStringList keys = json.keys();
             if (keys.contains("error")) {
                 QString err_msg = json.value("error").toString();
@@ -215,10 +220,11 @@ public slots:
         if (sent == 0) {
             emit error("Fatal error: can't send config", true);
         }
+        dump_logger->write_raw(0, message);
         socket->flush();
     }
 
-    void send_state(const PlayerArray &fragments, const CircleArray &visibles) {
+    void send_state(const PlayerArray &fragments, const CircleArray &visibles, int tick=0) {
         waiting = true;
         wait_timeout = 0;
 
@@ -227,6 +233,7 @@ public slots:
         if (sent == 0) {
             emit error("Fatal error: can't send state", true);
         }
+        dump_logger->write_raw(tick + 1, message);
         socket->flush();
     }
 
@@ -270,6 +277,10 @@ public slots:
 
     Logger *get_logger() const {
         return logger;
+    }
+
+    Logger *get_dump_logger() const {
+        return dump_logger;
     }
 };
 
