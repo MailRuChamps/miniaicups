@@ -7,6 +7,7 @@
 #include <QKeyEvent>
 #include <QMessageBox>
 
+#include "constants.h"
 #include "strategymodal.h"
 #include "mechanic.h"
 #include "ui_mainwindow.h"
@@ -42,8 +43,12 @@ public:
         this->setMouseTracking(true);
         this->setFixedSize(this->geometry().width(), this->geometry().height());
 
-        long T; time(&T);
-        ui->txt_seed->setText(QString::number(T));
+        if (Constants::instance().SEED.empty()) {
+            ui->txt_seed->setText(QString::fromStdString(Constants::generate_seed()));
+        } else {
+            ui->txt_seed->setText(QString::fromStdString(Constants::instance().SEED));
+        }
+
 
         connect(ui->btn_start, SIGNAL(pressed()), this, SLOT(init_game()));
         connect(ui->btn_stop, SIGNAL(pressed()), this, SLOT(clear_game()));
@@ -63,6 +68,8 @@ public:
         if (sm) delete sm;
     }
 
+
+
 public slots:
     void init_game() {
         if (is_paused) {
@@ -72,7 +79,7 @@ public slots:
         timerId = startTimer(Constants::instance().TICK_MS);
         ui->txt_ticks->setText("0");
 
-        int seed = ui->txt_seed->text().toInt();
+        std::string seed = ui->txt_seed->text().toStdString();
 
         mechanic->init_objects(seed, [this] (Player *player) {
             int pId = player->getId();

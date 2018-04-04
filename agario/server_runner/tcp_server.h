@@ -124,7 +124,7 @@ public slots:
         game_active = true;
         wait_timeout = 0;
 
-        quint64 seed = Constants::instance().SEED;
+        std::string seed = Constants::instance().SEED;
         mechanic->init_objects(seed, [] (Player*) -> Strategy* {
             return NULL;
         });

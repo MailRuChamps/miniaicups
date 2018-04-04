@@ -51,9 +51,16 @@ public:
     }
 
 public:
-    void init_objects(quint64 seed, const StrategyGet &get_strategy) {
-        rand.seed(seed);
-        logger->init_file(QString::number(seed));
+    void init_objects(const std::string &seed, const StrategyGet &get_strategy) {
+        std::seed_seq seq(seed.begin(), seed.end());
+        rand.seed(seq);
+
+        std::array<uint, 1> simple_seeds;
+        seq.generate(simple_seeds.begin(), simple_seeds.end());
+        srand(simple_seeds[0]); // на всякий случай, если вдруг где-то когда-то будет использоваться обычный rand().
+                                // он используется, например, в умолчальной стратегии
+
+        logger->init_file(QString::number(simple_seeds[0]));
 
         add_player(START_PLAYER_SETS, get_strategy);
         add_food(START_FOOD_SETS);
