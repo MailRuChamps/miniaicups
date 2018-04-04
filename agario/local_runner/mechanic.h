@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QMap>
 #include <list>
+#include <array>
 
 #include "logger.h"
 #include "entities/food.h"
