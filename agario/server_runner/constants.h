@@ -37,7 +37,7 @@ public:
 
     int TICK_MS;                // 16 ms
     int BASE_TICK;              // every 50 ticks
-    quint64 SEED;               // qrand()
+    std::string SEED;           // from std::random_device
 
     double INERTION_FACTOR;     // 10.0
     double VISCOSITY;           // 0.25
@@ -53,6 +53,19 @@ public:
     static Constants &instance() {
         static Constants ins;
         return ins;
+    }
+
+    static std::string generate_seed(uint length = 10) {
+        std::random_device dev;
+        const std::string alphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567");
+        std::uniform_int_distribution<> dist(0, static_cast<int>(alphabet.length() - 1));
+
+        std::string seed;
+        while (seed.length() < length) {
+            seed += alphabet[static_cast<uint>(dist(dev))];
+        }
+
+        return seed;
     }
 
     static Constants &initialize(const QProcessEnvironment &env) {
@@ -94,10 +107,11 @@ public:
         settings.endGroup();
         settings.sync();
 
-        QTime time = QTime::currentTime();
-        uint secs = QTime(0,0,0).secsTo(QTime::currentTime());
-        qsrand(secs * 1000 + time.msec());
-        c.SEED = env.value("SEED", QString::number(qrand())).toULongLong();
+        c.SEED = env.value("SEED", "").toStdString();
+        if (c.SEED.empty()) {
+            c.SEED = generate_seed();
+        }
+
         return c;
     }
 
