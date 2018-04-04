@@ -526,9 +526,8 @@ public:
     }
 
     void burst_on_viruses() { // TODO: improve target selection
-        PlayerArray targets = player_array;
 
-        auto nearest_to = [this, &targets] (Virus *virus) {
+        auto nearest_to = [this] (Virus *virus) {
             double nearest_dist = INFINITY;
             Player *nearest_player = NULL;
 
@@ -556,7 +555,6 @@ public:
                 player->burst_on(*vit);
                 PlayerArray fragments = player->burst_now(max_fId, yet_cnt);
                 player_array.append(fragments);
-                targets.removeAll(player);
 
                 for (Player *frag : fragments) {
                     logger->write_add_cmd(tick, frag);
