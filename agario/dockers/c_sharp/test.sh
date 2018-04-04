@@ -1,6 +1,6 @@
 #!bin/bash
 CODE_DIR=$(echo "$(cd "../../examples/csharp"; pwd)")
-BUILD_INTO_DIR=$(echo "$(cd "../../examples"; pwd)")
+BUILD_INTO_DIR=$(echo "$(cd "../../examples/"; pwd)")/build
 
 #Build container
 docker build -t cups/csharp:latest ./
