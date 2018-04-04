@@ -76,7 +76,7 @@ public:
             logger->clear_file();
         }
 
-        id_counter = 0;
+        id_counter = 1;
         for (Food *food : food_array) {
             if (food) delete food;
         }
