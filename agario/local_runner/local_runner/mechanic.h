@@ -402,7 +402,6 @@ public:
     void apply_direct_for(int sId, Direct direct) {
 //        logger->write_direct(tick, sId, direct);
         PlayerArray fragments = get_players_by_id(sId);
-        int yet_cnt = fragments.length();
 
         for (Player *frag : fragments) {
             frag->apply_direct(direct, Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
