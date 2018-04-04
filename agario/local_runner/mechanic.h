@@ -348,28 +348,34 @@ public:
             }
         }
 
+        auto can_see = [&for_them](Circle* c){
+            for (Player *fragment : for_them) {
+                if (fragment->can_see(c)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
         CircleArray visibles;
-        for (Player *fragment : for_them) {
-            for (Food *food : food_array) {
-                if (fragment->can_see(food)) {
-                    visibles.append((Circle *) food);
-                }
+        for (Food *food : food_array) {
+            if (can_see(food)) {
+                visibles.append(food);
             }
-            for (Ejection *eject : eject_array) {
-                if (fragment->can_see(eject)) {
-                    visibles.append((Circle *) eject);
-                }
+        }
+        for (Ejection *eject : eject_array) {
+            if (can_see(eject)) {
+                visibles.append(eject);
             }
-            for (Player *player : player_array) {
-                if (for_them.indexOf(player) == -1) {
-                    if (fragment->can_see(player)) {
-                        visibles.append((Circle *) player);
-                    }
-                }
+        }
+        auto pId = for_them.empty() ? -1 : for_them.front()->getId();
+        for (Player *player : player_array) {
+            if (player->getId() != pId && can_see(player)) {
+                visibles.append(player);
             }
         }
         for (Virus *virus : virus_array) {
-            visibles.append((Circle *) virus);
+            visibles.append(virus);
         }
         return visibles;
     }
