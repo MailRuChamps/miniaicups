@@ -1,9 +1,12 @@
 FROM ubuntu:16.04
 MAINTAINER Boris Kolganov <b.kolganov@corp.mail.ru>
 
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
+RUN \
     apt-get update -y && \
-    apt-get install -y g++-7 make 
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
+    apt-get update -y && \
+    apt-get install -y g++-7 make
 
 COPY Makefile ./
 COPY ./nlohmann ./nlohmann
