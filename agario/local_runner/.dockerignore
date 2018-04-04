@@ -1,0 +1,10 @@
+local_runner/*.pro.user
+local_runner/.qmake.stash
+local_runner/local_runner.app
+local_runner/*plugin_import*
+local_runner/*.o
+local_runner/moc*.cpp
+local_runner/moc*.h
+
+local_runner/ui_*.h
+local_runner/Makefile

@@ -4,6 +4,8 @@
 #
 #-------------------------------------------------
 
+DEFINES += LOCAL_RUNNER
+
 QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -13,7 +15,7 @@ TARGET = local_runner
 TEMPLATE = app
 
 
-SOURCES += main.cpp
+SOURCES += local_runner.cpp
 
 HEADERS  += mainwindow.h \
     mechanic.h \
