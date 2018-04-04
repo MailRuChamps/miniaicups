@@ -240,6 +240,7 @@ public slots:
     QString prepare_config() {
         Constants &ins = Constants::instance();
         QJsonObject jsonConfig;
+        jsonConfig.insert("TICK_MS", QJsonValue(ins.TICK_MS));
         jsonConfig.insert("GAME_WIDTH", QJsonValue(ins.GAME_WIDTH));
         jsonConfig.insert("GAME_HEIGHT", QJsonValue(ins.GAME_HEIGHT));
         jsonConfig.insert("GAME_TICKS", QJsonValue(ins.GAME_TICKS));
