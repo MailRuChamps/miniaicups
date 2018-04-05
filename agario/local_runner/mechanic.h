@@ -428,12 +428,12 @@ public:
 
             if (frag->can_split(fragments_count)) {
                 int max_fId = get_max_fragment_id(frag->getId());
+                QString old_id = frag->id_to_str();
 
                 Player *new_frag= frag->split_now(max_fId);
                 player_array.push_back(new_frag);
                 fragments_count++;
 
-                QString old_id = frag->id_to_str();
                 logger->write_add_cmd(tick, new_frag);
                 logger->write_change_mass_id(tick, old_id, frag);
             }
