@@ -112,23 +112,21 @@ public:
     }
 
     QJsonObject toJson() const {
-        Constants &ins = Constants::instance();
-        QJsonObject jsonConfig;
-        jsonConfig.insert("GAME_WIDTH", QJsonValue(ins.GAME_WIDTH));
-        jsonConfig.insert("GAME_HEIGHT", QJsonValue(ins.GAME_HEIGHT));
-        jsonConfig.insert("GAME_TICKS", QJsonValue(ins.GAME_TICKS));
+        return {
+            {"GAME_WIDTH", GAME_WIDTH},
+            {"GAME_HEIGHT", GAME_HEIGHT},
+            {"GAME_TICKS", GAME_TICKS},
 
-        jsonConfig.insert("FOOD_MASS", QJsonValue(ins.FOOD_MASS));
-        jsonConfig.insert("MAX_FRAGS_CNT", QJsonValue(ins.MAX_FRAGS_CNT));
-        jsonConfig.insert("TICKS_TIL_FUSION", QJsonValue(ins.TICKS_TIL_FUSION));
-        jsonConfig.insert("VIRUS_RADIUS", QJsonValue(ins.VIRUS_RADIUS));
-        jsonConfig.insert("VIRUS_SPLIT_MASS", QJsonValue(ins.VIRUS_SPLIT_MASS));
+            {"FOOD_MASS", FOOD_MASS},
+            {"MAX_FRAGS_CNT", MAX_FRAGS_CNT},
+            {"TICKS_TIL_FUSION", TICKS_TIL_FUSION},
+            {"VIRUS_RADIUS", VIRUS_RADIUS},
+            {"VIRUS_SPLIT_MASS", VIRUS_SPLIT_MASS},
 
-        jsonConfig.insert("VISCOSITY", QJsonValue(ins.VISCOSITY));
-        jsonConfig.insert("INERTION_FACTOR", QJsonValue(ins.INERTION_FACTOR));
-        jsonConfig.insert("SPEED_FACTOR", QJsonValue(ins.SPEED_FACTOR));
-
-        return jsonConfig;
+            {"VISCOSITY", VISCOSITY},
+            {"INERTION_FACTOR", INERTION_FACTOR},
+            {"SPEED_FACTOR", SPEED_FACTOR},
+        };
     }
 
 private:
