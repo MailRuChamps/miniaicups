@@ -49,17 +49,17 @@ public:
             ui->txt_seed->setText(QString::fromStdString(Constants::instance().SEED));
         }
 
-
-        connect(ui->btn_start, SIGNAL(pressed()), this, SLOT(init_game()));
+        ui->txt_ticks->setText("0");
+        connect(ui->btn_start_pause, SIGNAL(pressed()), this, SLOT(init_game()));
         connect(ui->btn_stop, SIGNAL(pressed()), this, SLOT(clear_game()));
-        connect(ui->btn_pause, SIGNAL(pressed()), this, SLOT(pause_game()));
 
         connect(ui->cbx_forces, SIGNAL(stateChanged(int)), this, SLOT(update()));
         connect(ui->cbx_speed, SIGNAL(stateChanged(int)), this, SLOT(update()));
         connect(ui->cbx_fog, SIGNAL(stateChanged(int)), this, SLOT(update()));
 
-        connect(ui->action_1, SIGNAL(triggered(bool)), sm, SLOT(show()));
         connect(ui->btn_strategies_settings, &QPushButton::clicked, sm, &QDialog::show);
+
+        ui->btn_newSeed->setVisible(false);
     }
 
     ~MainWindow() {
@@ -72,14 +72,14 @@ public:
 
 public slots:
     void init_game() {
-        if (is_paused) {
+        if (timerId > 0) {
             pause_game();
+            return;
         }
-        if (timerId > 0) return;
         timerId = startTimer(Constants::instance().TICK_MS);
-        ui->txt_ticks->setText("0");
 
         std::string seed = ui->txt_seed->text().toStdString();
+        ui->btn_start_pause->setText("Пауза");
 
         mechanic->init_objects(seed, [this] (Player *player) {
             int pId = player->getId();
@@ -112,11 +112,14 @@ public slots:
         ui->txt_ticks->setText("");
         ui->leaders->clear();
         mechanic->clear_objects(false);
+        ui->btn_start_pause->setText("Старт");
         this->update();
     }
 
     void pause_game() {
         is_paused = !is_paused;
+        if (is_paused) ui->btn_start_pause->setText("Продолжить");
+        else ui->btn_start_pause->setText("Пауза");
     }
 
     void finish_game() {
