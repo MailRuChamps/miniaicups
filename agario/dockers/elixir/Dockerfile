@@ -12,7 +12,8 @@ RUN (echo 'deb http://packages.erlang-solutions.com/ubuntu xenial contrib' >> /e
   && apt-get install -y wget elixir \
   && cd /opt/client/default \
   && mix local.hex --force \
-  && mix deps.get
+  && mix deps.get \
+  && mkdir -p /opt/client/solution/lib
 
 
 ENV COMPILED_FILE_PATH=/opt/client/strategy

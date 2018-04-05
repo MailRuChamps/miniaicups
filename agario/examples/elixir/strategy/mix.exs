@@ -7,7 +7,7 @@ defmodule Strategy.Mixfile do
     [app: :elixir_strategy,
      version: "0.1.0",
      elixir: "~> 1.1",
-     escript: [main_module: Strategy, path: @output_filename],
+     escript: [main_module: Strategy, path: @output_filename, emu_args: "+A 4 +S 4:4 +SDcpu 4:4"],
      deps: deps()]
   end
 
