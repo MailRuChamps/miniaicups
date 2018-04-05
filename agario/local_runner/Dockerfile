@@ -8,7 +8,7 @@ RUN apt-get update && \
     apt-get autoremove
 
 WORKDIR /opt/mechanic
-COPY ./local_runner ./
+COPY . ./
 
 RUN qmake ./server_runner.pro -r CONFIG+=x86_64\ release
 RUN make
