@@ -413,19 +413,27 @@ public:
         strategy_directs.insert(sId, direct);
     }
 
-    void split_fragments(const PlayerArray& fragments) {
+    void split_fragments(PlayerArray fragments) {
         int fragments_count = fragments.length();
+
+        // Сортировка фрагментов по массе. При совпадении массы - по индексу.
+        // Фрагменты с большим значением критерия после сортировки окажутся ближе к началу.
+        std::sort(fragments.begin(), fragments.end(), [] (const Player* lhs, const Player* rhs) {
+            return
+                std::make_tuple(lhs->getM(), lhs->get_fId()) >
+                std::make_tuple(rhs->getM(), rhs->get_fId());
+        });
 
         for (Player *frag : fragments) {
 
             if (frag->can_split(fragments_count)) {
                 int max_fId = get_max_fragment_id(frag->getId());
-                QString old_id = frag->id_to_str();
 
                 Player *new_frag= frag->split_now(max_fId);
                 player_array.push_back(new_frag);
                 fragments_count++;
 
+                QString old_id = frag->id_to_str();
                 logger->write_add_cmd(tick, new_frag);
                 logger->write_change_mass_id(tick, old_id, frag);
             }
