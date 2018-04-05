@@ -38,10 +38,7 @@ public:
     virtual ~Player() {}
 
     QString id_to_str() const {
-        if (fragmentId > 0) {
-            return QString::number(id) + "." + QString::number(fragmentId);
-        }
-        return QString::number(id);
+        return QString::number(id) + "." + QString::number(fragmentId);
     }
 
     int get_fId() const {
