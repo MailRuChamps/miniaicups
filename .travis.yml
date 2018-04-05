@@ -1,0 +1,10 @@
+sudo: required
+
+services:
+  - docker
+  
+env:
+- TEST_DIR=./agario/dockers/c_sharp/
+
+script:
+- cd $TEST_DIR && . ./test.sh
