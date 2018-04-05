@@ -254,7 +254,7 @@ public:
     }
 
     bool can_split(int yet_cnt) {
-        if (yet_cnt + 1 <= Constants::instance().MAX_FRAGS_CNT) {
+        if (yet_cnt < Constants::instance().MAX_FRAGS_CNT) {
             if (mass > MIN_SPLIT_MASS) {
                 return true;
             }
