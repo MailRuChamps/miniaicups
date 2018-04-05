@@ -39,7 +39,6 @@ public:
     double INERTION_FACTOR;     // 10.0
     double VISCOSITY;           // 0.25
     double SPEED_FACTOR;        // 25.0
-    double RADIUS_FACTOR;       // 2.0
 
     double FOOD_MASS;           // 1.0
     double VIRUS_RADIUS;        // 22.0
@@ -92,7 +91,6 @@ public:
         SET_CONSTANT(INERTION_FACTOR, "10.0", toDouble);
         SET_CONSTANT(VISCOSITY, "0.25", toDouble);
         SET_CONSTANT(SPEED_FACTOR, "25.0", toDouble);
-        SET_CONSTANT(RADIUS_FACTOR, "2.0", toDouble);
         SET_CONSTANT(FOOD_MASS, "1.0", toDouble);
         SET_CONSTANT(VIRUS_RADIUS, "22.0", toDouble);
         SET_CONSTANT(VIRUS_SPLIT_MASS, "80.0", toDouble);
@@ -147,18 +145,16 @@ const double VIRUS_MASS = 40.0;
 
 const int START_PLAYER_SETS = 1;
 const int START_PLAYER_OFFSET = 400;
-const double PLAYER_RADIUS = 12.65;
+const double PLAYER_RADIUS_FACTOR = 2;
 const double PLAYER_MASS = 40.0;
+const double PLAYER_RADIUS = PLAYER_RADIUS_FACTOR * std::sqrt(PLAYER_MASS);
 
 const double VIS_FACTOR = 4.0; // vision = radius * VF
 const double VIS_FACTOR_FR = 2.5; // vision = radius * VFF * qSqrt(fragments.count())
 const double VIS_SHIFT = 10.0; // dx = qCos(angle) * VS; dy = qSin(angle) * VS
 const double DRAW_SPEED_FACTOR = 14.0;
-//const double INERTION_FACTOR = 10.0;
 
 const double COLLISION_POWER = 20.;
-//const double SPEED_FACTOR = 25.0; // speed = SF / sqrt(mass)
-//const double RADIUS_FACTOR = 2.0; // radius = RF * sqrt(mass)
 const double MASS_EAT_FACTOR = 1.20; // mass > food.mass * MEF
 const double DIAM_EAT_FACTOR = 2./3.; // dist - eject->getR() + (eject->getR() * 2) * DIAM_EAT_FACTOR < radius
 
