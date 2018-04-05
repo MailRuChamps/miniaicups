@@ -1,10 +1,13 @@
-local_runner/*.pro.user
-local_runner/.qmake.stash
-local_runner/local_runner.app
-local_runner/*plugin_import*
-local_runner/*.o
-local_runner/moc*.cpp
-local_runner/moc*.h
+.dockerignore
+Dockerfile
 
-local_runner/ui_*.h
-local_runner/Makefile
+*.pro.user
+.qmake.stash
+local_runner.app
+*plugin_import*
+*.o
+moc*.cpp
+moc*.h
+
+ui_*.h
+Makefile
