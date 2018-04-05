@@ -29,6 +29,7 @@ private:
     int timerId;
     bool is_paused;
 
+    QMap<int, bool> player_vision;
 public:
     explicit MainWindow(QWidget *parent = 0) :
         QMainWindow(parent),
@@ -48,6 +49,16 @@ public:
         } else {
             ui->txt_seed->setText(QString::fromStdString(Constants::instance().SEED));
         }
+
+        ui->tableWidget->setSelectionMode(QAbstractItemView::NoSelection);
+        ui->tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        ui->tableWidget->setFocusPolicy(Qt::NoFocus);
+        ui->tableWidget->resizeColumnsToContents();
+        ui->tableWidget->resizeRowsToContents();
+        ui->tableWidget->setSortingEnabled(true);
+        ui->tableWidget->sortByColumn(2, Qt::DescendingOrder);
+        ui->tableWidget->horizontalHeader()->setSortIndicatorShown(true);
+        ui->tableWidget->verticalHeader()->hide();
 
         ui->txt_ticks->setText("0");
         connect(ui->btn_start_pause, SIGNAL(pressed()), this, SLOT(init_game()));
@@ -81,6 +92,9 @@ public slots:
         std::string seed = ui->txt_seed->text().toStdString();
         ui->btn_start_pause->setText("Пауза");
 
+        ui->tableWidget->setSortingEnabled(false);
+        ui->tableWidget->setRowCount(0);
+
         mechanic->init_objects(seed, [this] (Player *player) {
             int pId = player->getId();
             player->set_color(sm->get_color(pId));
@@ -90,8 +104,41 @@ public slots:
             if (custom != NULL) {
                 connect(custom, SIGNAL(error(QString)), this, SLOT(on_error(QString)));
             }
+
+            int row = ui->tableWidget->rowCount();
+            ui->tableWidget->insertRow(row);
+
+            int col = 0;
+
+            ui->tableWidget->setItem(row, col++, new QTableWidgetItem(QString::number(pId)));
+            ui->tableWidget->setItem(row, col++, new QTableWidgetItem(sm->get_color_name(pId)));
+            ui->tableWidget->setItem(row, col++, new QTableWidgetItem("0"));
+
+            //centered checkbox
+            QWidget *widget = new QWidget(this);
+            QCheckBox *checkBox = new QCheckBox(widget);
+            QHBoxLayout *layout = new QHBoxLayout(widget);
+            layout->addWidget(checkBox);
+            layout->setAlignment(Qt::AlignCenter);
+            layout->setContentsMargins(0,0,0,0);
+            widget->setLayout(layout);
+            checkBox->setProperty("pId", pId);
+            checkBox->setChecked(player_vision.value(pId));
+            connect(checkBox, SIGNAL(toggled(bool)), this, SLOT(set_vision(bool)));
+            ui->tableWidget->setCellWidget(row, col++, widget);
+
             return strategy;
         });
+
+        for (int row = 0; row < ui->tableWidget->rowCount(); ++row)
+            for (int col = 0; col < ui->tableWidget->columnCount() - 1; ++col)
+                ui->tableWidget->item(row, col)->setTextAlignment(Qt::AlignCenter);
+
+
+        ui->tableWidget->resizeColumnsToContents();
+        ui->tableWidget->resizeRowsToContents();
+        ui->tableWidget->setSortingEnabled(true);
+
         this->update();
     }
 
@@ -103,6 +150,13 @@ public slots:
         mbox->exec();
     }
 
+    void set_vision(bool b) {
+        auto cb = (QCheckBox*)QObject::sender();
+        auto pid = cb->property("pId").toInt();
+        player_vision[pid] = b;
+        update();
+    }
+
     void clear_game() {
         if (timerId > 0) {
             killTimer(timerId);
@@ -110,7 +164,6 @@ public slots:
             timerId = -1;
         }
         ui->txt_ticks->setText("");
-        ui->leaders->clear();
         mechanic->clear_objects(false);
         ui->btn_start_pause->setText("Старт");
         this->update();
@@ -151,7 +204,8 @@ public:
         bool show_speed = ui->cbx_speed->isChecked();
         bool show_cmd = ui->cbx_forces->isChecked();
         bool show_fogs = ui->cbx_fog->isChecked();
-        mechanic->paintEvent(painter, show_speed, show_fogs, show_cmd);
+
+        mechanic->paintEvent(painter, show_speed, show_fogs, show_cmd, player_vision);
     }
 
     void timerEvent(QTimerEvent *event) {
@@ -161,7 +215,7 @@ public:
             this->update();
 
             if (tick % Constants::instance().BASE_TICK == 0 && tick != 0) {
-                show_leaders();
+                update_score();
             }
             if (tick % Constants::instance().GAME_TICKS == 0 && tick != 0) {
                 finish_game();
@@ -186,23 +240,18 @@ public:
         mechanic->keyPressEvent(event);
     }
 
-    void show_leaders() {
-        QList<QPair<int, int>> scores_list;
+    void update_score() {
         QMap<int, int> scores = mechanic->get_scores();
-        for (int player_id : scores.keys()) {
-            scores_list.append(QPair<int, int>(player_id, scores[player_id]));
-        }
-        qSort(scores_list.begin(), scores_list.end(), [] (QPair<int, int> &a, QPair<int, int> &b) {
-            return a.second > b.second;
-        });
 
-        ui->leaders->clear();
-        for (auto const& pair : scores_list) {
-            QString line = "" + sm->get_color_name(pair.first) + " =" + QString::number(pair.second);
-            ui->leaders->addItem(line);
+        ui->tableWidget->setSortingEnabled(false);
+
+        for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
+            int pId = ui->tableWidget->item(row, 0)->data(Qt::DisplayRole).toInt();
+            ui->tableWidget->item(row, 2)->setData(Qt::DisplayRole, scores.value(pId));
         }
-        ui->leaders->update();
-    }
+
+         ui->tableWidget->setSortingEnabled(true);
+     }
 };
 
 #endif // MAINWINDOW_H
