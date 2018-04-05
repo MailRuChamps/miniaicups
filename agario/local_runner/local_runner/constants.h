@@ -10,6 +10,7 @@
 #include <QProcessEnvironment>
 #include <random>
 #include <QSettings>
+#include <QJsonObject>
 
 // yes ugly
 #define DEFINE_QSETTINGS(VARIABLE_NAME) QSettings VARIABLE_NAME("LocalRunner.ini", QSettings::IniFormat)
@@ -108,6 +109,26 @@ public:
         c.SEED = env.value("SEED", "").toStdString();
 
         return c;
+    }
+
+    QJsonObject toJson() const {
+        Constants &ins = Constants::instance();
+        QJsonObject jsonConfig;
+        jsonConfig.insert("GAME_WIDTH", QJsonValue(ins.GAME_WIDTH));
+        jsonConfig.insert("GAME_HEIGHT", QJsonValue(ins.GAME_HEIGHT));
+        jsonConfig.insert("GAME_TICKS", QJsonValue(ins.GAME_TICKS));
+
+        jsonConfig.insert("FOOD_MASS", QJsonValue(ins.FOOD_MASS));
+        jsonConfig.insert("MAX_FRAGS_CNT", QJsonValue(ins.MAX_FRAGS_CNT));
+        jsonConfig.insert("TICKS_TIL_FUSION", QJsonValue(ins.TICKS_TIL_FUSION));
+        jsonConfig.insert("VIRUS_RADIUS", QJsonValue(ins.VIRUS_RADIUS));
+        jsonConfig.insert("VIRUS_SPLIT_MASS", QJsonValue(ins.VIRUS_SPLIT_MASS));
+
+        jsonConfig.insert("VISCOSITY", QJsonValue(ins.VISCOSITY));
+        jsonConfig.insert("INERTION_FACTOR", QJsonValue(ins.INERTION_FACTOR));
+        jsonConfig.insert("SPEED_FACTOR", QJsonValue(ins.SPEED_FACTOR));
+
+        return jsonConfig;
     }
 
 private:
