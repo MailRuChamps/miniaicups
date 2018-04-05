@@ -207,13 +207,27 @@
        </widget>
       </item>
       <item>
-       <widget class="QListWidget" name="leaders">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>75</height>
-         </size>
-        </property>
+       <widget class="QTableWidget" name="tableWidget">
+        <column>
+         <property name="text">
+          <string>Id</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Игрок</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Счет</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Обзор</string>
+         </property>
+        </column>
        </widget>
       </item>
       <item>
@@ -287,7 +301,6 @@
   <tabstop>cbx_speed</tabstop>
   <tabstop>cbx_forces</tabstop>
   <tabstop>cbx_fog</tabstop>
-  <tabstop>leaders</tabstop>
  </tabstops>
  <resources/>
  <connections/>

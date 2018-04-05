@@ -102,24 +102,54 @@ public:
         strategy_array.clear();
     }
 
-    void paintEvent(QPainter &painter, bool show_speed, bool show_fogs, bool show_cmd) {
+    bool isSeenBySomeone(Circle *target, const QMap<int, bool> &player_vision){
+        for (Player *player : player_array) {
+            if (player_vision.value(player->getId()) && player->can_see(target)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void paintEvent(QPainter &painter, bool show_speed, bool show_fogs, bool show_cmd, const QMap<int, bool> &player_vision) {
+        bool fullVision = !player_vision.values().contains(true);
+
+        if (!fullVision) {
+            //draw fog everywhere
+            painter.save();
+            painter.setBrush(Qt::GlobalColor(Qt::gray));
+            painter.fillRect(0, 0, Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT, Qt::Dense6Pattern);
+            painter.restore();
+
+            //clear fog for players with vision enabled
+            for (Player *player : player_array) {
+                if (player_vision.value(player->getId()))
+                    player->clear_vision_area(painter);
+            }
+
+        }
+
         if (show_fogs) {
             for (Player *player : player_array) {
-                player->draw_vision_line(painter);
+                if (fullVision || isSeenBySomeone(player, player_vision))
+                    player->draw_vision_line(painter);
             }
         }
 
         for (Food *food : food_array) {
-            food->draw(painter);
+            if (fullVision || isSeenBySomeone(food, player_vision))
+                food->draw(painter);
         }
         for (Ejection *eject : eject_array) {
-            eject->draw(painter);
+            if (fullVision || isSeenBySomeone(eject, player_vision))
+                eject->draw(painter);
         }
         std::sort(player_array.begin(), player_array.end(), [] (Player *lhs, Player *rhs) {
             return lhs->getR() < rhs->getR();
         });
         for (Player *player : player_array) {
-            player->draw(painter, show_speed, show_cmd);
+            if (fullVision || player_vision.value(player->getId()) || isSeenBySomeone(player, player_vision))
+                player->draw(painter, show_speed, show_cmd);
         }
         for (Virus *virus : virus_array) {
             virus->draw(painter);

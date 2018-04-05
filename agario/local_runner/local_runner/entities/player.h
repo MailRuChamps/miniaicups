@@ -146,26 +146,26 @@ public:
         return (qdist < (vision_radius + circle->getR()) * (vision_radius + circle->getR()));
     }
 
-    void draw_vision(QPainter &painter) const {
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(Qt::lightGray);
-        int ix = int(x), iy = int(y);
-        int ivr = int(vision_radius);
+    void draw_vision_ellipse(QPainter &painter) const {
+        double xVisionCenter = x + qCos(angle) * VIS_SHIFT;
+        double yVisionCenter = y + qSin(angle) * VIS_SHIFT;
 
-        int xShift = int(qCos(angle) * VIS_SHIFT), yShift = int(qSin(angle) * VIS_SHIFT);
-        int arcX = ix + xShift, arcY = iy + yShift;
-        painter.drawEllipse(QPoint(arcX, arcY), ivr, ivr);
+        painter.drawEllipse(QPointF(xVisionCenter, yVisionCenter), vision_radius, vision_radius);
+    }
+
+    void clear_vision_area(QPainter &painter) const {
+        painter.setPen(Qt::white);
+        painter.setBrush(Qt::white);
+
+        draw_vision_ellipse(painter);
     }
 
     void draw_vision_line(QPainter &painter) const {
         painter.setPen(QPen(QBrush(Qt::black), 1, Qt::DashLine));
-        int ix = int(x), iy = int(y), ir = int(radius);
-        int ivr = int(vision_radius);
+        painter.setBrush(Qt::transparent);
 
-        int xShift = int(qCos(angle) * VIS_SHIFT), yShift = int(qSin(angle) * VIS_SHIFT);
-        int arcX = ix - ivr + xShift, arcY = iy - ivr + yShift;
-        painter.drawArc(arcX, arcY, ivr * 2, ivr * 2, 0, 360 * 16);
-    }
+        draw_vision_ellipse(painter);
+     }
 
     double can_eat(Circle *food) const {
         if (food->is_player() && food->getId() == id) {
