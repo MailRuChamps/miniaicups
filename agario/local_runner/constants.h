@@ -111,6 +111,7 @@ public:
 
     QJsonObject toJson() const {
         return {
+            {"TICK_MS", TICK_MS},
             {"GAME_WIDTH", GAME_WIDTH},
             {"GAME_HEIGHT", GAME_HEIGHT},
             {"GAME_TICKS", GAME_TICKS},
