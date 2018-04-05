@@ -198,7 +198,7 @@ public:
             return false;
         }
         int frags_cnt = int(mass / MIN_BURST_MASS);
-        if (frags_cnt > 1 && yet_cnt + 1 <= Constants::instance().MAX_FRAGS_CNT) {
+        if (frags_cnt > 1 && rest_fragments_count(yet_cnt) > 0) {
             return true;
         }
         return false;
@@ -227,10 +227,7 @@ public:
     QVector<Player*> burst_now(int max_fId, int yet_cnt) {
         QVector<Player*> fragments;
         int new_frags_cnt = int(mass / MIN_BURST_MASS) - 1;
-        int max_cnt = Constants::instance().MAX_FRAGS_CNT - yet_cnt;
-        if (new_frags_cnt > max_cnt) {
-            new_frags_cnt = max_cnt;
-        }
+        new_frags_cnt = std::min(new_frags_cnt, rest_fragments_count(yet_cnt));
 
         double new_mass = mass / (new_frags_cnt + 1);
         double new_radius = mass2radius(new_mass);
@@ -254,7 +251,9 @@ public:
     }
 
     bool can_split(int yet_cnt) {
-        if (yet_cnt + 1 <= Constants::instance().MAX_FRAGS_CNT) {
+
+        if (rest_fragments_count(yet_cnt) > 0) {
+
             if (mass > MIN_SPLIT_MASS) {
                 return true;
             }
@@ -524,6 +523,15 @@ public:
 
     static double mass2radius(double mass) {
         return PLAYER_RADIUS_FACTOR * std::sqrt(mass);
+    }
+private:
+    /**
+     * @param existingFragmentsCount число фрагментов игрока
+     * @return максимально возможное число фрагментов, которое может дополнительно появиться у игрока в результате
+     * взрыва / деления
+     */
+    static int rest_fragments_count(const int existingFragmentsCount) {
+        return Constants::instance().MAX_FRAGS_CNT - existingFragmentsCount;
     }
 };
 
