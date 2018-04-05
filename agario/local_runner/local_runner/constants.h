@@ -12,7 +12,9 @@
 #include <QSettings>
 
 // yes ugly
-#define DEFINE_QSETTINGS(VARIABLE_NAME) QSettings VARIABLE_NAME("LocalRunner.ini", QSettings::IniFormat)
+#define DEFINE_QSETTINGS(VARIABLE_NAME)                                   \
+        QSettings VARIABLE_NAME("LocalRunner.ini", QSettings::IniFormat); \
+        VARIABLE_NAME.setIniCodec("Utf-8");
 
 struct Constants
 {

@@ -108,12 +108,12 @@ public:
 
     Qt::GlobalColor get_color(int playerId) const {
         QString color = get_color_name(playerId);
-        if (color == "Красный") return Qt::red;
-        else if (color == "Зеленый") return Qt::green;
-        else if (color == "Синий") return Qt::blue;
-        else if (color == "Желтый") return Qt::yellow;
+             if (color == "Красный")    return Qt::red;
+        else if (color == "Зеленый")    return Qt::green;
+        else if (color == "Синий")      return Qt::blue;
+        else if (color == "Желтый")     return Qt::yellow;
         else if (color == "Фиолетовый") return Qt::magenta;
-        else if (color == "Бирюзовый") return Qt::cyan;
+        else if (color == "Бирюзовый")  return Qt::cyan;
         return Qt::black;
     }
 
@@ -162,6 +162,12 @@ public slots:
             settings.setValue("color", color);
         }
         settings.endArray();
+        settings.beginGroup("valid_params");
+            settings.setValue("Custom","Ваша стратегия");
+            settings.setValue("Comp",  "Стратегия предлагаемая организаторами");
+            settings.setValue("Mouse", "Ручное управление (мышка)");
+            settings.setValue("color", "Красный Зеленый Синий Желтый Фиолетовый Бирюзовый");
+        settings.endGroup();
     }
 };
 
