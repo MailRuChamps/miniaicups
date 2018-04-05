@@ -233,7 +233,7 @@ public:
         }
 
         double new_mass = mass / (new_frags_cnt + 1);
-        double new_radius = Constants::instance().RADIUS_FACTOR * qSqrt(new_mass);
+        double new_radius = mass2radius(new_mass);
 
         for (int I = 0; I < new_frags_cnt; I++) {
             int new_fId = max_fId + I + 1;
@@ -264,7 +264,7 @@ public:
 
     Player *split_now(int max_fId) {
         double new_mass = mass / 2;
-        double new_radius = Constants::instance().RADIUS_FACTOR * qSqrt(new_mass);
+        double new_radius = mass2radius(new_mass);
 
         Player *new_player = new Player(id, x, y, new_radius, new_mass, max_fId + 1);
         new_player->set_color(color);
@@ -372,14 +372,14 @@ public:
         new_eject->set_impulse(EJECT_START_SPEED, angle);
 
         mass -= EJECT_MASS;
-        radius = Constants::instance().RADIUS_FACTOR * qSqrt(mass);
+        radius = mass2radius(mass);
         score += SCORE_FOR_EJECT;
         return new_eject;
     }
 
     bool update_by_mass(int max_x, int max_y) {
         bool changed = false;
-        double new_radius = Constants::instance().RADIUS_FACTOR * qSqrt(mass);
+        double new_radius = mass2radius(mass);
         if (radius != new_radius) {
             radius = new_radius;
             changed = true;
@@ -498,7 +498,7 @@ public:
 
     void shrink_now() {
         mass -= ((mass - MIN_SHRINK_MASS) * SHRINK_FACTOR);
-        radius = Constants::instance().RADIUS_FACTOR * qSqrt(mass);
+        radius = mass2radius(mass);
     }
 
 public:
@@ -520,6 +520,10 @@ public:
             objData.insert("T", QJsonValue("P"));
         }
         return objData;
+    }
+
+    static double mass2radius(double mass) {
+        return PLAYER_RADIUS_FACTOR * std::sqrt(mass);
     }
 };
 
