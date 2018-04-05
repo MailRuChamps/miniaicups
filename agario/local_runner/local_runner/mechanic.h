@@ -63,6 +63,8 @@ public:
                                 // он используется, например, в умолчальной стратегии
         logger->init_file(QString::number(simple_seeds[0]), LOG_FILE, false);
 
+        Constants::reInitialize();
+
         add_player(START_PLAYER_SETS, get_strategy);
         add_food(START_FOOD_SETS);
         add_virus(START_VIRUS_SETS);

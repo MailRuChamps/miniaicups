@@ -14,6 +14,23 @@
 // yes ugly
 #define DEFINE_QSETTINGS(VARIABLE_NAME) QSettings VARIABLE_NAME("LocalRunner.ini", QSettings::IniFormat)
 
+const int FRAGS_CNT_MIN = 4;
+const int FRAGS_CNT_MAX = 16;
+const double SPEED_FACTOR_MIN = 25.0;
+const double SPEED_FACTOR_MAX = 100.0;
+const double INERTION_FACTOR_MIN = 1.0;
+const double INERTION_FACTOR_MAX = 20.0;
+const double VISCOSITY_MIN = 0.05;
+const double VISCOSITY_MAX = 0.5;
+const double FOOD_MASS_MIN = 1.0;
+const double FOOD_MASS_MAX = 4.0;
+const double VIRUS_RADIUS_MIN = 15.0;
+const double VIRUS_RADIUS_MAX = 40.0;
+const double VIRUS_SPLIT_MASS_MIN = 50.0;
+const double VIRUS_SPLIT_MASS_MAX = 100.0;
+const double TICKS_TIL_FUSION_MIN = 150;
+const double TICKS_TIL_FUSION_MAX = 500;
+
 struct Constants
 {
 private:
@@ -30,22 +47,22 @@ public:
     int GAME_WIDTH;             // 660
     int GAME_HEIGHT;            // 660
     int SUM_RESP_TIMEOUT;       // 500 secs
-    int RESP_TIMEOUT;           // 5 sec
 
     int TICK_MS;                // 16 ms
     int BASE_TICK;              // every 50 ticks
+    double RADIUS_FACTOR;       // 2.0
+    int RESP_TIMEOUT;           // 5 sec
+
     std::string SEED;           // from std::random_device
 
-    double INERTION_FACTOR;     // 10.0
-    double VISCOSITY;           // 0.25
-    double SPEED_FACTOR;        // 25.0
-    double RADIUS_FACTOR;       // 2.0
-
     double FOOD_MASS;           // 1.0
-    double VIRUS_RADIUS;        // 22.0
-    double VIRUS_SPLIT_MASS;    // 80.0
     int MAX_FRAGS_CNT;          // 10
     int TICKS_TIL_FUSION;       // 250 ticks
+    double VIRUS_RADIUS;        // 22.0
+    double VIRUS_SPLIT_MASS;    // 80.0
+    double VISCOSITY;           // 0.25
+    double INERTION_FACTOR;     // 10.0
+    double SPEED_FACTOR;        // 25.0
 
     static Constants &instance() {
         static Constants ins;
@@ -89,16 +106,20 @@ public:
 
         SET_CONSTANT(TICK_MS, "16", toInt);
         SET_CONSTANT(BASE_TICK, "50", toInt);
-        SET_CONSTANT(INERTION_FACTOR, "10.0", toDouble);
-        SET_CONSTANT(VISCOSITY, "0.25", toDouble);
-        SET_CONSTANT(SPEED_FACTOR, "25.0", toDouble);
         SET_CONSTANT(RADIUS_FACTOR, "2.0", toDouble);
-        SET_CONSTANT(FOOD_MASS, "1.0", toDouble);
-        SET_CONSTANT(VIRUS_RADIUS, "22.0", toDouble);
-        SET_CONSTANT(VIRUS_SPLIT_MASS, "80.0", toDouble);
-        SET_CONSTANT(MAX_FRAGS_CNT, "10", toInt);
-        SET_CONSTANT(TICKS_TIL_FUSION, "250", toInt);
         SET_CONSTANT(RESP_TIMEOUT, "5", toInt);
+        settings.endGroup();
+
+        settings.beginGroup("random_values");
+
+        SET_CONSTANT(FOOD_MASS       , "1.0" , toDouble);
+        SET_CONSTANT(MAX_FRAGS_CNT   , "10"  , toInt);
+        SET_CONSTANT(TICKS_TIL_FUSION, "250" , toInt);
+        SET_CONSTANT(VIRUS_RADIUS    , "22.0", toDouble);
+        SET_CONSTANT(VIRUS_SPLIT_MASS, "80.0", toDouble);
+        SET_CONSTANT(VISCOSITY       , "0.25", toDouble);
+        SET_CONSTANT(INERTION_FACTOR , "10.0", toDouble);
+        SET_CONSTANT(SPEED_FACTOR    , "25.0", toDouble);
 
 #undef SET_CONSTANT
 
@@ -108,6 +129,22 @@ public:
         c.SEED = env.value("SEED", "").toStdString();
 
         return c;
+    }
+
+    static reInitialize() {
+        Constants& c = instance();
+        DEFINE_QSETTINGS(settings);
+        settings.beginGroup("random_values");
+        if (settings.value("FOOD_MASS").toDouble()       < FOOD_MASS_MIN        || FOOD_MASS_MAX        < settings.value("FOOD_MASS").toDouble()       ) c.FOOD_MASS        = FOOD_MASS_MIN       + (FOOD_MASS_MAX        - FOOD_MASS_MIN       )/10000.0*(qrand()%10000);
+        if (settings.value("MAX_FRAGS_CNT").toInt()      < FRAGS_CNT_MIN        || FRAGS_CNT_MAX        < settings.value("MAX_FRAGS_CNT").toInt()      ) c.MAX_FRAGS_CNT    = FRAGS_CNT_MIN       + (FRAGS_CNT_MAX        - FRAGS_CNT_MIN       )/10000.0*(qrand()%10000);
+        if (settings.value("TICKS_TIL_FUSION").toInt()   < TICKS_TIL_FUSION_MIN || TICKS_TIL_FUSION_MAX < settings.value("TICKS_TIL_FUSION").toInt()   ) c.TICKS_TIL_FUSION = TICKS_TIL_FUSION_MIN+ (TICKS_TIL_FUSION_MAX - TICKS_TIL_FUSION_MIN)/10000.0*(qrand()%10000);
+        if (settings.value("VIRUS_RADIUS").toDouble()    < VIRUS_RADIUS_MIN     || VIRUS_RADIUS_MAX     < settings.value("VIRUS_RADIUS").toDouble()    ) c.VIRUS_RADIUS     = VIRUS_RADIUS_MIN    + (VIRUS_RADIUS_MAX     - VIRUS_RADIUS_MIN    )/10000.0*(qrand()%10000);
+        if (settings.value("VIRUS_SPLIT_MASS").toDouble()< VIRUS_SPLIT_MASS_MIN || VIRUS_SPLIT_MASS_MAX < settings.value("VIRUS_SPLIT_MASS").toDouble()) c.VIRUS_SPLIT_MASS = VIRUS_SPLIT_MASS_MIN+ (VIRUS_SPLIT_MASS_MAX - VIRUS_SPLIT_MASS_MIN)/10000.0*(qrand()%10000);
+        if (settings.value("VISCOSITY").toDouble()       < VISCOSITY_MIN        || VISCOSITY_MAX        < settings.value("VISCOSITY").toDouble()       ) c.VISCOSITY        = VISCOSITY_MIN       + (VISCOSITY_MAX        - VISCOSITY_MIN       )/10000.0*(qrand()%10000);
+        if (settings.value("INERTION_FACTOR").toDouble() < INERTION_FACTOR_MIN  || INERTION_FACTOR_MAX  < settings.value("INERTION_FACTOR").toDouble() ) c.INERTION_FACTOR  = INERTION_FACTOR_MIN + (INERTION_FACTOR_MAX  - INERTION_FACTOR_MIN )/10000.0*(qrand()%10000);
+        if (settings.value("SPEED_FACTOR").toDouble()    < SPEED_FACTOR_MIN     || SPEED_FACTOR_MAX     < settings.value("SPEED_FACTOR").toDouble()    ) c.SPEED_FACTOR     = SPEED_FACTOR_MIN    + (SPEED_FACTOR_MAX     - SPEED_FACTOR_MIN    )/10000.0*(qrand()%10000);
+        settings.endGroup();
+        qDebug() << c.FOOD_MASS << c.MAX_FRAGS_CNT << c.TICKS_TIL_FUSION << c.VIRUS_RADIUS << c.VIRUS_SPLIT_MASS << c.VISCOSITY << c.INERTION_FACTOR << c.SPEED_FACTOR;
     }
 
 private:
@@ -215,6 +252,5 @@ const QString CLIENT_DISCONNECTED = "Решение отключилось от 
 
 const int MAX_GAME_FOOD = 2000;
 const int MAX_GAME_VIRUS = 20;
-
 
 #endif // CONSTANTS_H

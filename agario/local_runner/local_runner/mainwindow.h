@@ -6,6 +6,7 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 #include <QMessageBox>
+#include <QTime>
 
 #include "constants.h"
 #include "strategymodal.h"
@@ -52,14 +53,13 @@ public:
         ui->txt_ticks->setText("0");
         connect(ui->btn_start_pause, SIGNAL(pressed()), this, SLOT(init_game()));
         connect(ui->btn_stop, SIGNAL(pressed()), this, SLOT(clear_game()));
+        connect(ui->btn_newSeed, SIGNAL(pressed()), this, SLOT(generate_world()));
 
         connect(ui->cbx_forces, SIGNAL(stateChanged(int)), this, SLOT(update()));
         connect(ui->cbx_speed, SIGNAL(stateChanged(int)), this, SLOT(update()));
         connect(ui->cbx_fog, SIGNAL(stateChanged(int)), this, SLOT(update()));
 
         connect(ui->btn_strategies_settings, &QPushButton::clicked, sm, &QDialog::show);
-
-        ui->btn_newSeed->setVisible(false);
     }
 
     ~MainWindow() {
@@ -68,14 +68,18 @@ public:
         if (sm) delete sm;
     }
 
-
-
 public slots:
+    void generate_world() {
+        ui->txt_seed->setText(QTime::currentTime().toString("hhmmsszzz"));
+//        Constants::reInitialize();
+    }
+
     void init_game() {
         if (timerId > 0) {
             pause_game();
             return;
         }
+        ui->btn_newSeed->setEnabled(false);
         timerId = startTimer(Constants::instance().TICK_MS);
 
         std::string seed = ui->txt_seed->text().toStdString();
@@ -113,6 +117,7 @@ public slots:
         ui->leaders->clear();
         mechanic->clear_objects(false);
         ui->btn_start_pause->setText("Старт");
+        ui->btn_newSeed->setEnabled(true);
         this->update();
     }
 
