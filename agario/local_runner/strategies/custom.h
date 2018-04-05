@@ -107,33 +107,14 @@ public slots:
 
 public:
     void send_config() {
-        QString message = prepare_config();
+        QJsonDocument jsonDoc(Constants::instance().toJson());
+        QString message = QString(jsonDoc.toJson(QJsonDocument::Compact)) + "\n";
+
         qDebug() << message;
         int sent = solution->write(message.toStdString().c_str());
         if (sent == 0) {
             emit error("Can't write config to process");
         }
-    }
-
-    QString prepare_config() {
-        Constants &ins = Constants::instance();
-        QJsonObject jsonConfig;
-        jsonConfig.insert("GAME_WIDTH", QJsonValue(ins.GAME_WIDTH));
-        jsonConfig.insert("GAME_HEIGHT", QJsonValue(ins.GAME_HEIGHT));
-        jsonConfig.insert("GAME_TICKS", QJsonValue(ins.GAME_TICKS));
-
-        jsonConfig.insert("FOOD_MASS", QJsonValue(ins.FOOD_MASS));
-        jsonConfig.insert("MAX_FRAGS_CNT", QJsonValue(ins.MAX_FRAGS_CNT));
-        jsonConfig.insert("TICKS_TIL_FUSION", QJsonValue(ins.TICKS_TIL_FUSION));
-        jsonConfig.insert("VIRUS_RADIUS", QJsonValue(ins.VIRUS_RADIUS));
-        jsonConfig.insert("VIRUS_SPLIT_MASS", QJsonValue(ins.VIRUS_SPLIT_MASS));
-
-        jsonConfig.insert("VISCOSITY", QJsonValue(ins.VISCOSITY));
-        jsonConfig.insert("INERTION_FACTOR", QJsonValue(ins.INERTION_FACTOR));
-        jsonConfig.insert("SPEED_FACTOR", QJsonValue(ins.SPEED_FACTOR));
-
-        QJsonDocument jsonDoc(jsonConfig);
-        return QString(jsonDoc.toJson(QJsonDocument::Compact)) + "\n";
     }
 
     QString prepare_state(const PlayerArray &fragments, const CircleArray &visibles) {
