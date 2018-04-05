@@ -10,6 +10,7 @@
 #include <QProcessEnvironment>
 #include <random>
 #include <QSettings>
+#include <QJsonObject>
 
 // yes ugly
 #define DEFINE_QSETTINGS(VARIABLE_NAME) QSettings VARIABLE_NAME("LocalRunner.ini", QSettings::IniFormat)
@@ -106,6 +107,24 @@ public:
         c.SEED = env.value("SEED", "").toStdString();
 
         return c;
+    }
+
+    QJsonObject toJson() const {
+        return {
+            {"GAME_WIDTH", GAME_WIDTH},
+            {"GAME_HEIGHT", GAME_HEIGHT},
+            {"GAME_TICKS", GAME_TICKS},
+
+            {"FOOD_MASS", FOOD_MASS},
+            {"MAX_FRAGS_CNT", MAX_FRAGS_CNT},
+            {"TICKS_TIL_FUSION", TICKS_TIL_FUSION},
+            {"VIRUS_RADIUS", VIRUS_RADIUS},
+            {"VIRUS_SPLIT_MASS", VIRUS_SPLIT_MASS},
+
+            {"VISCOSITY", VISCOSITY},
+            {"INERTION_FACTOR", INERTION_FACTOR},
+            {"SPEED_FACTOR", SPEED_FACTOR},
+        };
     }
 
 private:
