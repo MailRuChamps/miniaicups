@@ -177,7 +177,7 @@ const double COLLISION_POWER = 20.;
 const double MASS_EAT_FACTOR = 1.20; // mass > food.mass * MEF
 const double DIAM_EAT_FACTOR = 2./3.; // dist - eject->getR() + (eject->getR() * 2) * DIAM_EAT_FACTOR < radius
 
-const double RAD_HURT_FACTOR = 2./3.; // (radius * RHF + player.radius) > dist
+const double RAD_HURT_FACTOR = 1./3.; // (radius * RHF + player.radius) > dist
 const double MIN_BURST_MASS = 60.0; // MBM * 2 < mass
 //const int MAX_FRAGS_CNT = 10;
 const double BURST_START_SPEED = 8.0;
