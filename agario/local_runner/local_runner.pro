@@ -28,6 +28,7 @@ HEADERS  += mainwindow.h \
     strategies/strategy.h \
     strategies/bymouse.h \
     entities/ejection.h \
+    entities/scores.h \
     strategymodal.h \
     strategies/custom.h
 

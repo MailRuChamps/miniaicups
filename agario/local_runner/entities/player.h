@@ -3,7 +3,7 @@
 
 #include "circle.h"
 #include "ejection.h"
-
+#include "scores.h"
 
 class Player : public Circle
 {
@@ -15,17 +15,17 @@ protected:
     double speed, angle;
     int fragmentId;
     int color;
-    int score;
+    Scores score;
     double vision_radius;
     double cmd_x, cmd_y;
 
 public:
-    explicit Player(int _id, double _x, double _y, double _radius, double _mass, const int fId=0) :
+    explicit Player(Scores strategy_scores, int _id, double _x, double _y, double _radius, double _mass, const int fId=0) :
         Circle(_id, _x, _y, _radius, _mass),
         is_fast(false),
         speed(0), angle(0),
         fragmentId(fId),
-        score(0),
+        score(strategy_scores),
         vision_radius(0),
         cmd_x(0), cmd_y(0)
     {
@@ -62,12 +62,6 @@ public:
 
     virtual bool is_player() const {
         return true;
-    }
-
-    int get_score() {
-        int _score = score;
-        score = 0;
-        return _score;
     }
 
     QPair<double, double> get_direct_norm() const {
@@ -235,7 +229,7 @@ public:
 
         for (int I = 0; I < new_frags_cnt; I++) {
             int new_fId = max_fId + I + 1;
-            Player *new_fragment = new Player(id, x, y, new_radius, new_mass, new_fId);
+            Player *new_fragment = new Player(score, id, x, y, new_radius, new_mass, new_fId);
             new_fragment->set_color(color);
             fragments.append(new_fragment);
 
@@ -266,7 +260,7 @@ public:
         double new_mass = mass / 2;
         double new_radius = mass2radius(new_mass);
 
-        Player *new_player = new Player(id, x, y, new_radius, new_mass, max_fId + 1);
+        Player *new_player = new Player(score, id, x, y, new_radius, new_mass, max_fId + 1);
         new_player->set_color(color);
         new_player->set_impulse(SPLIT_START_SPEED, angle);
 
@@ -373,7 +367,6 @@ public:
 
         mass -= EJECT_MASS;
         radius = mass2radius(mass);
-        score += SCORE_FOR_EJECT;
         return new_eject;
     }
 

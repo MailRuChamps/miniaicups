@@ -11,6 +11,7 @@
 #include "strategymodal.h"
 #include "mechanic.h"
 #include "ui_mainwindow.h"
+#include "entities/scores.h"
 
 namespace Ui {
     class MainWindow;
@@ -241,13 +242,13 @@ public:
     }
 
     void update_score() {
-        QMap<int, int> scores = mechanic->get_scores();
+        const QMap<int, Scores>& scores = mechanic->get_scores();
 
         ui->tableWidget->setSortingEnabled(false);
 
         for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
             int pId = ui->tableWidget->item(row, 0)->data(Qt::DisplayRole).toInt();
-            ui->tableWidget->item(row, 2)->setData(Qt::DisplayRole, scores.value(pId));
+            ui->tableWidget->item(row, 2)->setData(Qt::DisplayRole, int(scores.value(pId)));
         }
 
          ui->tableWidget->setSortingEnabled(true);

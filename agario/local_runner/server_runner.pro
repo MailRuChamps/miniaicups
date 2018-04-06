@@ -20,6 +20,7 @@ HEADERS  += mechanic.h \
     entities/virus.h \
     entities/player.h \
     entities/ejection.h \
+    entities/scores.h \
     tcp_server.h \
     tcp_connect.h
 

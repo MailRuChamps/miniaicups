@@ -12,6 +12,7 @@
 #include "entities/virus.h"
 #include "entities/player.h"
 #include "entities/ejection.h"
+#include "entities/scores.h"
 
 #include "strategies/strategy.h"
 #include "strategies/bymouse.h"
@@ -36,7 +37,7 @@ private:
     PlayerArray player_array;
     StrategyArray strategy_array;
     QMap<int, Direct> strategy_directs;
-    QMap<int, int> player_scores;
+    QMap<int, Scores> player_scores;
 
     std::mt19937_64 rand;
 
@@ -100,6 +101,7 @@ public:
             if (strategy) delete strategy;
         }
         strategy_array.clear();
+        player_scores.clear();
     }
 
     bool isSeenBySomeone(Circle *target, const QMap<int, bool> &player_vision){
@@ -173,7 +175,7 @@ public:
         burst_on_viruses();
 
         update_players_radius();
-        update_scores();
+        log_scores();
         split_viruses();
 
         if (tick % ADD_FOOD_DELAY == 0 && food_array.length() < MAX_GAME_FOOD) {
@@ -201,7 +203,7 @@ public:
             return true;
         }
         else if (livingIds.length() == 1) {
-            int living_score = player_scores[livingIds[0]];
+            unsigned living_score = player_scores[livingIds[0]];
             for (int pId : player_scores.keys()) {
                 if (pId != livingIds[0] && player_scores[pId] >= living_score) {
                     return false;
@@ -245,7 +247,7 @@ public:
             logger->write_add_cmd(tick, player);
         }
         for (int pId : player_scores.keys()) {
-            logger->write_player_score(tick, pId, player_scores[pId]);
+            logger->write_player_score(tick, pId, int(player_scores[pId]));
         }
     }
 
@@ -313,7 +315,7 @@ public:
             if (! is_space_empty(_x, _y, PLAYER_RADIUS)) {
                 return;
             }
-            Player *new_player = new Player(id_counter, _x, _y, PLAYER_RADIUS, PLAYER_MASS);
+            Player *new_player = new Player(player_scores[id_counter], id_counter, _x, _y, PLAYER_RADIUS, PLAYER_MASS);
             player_array.append(new_player);
             new_player->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
 
@@ -322,7 +324,6 @@ public:
             strategy_array.append(new_strategy);
 #endif
 
-            player_scores[id_counter] = 0;
             id_counter++;
             if (tick % Constants::instance().BASE_TICK != 0) {
                 logger->write_add_cmd(tick, new_player);
@@ -726,13 +727,13 @@ public:
         }
     }
 
-    void update_scores() {
-        for (Player *player : player_array) {
-            int score = player->get_score();
-            if (score > 0) {
-                int pId = player->getId();
-                player_scores[pId] += score;
-                logger->write_player_score(tick, pId, player_scores[pId]);
+    void log_scores() {
+
+        for (auto it = player_scores.begin(); it != player_scores.end(); ++it) {
+            Scores& scores = it.value();
+
+            if (scores.extract_changes() > 0) {
+                logger->write_player_score(tick, it.key(), int(scores));
             }
         }
     }
@@ -763,7 +764,7 @@ public:
         return player_scores[pId];
     }
 
-    QMap<int, int> get_scores() const {
+    const QMap<int, Scores>& get_scores() const {
         return player_scores;
     }
 };
