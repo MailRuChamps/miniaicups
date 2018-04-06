@@ -175,7 +175,7 @@ public:
         burst_on_viruses();
 
         update_players_radius();
-        update_scores();
+        log_scores();
         split_viruses();
 
         if (tick % ADD_FOOD_DELAY == 0 && food_array.length() < MAX_GAME_FOOD) {
@@ -727,7 +727,7 @@ public:
         }
     }
 
-    void update_scores() {
+    void log_scores() {
 
         for (auto it = player_scores.begin(); it != player_scores.end(); ++it) {
             Scores& scores = it.value();
