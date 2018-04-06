@@ -373,7 +373,6 @@ public:
 
         mass -= EJECT_MASS;
         radius = mass2radius(mass);
-        score += SCORE_FOR_EJECT;
         return new_eject;
     }
 
