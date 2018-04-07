@@ -15,6 +15,15 @@
 // yes ugly
 #define DEFINE_QSETTINGS(VARIABLE_NAME) QSettings VARIABLE_NAME("LocalRunner.ini", QSettings::IniFormat)
 
+const std::pair<int, int> FRAGS_CNT_RANGE       (  4,  16);
+const std::pair<int, int> TICKS_TIL_FUSION_RANGE(150, 500);
+const std::pair<double, double> SPEED_FACTOR_RANGE    (25.0, 100.0);
+const std::pair<double, double> INERTION_FACTOR_RANGE ( 1.0,  20.0);
+const std::pair<double, double> VISCOSITY_RANGE       ( 0.05,  0.5);
+const std::pair<double, double> FOOD_MASS_RANGE       ( 1.0,   4.0);
+const std::pair<double, double> VIRUS_RADIUS_RANGE    (15.0,  40.0);
+const std::pair<double, double> VIRUS_SPLIT_MASS_RANGE(50.0, 100.0);
+
 struct Constants
 {
 private:
@@ -86,18 +95,21 @@ public:
         SET_CONSTANT(GAME_HEIGHT, "990", toInt);
         SET_CONSTANT(SUM_RESP_TIMEOUT, "150", toInt);
 #endif
-
         SET_CONSTANT(TICK_MS, "16", toInt);
         SET_CONSTANT(BASE_TICK, "50", toInt);
-        SET_CONSTANT(INERTION_FACTOR, "10.0", toDouble);
-        SET_CONSTANT(VISCOSITY, "0.25", toDouble);
-        SET_CONSTANT(SPEED_FACTOR, "25.0", toDouble);
+        SET_CONSTANT(RESP_TIMEOUT, "5", toInt);
+
+        settings.endGroup();
+        settings.beginGroup("random_params");
+
         SET_CONSTANT(FOOD_MASS, "1.0", toDouble);
-        SET_CONSTANT(VIRUS_RADIUS, "22.0", toDouble);
-        SET_CONSTANT(VIRUS_SPLIT_MASS, "80.0", toDouble);
         SET_CONSTANT(MAX_FRAGS_CNT, "10", toInt);
         SET_CONSTANT(TICKS_TIL_FUSION, "250", toInt);
-        SET_CONSTANT(RESP_TIMEOUT, "5", toInt);
+        SET_CONSTANT(VIRUS_RADIUS, "22.0", toDouble);
+        SET_CONSTANT(VIRUS_SPLIT_MASS, "80.0", toDouble);
+        SET_CONSTANT(VISCOSITY, "0.25", toDouble);
+        SET_CONSTANT(INERTION_FACTOR, "10.0", toDouble);
+        SET_CONSTANT(SPEED_FACTOR, "25.0", toDouble);
 
 #undef SET_CONSTANT
 
@@ -106,7 +118,45 @@ public:
 
         c.SEED = env.value("SEED", "").toStdString();
 
+        c.reInitialize();
+
         return c;
+    }
+
+    std::mt19937_64 rand;
+    int generate(const std::pair<int, int>& range) {
+        std::uniform_int_distribution<int> distrib(range.first, range.second);
+        return distrib(rand);
+    }
+    double generate(const std::pair<double, double>& range) {
+        std::uniform_real_distribution<double> distrib(range.first, range.second);
+        return distrib(rand);
+    }
+    template <class T>
+    bool isOutOfRange(const T value, const std::pair<T, T>& range) {
+        return  (value < range.first || value > range.second);
+    }
+    template <class T>
+    T getOrGenerate(T value, const std::pair<T, T>& range) {
+        if (isOutOfRange(value, range)) {
+            value = generate(range);
+        }
+        return value;
+    }
+
+    static void reInitialize() {
+        static Constants& c = instance();
+        DEFINE_QSETTINGS(settings);
+        settings.beginGroup("random_params");
+        c.FOOD_MASS        = c.getOrGenerate(settings.value("FOOD_MASS").toDouble()       , FOOD_MASS_RANGE       ); //
+        c.MAX_FRAGS_CNT    = c.getOrGenerate(settings.value("MAX_FRAGS_CNT").toInt()      , FRAGS_CNT_RANGE       ); //
+        c.TICKS_TIL_FUSION = c.getOrGenerate(settings.value("TICKS_TIL_FUSION").toInt()   , TICKS_TIL_FUSION_RANGE); //
+        c.VIRUS_RADIUS     = c.getOrGenerate(settings.value("VIRUS_RADIUS").toDouble()    , VIRUS_RADIUS_RANGE    ); //
+        c.VIRUS_SPLIT_MASS = c.getOrGenerate(settings.value("VIRUS_SPLIT_MASS").toDouble(), VIRUS_SPLIT_MASS_RANGE); //
+        c.VISCOSITY        = c.getOrGenerate(settings.value("VISCOSITY").toDouble()       , VISCOSITY_RANGE       ); //
+        c.INERTION_FACTOR  = c.getOrGenerate(settings.value("INERTION_FACTOR").toDouble() , INERTION_FACTOR_RANGE ); //
+        c.SPEED_FACTOR     = c.getOrGenerate(settings.value("SPEED_FACTOR").toDouble()    , SPEED_FACTOR_RANGE    ); //
+        settings.endGroup();
     }
 
     QJsonObject toJson() const {
@@ -140,7 +190,7 @@ private:
     }
 };
 
-const QString LOG_DIR = "/var/tmp/";
+const QString LOG_DIR = "";
 const QString LOG_FILE = "visio_{1}.log";
 const QString DEBUG_FILE = "{1}.log";
 const QString DUMP_FILE = "{1}_dump.log";
