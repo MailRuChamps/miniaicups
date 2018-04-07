@@ -73,6 +73,18 @@ public:
         return changed;
     }
 
+    int get_player() {
+        return player;
+    }
+
+    double get_speed() {
+        return speed;
+    }
+
+    double get_angle() {
+        return angle;
+    }
+
 public:
     virtual QJsonObject toJson(bool mine=false) const {
         QJsonObject objData;

@@ -198,16 +198,22 @@ public:
     }
 
     void write_add_cmd(int tick, Ejection *eject) {
-        write_cmd(tick, format("AE{1} X{2} Y{3}\n", eject->getId(), eject->getX(), eject->getY()));
+        write_cmd(tick, format("AE{1} X{2} Y{3} P{4}\n", eject->getId(), eject->getX(), eject->getY(), eject->get_player()));
     }
 
     void write_direct(int tick, int id, Direct direct) {
         write_cmd(tick, format("C{1} X{2} Y{3}\n", id, direct.x, direct.y));
     }
 
-    void write_direct_for(int tick, Player *player) {
-        QString cmd = "C" + player->id_to_str() + " X{1} Y{2}\n";
-        QPair<double, double> norm = player->get_direct_norm();
+    void write_direct_for(int tick, Player *player, Direct direct) {
+        QString cmd = "C" + player->id_to_str() + " X{1} Y{2}";
+        QPair<double, double> norm = player->get_direct();
+        if (direct.split) {
+            cmd += " S";
+        } else if (direct.eject) {
+            cmd += " E";
+        }
+        cmd += '\n';
         write_cmd(tick, format(cmd, norm.first, norm.second));
     }
 
@@ -234,16 +240,16 @@ public:
     }
 
     void write_change_pos(int tick, Player *player) {
-        QString cmd = "+P" + player->id_to_str() + " X{1} Y{2} A{3}\n";
-        write_cmd(tick, format(cmd, player->getX(), player->getY(), player->getA()));
+        QString cmd = "+P" + player->id_to_str() + " X{1} Y{2} A{3} S{4}\n";
+        write_cmd(tick, format(cmd, player->getX(), player->getY(), player->getA(), player->get_speed()));
     }
 
     void write_change_pos(int tick, Ejection *eject) {
-        write_cmd(tick, format("+E{1} X{2} Y{3}\n", eject->getId(), eject->getX(), eject->getY()));
+        write_cmd(tick, format("+E{1} X{2} Y{3} P{4} A{5} S{6}\n", eject->getId(), eject->getX(), eject->getY(), eject->get_player(), eject->get_angle(), eject->get_speed()));
     }
 
     void write_change_pos(int tick, Virus *virus) {
-        write_cmd(tick, format("+V{1} X{2} Y{3}\n", virus->getId(), virus->getX(), virus->getY()));
+        write_cmd(tick, format("+V{1} X{2} Y{3} M{4} A{5} S{6}\n", virus->getId(), virus->getX(), virus->getY(), virus->getM(), virus->get_angle(), virus->get_speed()));
     }
 
     void write_change_mass(int tick, Player *player) {

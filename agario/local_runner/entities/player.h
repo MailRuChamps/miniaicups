@@ -70,14 +70,8 @@ public:
         return _score;
     }
 
-    QPair<double, double> get_direct_norm() const {
-        double dx = cmd_x - x, dy = cmd_y - y;
-        double dist = qSqrt(dx * dx + dy * dy);
-        if (dist > 0) {
-            double factor = 50 / dist;
-            return QPair<double, double>(x + dx * factor, y + dy * factor);
-        }
-        return QPair<double, double>(x, y);
+    QPair<double, double> get_direct() const {
+        return QPair<double, double>(cmd_x, cmd_y);
     }
 
     double getVR() const {
@@ -118,7 +112,7 @@ public:
         }
         if (show_cmd) {
             painter.setPen(QPen(QBrush(Qt::red), 1));
-            QPair<double, double> norm = get_direct_norm();
+            QPair<double, double> norm = get_direct();
             painter.drawLine(ix, iy, norm.first, norm.second);
         }
     }
@@ -500,7 +494,9 @@ public:
         mass -= ((mass - MIN_SHRINK_MASS) * SHRINK_FACTOR);
         radius = mass2radius(mass);
     }
-
+    double get_speed() {
+        return speed;
+    }
 public:
     virtual QJsonObject toJson(bool mine=false) const {
         QJsonObject objData;

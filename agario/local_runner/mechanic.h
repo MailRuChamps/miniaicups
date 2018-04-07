@@ -437,7 +437,7 @@ public:
         for (Player *frag : fragments) {
             frag->apply_direct(direct, Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
 
-            logger->write_direct_for(tick, frag);
+            logger->write_direct_for(tick, frag, direct);
         }
 
         strategy_directs.insert(sId, direct);

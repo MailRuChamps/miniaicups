@@ -82,6 +82,14 @@ public:
         angle = _angle;
     }
 
+    double get_speed() {
+        return speed;
+    }
+
+    double get_angle() {
+        return angle;
+    }
+
     bool move(int max_x, int max_y) {
         if (speed == 0.0) {
             return false;
