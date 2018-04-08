@@ -1,0 +1,8 @@
+BasedOnStyle: WebKit
+IndentWidth: 4
+UseTab: Never
+BreakBeforeBraces: Custom
+BraceWrapping: {
+    AfterClass: 'true'
+}
+
