@@ -102,6 +102,8 @@ public slots:
 
         if (get_active_count() == 0 and game_active) {
             cancel_game();
+        } else if (get_answered_clients_count() == get_active_count()) {
+            next_tick();
         }
     }
 
