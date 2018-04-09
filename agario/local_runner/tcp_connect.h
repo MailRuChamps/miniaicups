@@ -33,7 +33,7 @@ protected:
 
 public:
     bool is_canceled;
-    vector<Direct> directs;
+    QVector<Direct> directs;
 signals:
     void ready();
     void disconnected();
