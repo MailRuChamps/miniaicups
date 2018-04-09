@@ -155,6 +155,7 @@ public slots:
                 PlayerArray fragments = mechanic->get_players_by_id(client->getId());
                 CircleArray visibles = mechanic->get_visibles(fragments);
                 client->send_state(fragments, visibles, current_tick);
+                client->directs.clear();
             }
         }
         ready_cnt = 0;
@@ -163,12 +164,23 @@ public slots:
     void client_responsed(Direct direct) {
         ClientWrapper *client = static_cast<ClientWrapper*>(sender());
 //        qDebug() << "client responsed" << client->getId();
-
-        mechanic->apply_direct_for(client->getId(), direct);
-        ready_cnt++;
-        if (ready_cnt == client_cnt) {
-            next_tick();
+        client->directs.push_back(direct);
+        ready_cnt = 0;
+        for (ClientWrapper *client : clients) {
+            if (client->directs.size() > 0) {
+                ready_cnt++;
+            }
         }
+        if (ready_cnt != client_cnt) {
+            return;
+        }
+        for (ClientWrapper *client : clients) {
+            if (client->directs.size() > 0) {
+                mechanic->apply_direct_for(client->getId(), client->directs.back());
+                client->directs.clear();
+            }
+        }
+        next_tick();
     }
 
     void next_tick() {
