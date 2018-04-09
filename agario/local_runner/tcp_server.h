@@ -164,13 +164,10 @@ public slots:
     void client_responsed(Direct direct) {
         ClientWrapper *client = static_cast<ClientWrapper*>(sender());
 //        qDebug() << "client responsed" << client->getId();
-        client->directs.push_back(direct);
-        ready_cnt = 0;
-        for (ClientWrapper *client : clients) {
-            if (client->directs.size() > 0) {
-                ready_cnt++;
-            }
+        if (client->directs.size() == 0) {
+            ready_cnt++;
         }
+        client->directs.push_back(direct);
         if (ready_cnt != client_cnt) {
             return;
         }
@@ -207,6 +204,7 @@ public slots:
 
         if (ready) {
             ready_cnt++;
+            client->directs.push_back(Direct(0,0));
         }
         else {
             if (! game_active) ready_cnt--;
