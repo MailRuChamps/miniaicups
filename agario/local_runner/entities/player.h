@@ -199,17 +199,9 @@ public:
     }
 
     void burst_on(Circle *virus) {
-        double dist = calc_dist(virus->getX(), virus->getY());
         double dy = y - virus->getY(), dx = x - virus->getX();
-        double new_angle = 0.0;
 
-        if (dist > 0) {
-            new_angle = qAsin(dy / dist);
-            if (dx < 0) {
-                new_angle = M_PI - new_angle;
-            }
-        }
-        angle = new_angle;
+        angle = qAtan2(dy, dx);
         double max_speed = Constants::instance().SPEED_FACTOR / qSqrt(mass);
         if (speed < max_speed) {
             speed = max_speed;
