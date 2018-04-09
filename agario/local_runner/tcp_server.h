@@ -177,7 +177,6 @@ public slots:
         for (ClientWrapper *client : clients) {
             if (client->directs.size() > 0) {
                 mechanic->apply_direct_for(client->getId(), client->directs.back());
-                client->directs.clear();
             }
         }
         next_tick();
