@@ -143,7 +143,8 @@ public:
         if (isOutOfRange(env_value, range))
             if (isOutOfRange(value, range))
                 return generate(range);
-        return env_value;
+            else return value;
+        else return env_value;
     }
 
     static void reInitialize() {
