@@ -79,6 +79,9 @@ public:
 
 public slots:
     void client_connected() {
+        if (clients.length() >= client_cnt) {
+            return;
+        }
         QTcpSocket *client_socket = server->nextPendingConnection();
         ClientWrapper *client = new ClientWrapper(client_socket);
         clients.append(client);
@@ -87,7 +90,7 @@ public slots:
         connect(client, SIGNAL(disconnected()), this, SLOT(client_disconnected()));
         connect(client, SIGNAL(ready()), this, SLOT(client_ready()));
         connect(client, SIGNAL(response(Direct)), this, SLOT(client_responsed(Direct)));
-        connect(client, SIGNAL(error(QString, bool)), this, SLOT(client_error(QString, bool)));
+        connect(client, SIGNAL(error(QString)), this, SLOT(client_error(QString)));
 
         connect(client, SIGNAL(debug(QString)), this, SLOT(client_debug(QString)));
         connect(client, SIGNAL(sprite(QString,QString)), this, SLOT(client_sprite(QString,QString)));
@@ -97,13 +100,33 @@ public slots:
         ClientWrapper *client = static_cast<ClientWrapper*>(sender());
         qDebug() << "client disconnected" << client->getId();
 
-        int rm_index = clients.indexOf(client);
-        if (rm_index != -1) {
-//            clients.remove(rm_index);
-//            if (! game_active) {
-//                client_cnt--;
-//            }
+        if (get_active_count() == 0 and game_active) {
+            cancel_game();
         }
+    }
+
+    int get_active_count() {
+        int count = 0;
+        for (ClientWrapper *client: clients) {
+            if (client->get_is_active()) count++;
+        }
+        return count;
+    }
+
+    int get_ready_clients_count() {
+        int count = 0;
+        for (ClientWrapper *client: clients) {
+            if (client->get_is_ready()) count++;
+        }
+        return count;
+    }
+
+    int get_answered_clients_count() {
+        int count = 0;
+        for (ClientWrapper *client: clients) {
+            if(client->get_answered() && client->get_is_active()) count ++;
+        }
+        return count;
     }
 
     void client_ready() {
@@ -111,10 +134,8 @@ public slots:
         client->set_player(ready_player_id);
 
         qDebug() << "client ready" << client->getId();
-
-        ready_cnt++;
         ready_player_id++;
-        if (ready_cnt == client_cnt) {
+        if (get_ready_clients_count() == client_cnt) {
             start_game();
         }
     }
@@ -143,7 +164,7 @@ public slots:
 
     void broadcast_config() {
         for (ClientWrapper *client : clients) {
-            if (! client->is_canceled) {
+            if (client->get_is_active()) {
                 client->send_config();
             }
         }
@@ -151,7 +172,7 @@ public slots:
 
     void broadcast_state() {
         for (ClientWrapper *client : clients) {
-            if (! client->is_canceled) {
+            if (client->get_is_active()) {
                 PlayerArray fragments = mechanic->get_players_by_id(client->getId());
                 CircleArray visibles = mechanic->get_visibles(fragments);
                 client->send_state(fragments, visibles, current_tick);
@@ -160,13 +181,12 @@ public slots:
         ready_cnt = 0;
     }
 
+
     void client_responsed(Direct direct) {
         ClientWrapper *client = static_cast<ClientWrapper*>(sender());
-//        qDebug() << "client responsed" << client->getId();
 
         mechanic->apply_direct_for(client->getId(), direct);
-        ready_cnt++;
-        if (ready_cnt == client_cnt) {
+        if (get_answered_clients_count() == get_active_count()) {
             next_tick();
         }
     }
@@ -187,35 +207,24 @@ public slots:
         }
     }
 
-    void client_error(QString msg, bool ready) {
+    void client_error(QString msg) {
         ClientWrapper *client = static_cast<ClientWrapper*>(sender());
 //        qDebug() << "error (client=" << client->getId() << "):" << msg << "tick=" << current_tick;
 
         Logger *logger = client->get_logger();
         logger->write_error(current_tick, client->getId(), msg);
 
-        if (ready) {
-            ready_cnt++;
-        }
-        else {
-            if (! game_active) ready_cnt--;
-            client_cnt--;
-            if (client_cnt == 0) {
-                qDebug() << "No clients. Exiting";
-                cancel_game();
-            }
-        }
-        if (ready_cnt == client_cnt) {
+        if (get_answered_clients_count() == get_active_count()) {
             next_tick();
         }
     }
 
     void cancel_game() {
         for (ClientWrapper *client : clients) {
-            client->is_canceled = true;
             client->get_logger()->flush();
             client->get_dump_logger()->flush();
         }
+        game_active = false;
         Logger *ml = mechanic->get_logger();
         ml->rewrite_game_ticks(current_tick);
         ml->flush();
