@@ -100,9 +100,9 @@ public slots:
         ClientWrapper *client = static_cast<ClientWrapper*>(sender());
         qDebug() << "client disconnected" << client->getId();
 
-        if (get_active_count() == 0 and game_active) {
+        if (get_active_count() == 0 && game_active) {
             cancel_game();
-        } else if (get_answered_clients_count() == get_active_count()) {
+        } else if (get_answered_clients_count() == get_active_count() && game_active) {
             next_tick();
         }
     }
@@ -188,7 +188,7 @@ public slots:
         ClientWrapper *client = static_cast<ClientWrapper*>(sender());
 
         mechanic->apply_direct_for(client->getId(), direct);
-        if (get_answered_clients_count() == get_active_count()) {
+        if (get_answered_clients_count() == get_active_count() && game_active) {
             next_tick();
         }
     }
@@ -216,7 +216,7 @@ public slots:
         Logger *logger = client->get_logger();
         logger->write_error(current_tick, client->getId(), msg);
 
-        if (get_answered_clients_count() == get_active_count()) {
+        if (get_answered_clients_count() == get_active_count() && game_active) {
             next_tick();
         }
     }
