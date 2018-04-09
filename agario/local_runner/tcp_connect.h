@@ -22,6 +22,8 @@ protected:
     QString solution_id;
     int player_id;
     bool is_ready;
+    bool answered;
+    bool is_active;
 
     QByteArray got_data;
 
@@ -31,14 +33,11 @@ protected:
     bool waiting;
     int sum_waiting;
 
-public:
-    bool is_canceled;
-
 signals:
     void ready();
     void disconnected();
     void response(Direct);
-    void error(QString, bool);
+    void error(QString);
     void debug(QString);
     void sprite(QString, QString);
 
@@ -51,7 +50,8 @@ public:
         wait_timeout(0),
         waiting(false),
         sum_waiting(0),
-        is_canceled(false)
+        is_active(false),
+        answered(false)
     {
         timerId = startTimer(100);
         connect(socket, SIGNAL(readyRead()), this, SLOT(read_data()));
@@ -65,6 +65,7 @@ public:
 
     void set_player(int pId) {
         player_id = pId;
+        is_active = true;
     }
 
     int getId() const {
@@ -77,13 +78,15 @@ public:
 
     void timerEvent(QTimerEvent *event) {
 
-        if (event->timerId() == timerId && waiting && !is_canceled) {
+        if (event->timerId() == timerId && waiting && is_active) {
             wait_timeout++;
             if (wait_timeout > Constants::instance().RESP_TIMEOUT * 10) {
                 bool is_expired = accumulate_wait();
                 if (is_expired) return;
 
-                emit error(RESP_EXPIRED, true);
+                emit error(RESP_EXPIRED);
+                is_active = false;
+                this->socket->disconnectFromHost();
             }
         }
     }
@@ -94,19 +97,32 @@ public:
         wait_timeout = 0;
 
         if (sum_waiting > Constants::instance().SUM_RESP_TIMEOUT * 10) {
-            is_canceled = true;
-            emit error(SUM_RESP_EXPIRED, false);
+            is_active = false;
+            emit error(SUM_RESP_EXPIRED);
+            this->socket->disconnectFromHost();
             return true;
         }
         return false;
     }
 
+    bool get_is_ready() {
+        return is_ready;
+    }
+
+    bool get_answered() {
+        return answered;
+    }
+
+    bool get_is_active() {
+        return is_active;
+    }
+
 public slots:
     void client_disconnected() {
-        if (! is_canceled) {
-            is_canceled = true;
-            emit error(CLIENT_DISCONNECTED, false);
+        if (is_active) {
+            emit error(CLIENT_DISCONNECTED);
         }
+        is_active = false;
         emit disconnected();
     }
 
@@ -118,20 +134,20 @@ public slots:
         }
         got_data.append(data);
         got_data = got_data.left(MAX_RESP_LEN);
-
+        answered = true;
         bool is_expired = accumulate_wait();
         if (is_expired) return;
 
         if (! is_ready) {
             QJsonObject json = parse_answer(got_data);
             if (json.isEmpty()) {
-                emit error("Can't parse json: " + got_data, true);
+                emit error("Can't parse json: " + got_data);
                 return;
             }
             got_data.clear();
             QStringList keys = json.keys();
             if (! keys.contains("solution_id")) {
-                emit error("No required key 'solution_id'", true);
+                emit error("No required key 'solution_id'");
                 return;
             }
 
@@ -144,7 +160,7 @@ public slots:
         else {
             QJsonObject json = parse_answer(got_data);
             if (json.isEmpty()) {
-                emit error("Can't parse json: " + got_data, true);
+                emit error("Can't parse json: " + got_data);
                 return;
             }
             got_data.clear();
@@ -153,12 +169,12 @@ public slots:
             QStringList keys = json.keys();
             if (keys.contains("error")) {
                 QString err_msg = json.value("error").toString();
-                emit error(err_msg.left(MAX_DEBUG_LEN), true);
+                emit error(err_msg.left(MAX_DEBUG_LEN));
 //                logger->write_error(player_id, error);
                 return;
             }
             if (! keys.contains("X") || ! keys.contains("Y")) {
-                emit error("No required key 'X' or 'Y'", true);
+                emit error("No required key 'X' or 'Y'");
                 return;
             }
 
@@ -198,7 +214,7 @@ public slots:
     QJsonObject parse_answer(QByteArray &data) {
         QJsonObject empty;
         if (data.length() < 3) {
-            emit error("Incorrect response (len < 3)", true);
+            emit error("Incorrect response (len < 3)");
             return empty;
         }
         if (data[data.length() - 1] == '\n') {
@@ -208,7 +224,7 @@ public slots:
         QJsonParseError err;
         QJsonDocument jsonDoc = QJsonDocument::fromJson(data, &err);
         if (jsonDoc.isNull()) {
-            emit error("Incorrect response (" + err.errorString() + ")", true);
+            emit error("Incorrect response (" + err.errorString() + ")");
             return empty;
         }
         return jsonDoc.object();
@@ -220,7 +236,7 @@ public slots:
 
         int sent = socket->write(message.toStdString().c_str());
         if (sent == 0) {
-            emit error("Fatal error: can't send config", true);
+            emit error("Fatal error: can't send config");
         }
         dump_logger->write_raw(0, message);
         socket->flush();
@@ -233,10 +249,11 @@ public slots:
         QString message = prepare_state(fragments, visibles);
         int sent = socket->write(message.toStdString().c_str());
         if (sent == 0) {
-            emit error("Fatal error: can't send state", true);
+            emit error("Fatal error: can't send state");
         }
         dump_logger->write_raw(tick + 1, message);
         socket->flush();
+        answered = false;
     }
 
     QString prepare_state(const PlayerArray &fragments, const CircleArray &visibles) {
