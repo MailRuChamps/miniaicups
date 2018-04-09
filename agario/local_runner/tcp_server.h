@@ -204,7 +204,6 @@ public slots:
 
         if (ready) {
             ready_cnt++;
-            client->directs.push_back(Direct(0,0));
         }
         else {
             if (! game_active) ready_cnt--;
