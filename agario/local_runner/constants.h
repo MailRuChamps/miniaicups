@@ -74,14 +74,16 @@ public:
         return seed;
     }
 
+    QProcessEnvironment env;
     static Constants &initialize(const QProcessEnvironment &env) {
         Constants& c = instance();
+        c.env = env;
 
         DEFINE_QSETTINGS(settings);
         settings.beginGroup("constants");
 
 #define SET_CONSTANT(NAME, DEFAULT, CONVERT) do {                              \
-            c.NAME = getSettingValue(#NAME, env, settings, DEFAULT).CONVERT(); \
+            c.NAME = getSettingValue(#NAME, c.env, settings, DEFAULT).CONVERT(); \
         } while(false)
 
         SET_CONSTANT(GAME_TICKS, "75000", toInt);
@@ -137,25 +139,25 @@ public:
         return  (value < range.first || value > range.second);
     }
     template <class T>
-    T getOrGenerate(T value, const std::pair<T, T>& range) {
-        if (isOutOfRange(value, range)) {
-            value = generate(range);
-        }
-        return value;
+    T getOrGenerate(T env_value, T value, const std::pair<T, T>& range) {
+        if (isOutOfRange(env_value, range))
+            if (isOutOfRange(value, range))
+                return generate(range);
+        return env_value;
     }
 
     static void reInitialize() {
         static Constants& c = instance();
         DEFINE_QSETTINGS(settings);
         settings.beginGroup("random_params");
-        c.FOOD_MASS        = c.getOrGenerate(settings.value("FOOD_MASS").toDouble()       , FOOD_MASS_RANGE       ); //
-        c.MAX_FRAGS_CNT    = c.getOrGenerate(settings.value("MAX_FRAGS_CNT").toInt()      , FRAGS_CNT_RANGE       ); //
-        c.TICKS_TIL_FUSION = c.getOrGenerate(settings.value("TICKS_TIL_FUSION").toInt()   , TICKS_TIL_FUSION_RANGE); //
-        c.VIRUS_RADIUS     = c.getOrGenerate(settings.value("VIRUS_RADIUS").toDouble()    , VIRUS_RADIUS_RANGE    ); //
-        c.VIRUS_SPLIT_MASS = c.getOrGenerate(settings.value("VIRUS_SPLIT_MASS").toDouble(), VIRUS_SPLIT_MASS_RANGE); //
-        c.VISCOSITY        = c.getOrGenerate(settings.value("VISCOSITY").toDouble()       , VISCOSITY_RANGE       ); //
-        c.INERTION_FACTOR  = c.getOrGenerate(settings.value("INERTION_FACTOR").toDouble() , INERTION_FACTOR_RANGE ); //
-        c.SPEED_FACTOR     = c.getOrGenerate(settings.value("SPEED_FACTOR").toDouble()    , SPEED_FACTOR_RANGE    ); //
+        c.FOOD_MASS        = c.getOrGenerate(c.env.value("FOOD_MASS").toDouble()       , settings.value("FOOD_MASS").toDouble()       , FOOD_MASS_RANGE       );
+        c.MAX_FRAGS_CNT    = c.getOrGenerate(c.env.value("MAX_FRAGS_CNT").toInt()      , settings.value("MAX_FRAGS_CNT").toInt()      , FRAGS_CNT_RANGE       );
+        c.TICKS_TIL_FUSION = c.getOrGenerate(c.env.value("TICKS_TIL_FUSION").toInt()   , settings.value("TICKS_TIL_FUSION").toInt()   , TICKS_TIL_FUSION_RANGE);
+        c.VIRUS_RADIUS     = c.getOrGenerate(c.env.value("VIRUS_RADIUS").toDouble()    , settings.value("VIRUS_RADIUS").toDouble()    , VIRUS_RADIUS_RANGE    );
+        c.VIRUS_SPLIT_MASS = c.getOrGenerate(c.env.value("VIRUS_SPLIT_MASS").toDouble(), settings.value("VIRUS_SPLIT_MASS").toDouble(), VIRUS_SPLIT_MASS_RANGE);
+        c.VISCOSITY        = c.getOrGenerate(c.env.value("VISCOSITY").toDouble()       , settings.value("VISCOSITY").toDouble()       , VISCOSITY_RANGE       );
+        c.INERTION_FACTOR  = c.getOrGenerate(c.env.value("INERTION_FACTOR").toDouble() , settings.value("INERTION_FACTOR").toDouble() , INERTION_FACTOR_RANGE );
+        c.SPEED_FACTOR     = c.getOrGenerate(c.env.value("SPEED_FACTOR").toDouble()    , settings.value("SPEED_FACTOR").toDouble()    , SPEED_FACTOR_RANGE    );
         settings.endGroup();
     }
 
