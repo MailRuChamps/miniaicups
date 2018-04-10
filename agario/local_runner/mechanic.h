@@ -175,9 +175,6 @@ public:
 
         update_players_radius();
 
-        for (Player *player : player_array) {
-            player_scores[player->getId()] += player->get_score();
-        }
         for(auto sit = player_scores.begin(); sit != player_scores.end(); sit++) {
             if (oldScores[sit.key()] != sit.value()) {
                 logger->write_player_score(tick, sit.key(), sit.value());
@@ -543,6 +540,7 @@ public:
         for (auto fit = food_array.begin(); fit != food_array.end();) {
             if (Player *eater = nearest_player(*fit)) {
                 eater->eat(*fit);
+                player_scores[eater->getId()] += SCORE_FOR_FOOD;
                 logger->write_kill_cmd(tick, *fit);
                 delete *fit;
                 fit = food_array.erase(fit);
@@ -557,6 +555,9 @@ public:
                 eater->eat(eject);
             } else if (Player *eater = nearest_player(eject)) {
                 eater->eat(eject);
+                if (!eject->is_my_eject(eater)) {
+                    player_scores[eater->getId()] += SCORE_FOR_FOOD;
+                }
             } else {
                 eit++;
                 continue;
@@ -570,7 +571,8 @@ public:
         for (auto pit = player_array.begin(); pit != player_array.end(); ) {
             if(Player *eater = nearest_player(*pit)) {
                 bool is_last = get_fragments_cnt((*pit)->getId()) == 1;
-                eater->eat(*pit, is_last);
+                eater->eat(*pit);
+                player_scores[eater->getId()] += is_last? SCORE_FOR_LAST : SCORE_FOR_PLAYER;
                 logger->write_kill_cmd(tick, *pit);
                 delete *pit;
                 pit = player_array.erase(pit);
@@ -609,6 +611,7 @@ public:
                 QString old_id = player->id_to_str();
 
                 player->burst_on(*vit);
+                player_scores[player->getId()] += SCORE_FOR_BURST;
                 PlayerArray fragments = player->burst_now(max_fId, yet_cnt);
                 player_array.append(fragments);
                 targets.removeAll(player);

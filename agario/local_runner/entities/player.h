@@ -15,7 +15,6 @@ protected:
     double speed, angle;
     int fragmentId;
     int color;
-    int score;
     double vision_radius;
     double cmd_x, cmd_y;
 
@@ -25,7 +24,6 @@ public:
         is_fast(false),
         speed(0), angle(0),
         fragmentId(fId),
-        score(0),
         vision_radius(0),
         cmd_x(0), cmd_y(0)
     {
@@ -62,12 +60,6 @@ public:
 
     virtual bool is_player() const {
         return true;
-    }
-
-    int get_score() {
-        int _score = score;
-        score = 0;
-        return _score;
     }
 
     QPair<double, double> get_direct() const {
@@ -174,17 +166,8 @@ public:
         return -INFINITY;
     }
 
-    void eat(Circle *food, bool is_last=false) {
+    void eat(Circle *food) {
         mass += food->getM();
-
-        if (food->is_my_eject(this)) {
-            return;
-        } else if (food->is_food()) {
-            score += SCORE_FOR_FOOD;
-        }
-        else if (food->is_player()) {
-            score += (! is_last)? SCORE_FOR_PLAYER : SCORE_FOR_LAST;
-        }
     }
 
     bool can_burst(int yet_cnt) {
@@ -215,7 +198,6 @@ public:
             speed = max_speed;
         }
         mass += BURST_BONUS;
-        score += SCORE_FOR_BURST;
     }
 
     QVector<Player*> burst_now(int max_fId, int yet_cnt) {
@@ -367,7 +349,6 @@ public:
 
         mass -= EJECT_MASS;
         radius = mass2radius(mass);
-        score += SCORE_FOR_EJECT;
         return new_eject;
     }
 
