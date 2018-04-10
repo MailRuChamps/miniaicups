@@ -22,6 +22,7 @@ public:
     explicit Player(int _id, double _x, double _y, double _radius, double _mass, const int fId=0) :
         Circle(_id, _x, _y, _radius, _mass),
         is_fast(false),
+        fuse_timer(0),
         speed(0), angle(0),
         fragmentId(fId),
         vision_radius(0),
