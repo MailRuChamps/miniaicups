@@ -157,6 +157,7 @@ public:
     }
 
     int tickEvent() {
+        auto oldScores = player_scores;
 #ifdef LOCAL_RUNNER
         apply_strategies();
 #endif
@@ -173,7 +174,16 @@ public:
         burst_on_viruses();
 
         update_players_radius();
-        update_scores();
+
+        for (Player *player : player_array) {
+            player_scores[player->getId()] += player->get_score();
+        }
+        for(auto sit = player_scores.begin(); sit != player_scores.end(); sit++) {
+            if (oldScores[sit.key()] != sit.value()) {
+                logger->write_player_score(tick, sit.key(), sit.value());
+            }
+        }
+
         split_viruses();
 
         if (tick % ADD_FOOD_DELAY == 0 && food_array.length() < MAX_GAME_FOOD) {
@@ -722,17 +732,6 @@ public:
             bool changed = player->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
             if (changed) {
                 logger->write_change_mass(tick, player);
-            }
-        }
-    }
-
-    void update_scores() {
-        for (Player *player : player_array) {
-            int score = player->get_score();
-            if (score > 0) {
-                int pId = player->getId();
-                player_scores[pId] += score;
-                logger->write_player_score(tick, pId, player_scores[pId]);
             }
         }
     }
