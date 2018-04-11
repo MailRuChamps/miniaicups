@@ -208,7 +208,6 @@ const int SCORE_FOR_FOOD = 1;
 const int SCORE_FOR_PLAYER = 10;
 const int SCORE_FOR_LAST = 100;
 const int SCORE_FOR_BURST = 2;
-const int SCORE_FOR_EJECT = 0;
 
 // TCP Server
 const QString HOST = "0.0.0.0";
