@@ -10,4 +10,5 @@ ENV SOLUTION_CODE_PATH=/opt/client/solution \
 COPY Cargo.toml ./
 RUN USER=user ~/.cargo/bin/cargo init --bin $SOLUTION_CODE_PATH &&\
         mv Cargo.toml $SOLUTION_CODE_PATH/Cargo.toml &&\
-        ~/.cargo/bin/cargo build --release --manifest-path $SOLUTION_CODE_PATH/Cargo.toml
+        ~/.cargo/bin/cargo build --release --manifest-path $SOLUTION_CODE_PATH/Cargo.toml && \
+        rm -rf $SOLUTION_CODE_PATH/src/*
