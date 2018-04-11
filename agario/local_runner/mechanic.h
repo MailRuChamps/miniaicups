@@ -43,7 +43,7 @@ private:
 public:
     explicit Mechanic() :
         tick(0),
-        id_counter(1),
+        id_counter(0),
         logger(new Logger)
     {}
 
