@@ -157,6 +157,7 @@ public:
     }
 
     int tickEvent() {
+        auto oldScores = player_scores;
 #ifdef LOCAL_RUNNER
         apply_strategies();
 #endif
@@ -173,7 +174,13 @@ public:
         burst_on_viruses();
 
         update_players_radius();
-        update_scores();
+
+        for(auto sit = player_scores.begin(); sit != player_scores.end(); sit++) {
+            if (oldScores[sit.key()] != sit.value()) {
+                logger->write_player_score(tick, sit.key(), sit.value());
+            }
+        }
+
         split_viruses();
 
         if (tick % ADD_FOOD_DELAY == 0 && food_array.length() < MAX_GAME_FOOD) {
@@ -533,6 +540,7 @@ public:
         for (auto fit = food_array.begin(); fit != food_array.end();) {
             if (Player *eater = nearest_player(*fit)) {
                 eater->eat(*fit);
+                player_scores[eater->getId()] += SCORE_FOR_FOOD;
                 logger->write_kill_cmd(tick, *fit);
                 delete *fit;
                 fit = food_array.erase(fit);
@@ -547,6 +555,9 @@ public:
                 eater->eat(eject);
             } else if (Player *eater = nearest_player(eject)) {
                 eater->eat(eject);
+                if (!eject->is_my_eject(eater)) {
+                    player_scores[eater->getId()] += SCORE_FOR_FOOD;
+                }
             } else {
                 eit++;
                 continue;
@@ -560,7 +571,8 @@ public:
         for (auto pit = player_array.begin(); pit != player_array.end(); ) {
             if(Player *eater = nearest_player(*pit)) {
                 bool is_last = get_fragments_cnt((*pit)->getId()) == 1;
-                eater->eat(*pit, is_last);
+                eater->eat(*pit);
+                player_scores[eater->getId()] += is_last? SCORE_FOR_LAST : SCORE_FOR_PLAYER;
                 logger->write_kill_cmd(tick, *pit);
                 delete *pit;
                 pit = player_array.erase(pit);
@@ -599,6 +611,7 @@ public:
                 QString old_id = player->id_to_str();
 
                 player->burst_on(*vit);
+                player_scores[player->getId()] += SCORE_FOR_BURST;
                 PlayerArray fragments = player->burst_now(max_fId, yet_cnt);
                 player_array.append(fragments);
                 targets.removeAll(player);
@@ -722,17 +735,6 @@ public:
             bool changed = player->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
             if (changed) {
                 logger->write_change_mass(tick, player);
-            }
-        }
-    }
-
-    void update_scores() {
-        for (Player *player : player_array) {
-            int score = player->get_score();
-            if (score > 0) {
-                int pId = player->getId();
-                player_scores[pId] += score;
-                logger->write_player_score(tick, pId, player_scores[pId]);
             }
         }
     }
