@@ -37,6 +37,7 @@ private:
     StrategyArray strategy_array;
     QMap<int, Direct> strategy_directs;
     QMap<int, int> player_scores;
+    QMap<int, int> player_last_fId;
 
     std::mt19937_64 rand;
 
@@ -358,15 +359,12 @@ public:
         return cnt;
     }
 
-    int get_max_fragment_id(int pId) const {
-        int max_fId = 0;
-        for (Player *player : player_array) {
-            if (player->getId() == pId && max_fId < player->get_fId()) {
-                max_fId = player->get_fId();
-            }
-        }
-        return max_fId;
-    }
+    int make_new_fragment_id(int pId) const {
+        auto last_fId=player_last_fId.value(pId,0);
+        last_fId++;
+        player_last_fId.insert(pId,last_fId);
+        return last_fId;
+   }
 
     Strategy *get_strategy_by_id(int sId) const {
         for (Strategy *strategy : strategy_array) {
@@ -464,10 +462,9 @@ public:
         for (Player *frag : fragments) {
 
             if (frag->can_split(fragments_count)) {
-                int max_fId = get_max_fragment_id(frag->getId());
                 QString old_id = frag->id_to_str();
 
-                Player *new_frag= frag->split_now(max_fId);
+                Player *new_frag= frag->split_now(this);
                 player_array.push_back(new_frag);
                 fragments_count++;
 
@@ -607,12 +604,11 @@ public:
         for (auto vit = virus_array.begin(); vit != virus_array.end(); ) {
             if (Player *player = nearest_to(*vit)) {
                 int yet_cnt = get_fragments_cnt(player->getId());
-                int max_fId = get_max_fragment_id(player->getId());
                 QString old_id = player->id_to_str();
 
                 player->burst_on(*vit);
                 player_scores[player->getId()] += SCORE_FOR_BURST;
-                PlayerArray fragments = player->burst_now(max_fId, yet_cnt);
+                PlayerArray fragments = player->burst_now(this, yet_cnt);
                 player_array.append(fragments);
                 targets.removeAll(player);
 
