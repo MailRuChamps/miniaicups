@@ -134,6 +134,7 @@ public slots:
         }
         got_data.append(data);
         got_data = got_data.left(MAX_RESP_LEN);
+        if (answered) return;
         answered = true;
         bool is_expired = accumulate_wait();
         if (is_expired) return;
