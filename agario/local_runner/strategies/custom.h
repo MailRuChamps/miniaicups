@@ -5,6 +5,7 @@
 #include <QProcess>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <logger.h>
 
 
 class Custom : public Strategy
@@ -15,7 +16,10 @@ protected:
     QProcess *solution;
     bool is_running;
     QMetaObject::Connection finish_connection;
-
+#ifdef CONSOLE_RUNNER
+    Logger *logger;
+    int tick;
+#endif
 signals:
     void error(QString);
 
@@ -23,7 +27,14 @@ public:
     explicit Custom(int _id, const QString &_path) :
         Strategy(_id),
         solution(new QProcess(this))
+#ifdef CONSOLE_RUNNER
+        ,logger(new Logger()),
+        tick(0)
+#endif
     {
+#ifdef CONSOLE_RUNNER
+        logger->init_file(QString::number(id), DUMP_FILE);
+#endif
         solution->start(_path);
         finish_connection = connect(solution, SIGNAL(finished(int)), this, SLOT(on_finished(int)));
         connect(solution, SIGNAL(readyReadStandardError()), this, SLOT(on_error()));
@@ -54,7 +65,12 @@ public:
             return Direct(0, 0);
         }
         QString message = prepare_state(fragments, objects);
+#ifndef CONSOLE_RUNNER
         qDebug() << message;
+#else
+        tick++;
+        logger->write_raw(tick, message);
+#endif
         int sent = solution->write(message.toStdString().c_str());
         if (sent == -1) {
             emit error("Can't write to process");
@@ -76,6 +92,10 @@ public:
         }
 
         QJsonObject json = parse_answer(cmdBytes);
+#ifdef CONSOLE_RUNNER
+        QJsonDocument doc(json);
+        logger->write_raw_with_old_tick(doc.toJson(QJsonDocument::Compact)+ "\n");
+#endif
         QStringList keys = json.keys();
         if (! keys.contains("X") || ! keys.contains("Y")) {
             emit error("No X or Y keys in answer json");
@@ -109,8 +129,11 @@ public:
     void send_config() {
         QJsonDocument jsonDoc(Constants::instance().toJson());
         QString message = QString(jsonDoc.toJson(QJsonDocument::Compact)) + "\n";
-
+#ifndef CONSOLE_RUNNER
         qDebug() << message;
+#else
+        logger->write_raw(0, message);
+#endif
         int sent = solution->write(message.toStdString().c_str());
         if (sent == 0) {
             emit error("Can't write config to process");
@@ -150,6 +173,11 @@ public:
         }
         return jsonDoc.object();
     }
+#ifdef CONSOLE_RUNNER
+    Logger* get_looger(){
+        return logger;
+    }
+#endif
 };
 
 #endif // CUSTOM_H

@@ -5,7 +5,9 @@
 
 #include <QJsonObject>
 #include <QJsonValue>
+#ifndef CONSOLE_RUNNER
 #include <QPainter>
+#endif
 #include <QPoint>
 
 

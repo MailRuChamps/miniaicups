@@ -25,6 +25,7 @@ public:
         return true;
     }
 
+#ifndef CONSOLE_RUNNER
     void draw(QPainter &painter) const {
         painter.setPen(QPen(QBrush(Qt::black), 1));
 
@@ -34,7 +35,7 @@ public:
             painter.drawLine(x - dx, y - dy, x + dx, y + dy);
         }
     }
-
+#endif
     double can_hurt(Circle *circle) const {
         if (circle->getR() < radius) {
             return INFINITY;

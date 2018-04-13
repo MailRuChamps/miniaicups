@@ -88,7 +88,7 @@ public:
             is_fast = false;
         }
     }
-
+#ifndef CONSOLE_RUNNER
     void draw(QPainter &painter, bool show_speed=false, bool show_cmd=false) const {
         painter.setPen(QPen(QBrush(Qt::black), 1));
         painter.setBrush(Qt::GlobalColor(color));
@@ -109,7 +109,7 @@ public:
             painter.drawLine(ix, iy, norm.first, norm.second);
         }
     }
-
+#endif
     bool update_vision(int frag_cnt) {
         double new_vision;
         if (frag_cnt == 1) {
@@ -132,7 +132,7 @@ public:
 
         return (qdist < (vision_radius + circle->getR()) * (vision_radius + circle->getR()));
     }
-
+#ifndef CONSOLE_RUNNER
     void draw_vision_ellipse(QPainter &painter) const {
         double xVisionCenter = x + qCos(angle) * VIS_SHIFT;
         double yVisionCenter = y + qSin(angle) * VIS_SHIFT;
@@ -153,7 +153,7 @@ public:
 
         draw_vision_ellipse(painter);
      }
-
+#endif
     double can_eat(Circle *food) const {
         if (food->is_player() && food->getId() == id) {
             return -INFINITY;

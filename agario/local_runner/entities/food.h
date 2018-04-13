@@ -25,7 +25,7 @@ public:
     virtual bool is_food() const {
         return true;
     }
-
+#ifndef CONSOLE_RUNNER
     void draw(QPainter &painter) const {
         painter.setPen(QPen(QBrush(Qt::black), 1));
         painter.setBrush(Qt::GlobalColor(color));
@@ -33,7 +33,7 @@ public:
         int ix = int(x), iy = int(y), ir = int(radius);
         painter.drawEllipse(QPoint(ix, iy), ir, ir);
     }
-
+#endif
 public:
     virtual QJsonObject toJson(bool mine=false) const {
         QJsonObject objData;

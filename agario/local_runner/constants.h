@@ -36,6 +36,7 @@ public:
     int TICK_MS;                // 16 ms
     int BASE_TICK;              // every 50 ticks
     std::string SEED;           // from std::random_device
+    QString LOG_DIR;
 
     double INERTION_FACTOR;     // 10.0
     double VISCOSITY;           // 0.25
@@ -85,6 +86,10 @@ public:
         SET_CONSTANT(GAME_WIDTH, "990", toInt);
         SET_CONSTANT(GAME_HEIGHT, "990", toInt);
         SET_CONSTANT(SUM_RESP_TIMEOUT, "150", toInt);
+#elif defined CONSOLE_RUNNER
+        SET_CONSTANT(GAME_WIDTH, "990", toInt);
+        SET_CONSTANT(GAME_HEIGHT, "990", toInt);
+        SET_CONSTANT(SUM_RESP_TIMEOUT, "550", toInt);
 #endif
 
         SET_CONSTANT(TICK_MS, "16", toInt);
@@ -105,6 +110,7 @@ public:
         settings.sync();
 
         c.SEED = env.value("SEED", "").toStdString();
+        c.LOG_DIR = "/var/tmp/";
 
         return c;
     }
@@ -140,7 +146,6 @@ private:
     }
 };
 
-const QString LOG_DIR = "/var/tmp/";
 const QString LOG_FILE = "visio_{1}.log";
 const QString DEBUG_FILE = "{1}.log";
 const QString DUMP_FILE = "{1}_dump.log";

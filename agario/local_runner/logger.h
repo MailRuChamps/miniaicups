@@ -8,6 +8,7 @@
 
 #include <QFile>
 #include <QByteArray>
+#include <qdir.h>
 #include "zlib.h"
 
 #define CHUNK 16384
@@ -85,12 +86,14 @@ public:
     void init_file(QString part, QString basename, bool debug=true) {
 //        QString f = (!debug)? LOG_FILE : DEBUG_FILE;
         file_name = basename.replace("{1}", part);
-        QString path = LOG_DIR + file_name;
-        file.setFileName(path);
+        QDir path(Constants::instance().LOG_DIR);
+        file.setFileName(path.filePath(file_name));
         clear_file();
+#ifndef CONSOLE_RUNNER
         if (! debug) {
             write_header(part);
         }
+#endif
     }
 
     QString get_file_name() const {

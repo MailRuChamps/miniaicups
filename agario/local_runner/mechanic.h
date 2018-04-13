@@ -7,6 +7,13 @@
 #include <list>
 #include <array>
 
+#ifdef CONSOLE_RUNNER
+#include <QJsonDocument>
+#include <QJsonValue>
+#include <QJsonArray>
+#include <QJsonObject>
+#endif
+
 #include "logger.h"
 #include "entities/food.h"
 #include "entities/virus.h"
@@ -14,7 +21,9 @@
 #include "entities/ejection.h"
 
 #include "strategies/strategy.h"
+#ifndef CONSOLE_RUNNER
 #include "strategies/bymouse.h"
+#endif
 
 typedef std::function<void(double, double)> AddFunc;
 typedef std::function<Strategy*(Player*)> StrategyGet;
@@ -66,8 +75,13 @@ public:
         add_player(START_PLAYER_SETS, get_strategy);
         add_food(START_FOOD_SETS);
         add_virus(START_VIRUS_SETS);
-
+#ifndef CONSOLE_RUNNER
         write_base_tick();
+#else
+        QJsonDocument jsonDoc(Constants::instance().toJson());
+        QString message = QString(jsonDoc.toJson(QJsonDocument::Compact)) + "\n";
+        logger->write_raw(0, message);
+#endif
     }
 
     void clear_objects(bool with_log=true) {
@@ -110,7 +124,7 @@ public:
         }
         return false;
     }
-
+#ifndef CONSOLE_RUNNER
     void paintEvent(QPainter &painter, bool show_speed, bool show_fogs, bool show_cmd, const QMap<int, bool> &player_vision) {
         bool fullVision = !player_vision.values().contains(true);
 
@@ -155,10 +169,10 @@ public:
             virus->draw(painter);
         }
     }
-
+#endif
     int tickEvent() {
         auto oldScores = player_scores;
-#ifdef LOCAL_RUNNER
+#if defined(LOCAL_RUNNER) || defined(CONSOLE_RUNNER)
         apply_strategies();
 #endif
         tick++;
@@ -174,13 +188,13 @@ public:
         burst_on_viruses();
 
         update_players_radius();
-
+#ifndef CONSOLE_RUNNER
         for(auto sit = player_scores.begin(); sit != player_scores.end(); sit++) {
             if (oldScores[sit.key()] != sit.value()) {
                 logger->write_player_score(tick, sit.key(), sit.value());
             }
         }
-
+#endif
         split_viruses();
 
         if (tick % ADD_FOOD_DELAY == 0 && food_array.length() < MAX_GAME_FOOD) {
@@ -189,9 +203,13 @@ public:
         if (tick % ADD_VIRUS_DELAY == 0 && virus_array.length() < MAX_GAME_VIRUS) {
             add_virus(ADD_VIRUS_SETS);
         }
+#ifndef CONSOLE_RUNNER
         if (tick % Constants::instance().BASE_TICK == 0) {
             write_base_tick();
         }
+#else
+        logger->write_raw(tick, toJsonString());
+#endif
         strategy_directs.clear();
         return tick;
     }
@@ -218,7 +236,7 @@ public:
         }
         return false;
     }
-
+#ifndef CONSOLE_RUNNER
     void mouseMoveEvent(int x, int y) {
         for (Strategy *strategy : strategy_array) {
             ByMouse *by_mouse = dynamic_cast<ByMouse*>(strategy);
@@ -236,6 +254,7 @@ public:
             }
         }
     }
+#endif
 
 public:
     void write_base_tick() {
@@ -293,9 +312,11 @@ public:
             Food *new_food = new Food(id_counter, _x, _y, FOOD_RADIUS, Constants::instance().FOOD_MASS);
             food_array.append(new_food);
             id_counter++;
+#ifndef CONSOLE_RUNNER
             if (tick % Constants::instance().BASE_TICK != 0) {
                 logger->write_add_cmd(tick, new_food);
             }
+#endif
         });
     }
 
@@ -308,9 +329,11 @@ public:
             Virus *new_virus = new Virus(id_counter, _x, _y, rad, VIRUS_MASS);
             virus_array.append(new_virus);
             id_counter++;
+#ifndef CONSOLE_RUNNER
             if (tick % Constants::instance().BASE_TICK != 0) {
                 logger->write_add_cmd(tick, new_virus);
             }
+#endif
         });
     }
 
@@ -324,16 +347,18 @@ public:
             player_array.append(new_player);
             new_player->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
 
-#ifdef LOCAL_RUNNER
+#if defined(LOCAL_RUNNER) || defined(CONSOLE_RUNNER)
             Strategy *new_strategy = get_strategy(new_player);
             strategy_array.append(new_strategy);
 #endif
 
             player_scores[id_counter] = 0;
             id_counter++;
+#ifndef CONSOLE_RUNNER
             if (tick % Constants::instance().BASE_TICK != 0) {
                 logger->write_add_cmd(tick, new_player);
             }
+#endif
         });
     }
 
@@ -382,9 +407,11 @@ public:
         for (Player *player : player_array) {
             int frag_cnt = get_fragments_cnt(player->getId());
             bool updated = player->update_vision(frag_cnt);
+#ifndef CONSOLE_RUNNER
             if (updated) {
                 logger->write_fog_for(tick, player);
             }
+#endif
         }
 
         auto can_see = [&for_them](Circle* c){
@@ -443,8 +470,9 @@ public:
 
         for (Player *frag : fragments) {
             frag->apply_direct(direct, Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
-
+#ifndef CONSOLE_RUNNER
             logger->write_direct_for(tick, frag, direct);
+#endif
         }
 
         strategy_directs.insert(sId, direct);
@@ -470,9 +498,10 @@ public:
                 Player *new_frag= frag->split_now(max_fId);
                 player_array.push_back(new_frag);
                 fragments_count++;
-
+#ifndef CONSOLE_RUNNER
                 logger->write_add_cmd(tick, new_frag);
                 logger->write_change_mass_id(tick, old_id, frag);
+#endif
             }
         }
     }
@@ -504,8 +533,9 @@ public:
                     Ejection *new_eject = frag->eject_now(id_counter);
                     eject_array.append(new_eject);
                     id_counter++;
-
+#ifndef CONSOLE_RUNNER
                     logger->write_add_cmd(tick, new_eject);
+#endif
                 }
             }
         }
@@ -541,7 +571,9 @@ public:
             if (Player *eater = nearest_player(*fit)) {
                 eater->eat(*fit);
                 player_scores[eater->getId()] += SCORE_FOR_FOOD;
+#ifndef CONSOLE_RUNNER
                 logger->write_kill_cmd(tick, *fit);
+#endif
                 delete *fit;
                 fit = food_array.erase(fit);
             } else {
@@ -562,8 +594,9 @@ public:
                 eit++;
                 continue;
             }
-
+#ifndef CONSOLE_RUNNER
             logger->write_kill_cmd(tick, eject);
+#endif
             delete eject;
             eit = eject_array.erase(eit);
         }
@@ -573,7 +606,9 @@ public:
                 bool is_last = get_fragments_cnt((*pit)->getId()) == 1;
                 eater->eat(*pit);
                 player_scores[eater->getId()] += is_last? SCORE_FOR_LAST : SCORE_FOR_PLAYER;
+#ifndef CONSOLE_RUNNER
                 logger->write_kill_cmd(tick, *pit);
+#endif
                 delete *pit;
                 pit = player_array.erase(pit);
             } else {
@@ -615,12 +650,13 @@ public:
                 PlayerArray fragments = player->burst_now(max_fId, yet_cnt);
                 player_array.append(fragments);
                 targets.removeAll(player);
-
+#ifndef CONSOLE_RUNNER
                 for (Player *frag : fragments) {
                     logger->write_add_cmd(tick, frag);
                 }
                 logger->write_change_mass_id(tick, old_id, player);
                 logger->write_kill_cmd(tick, *vit);
+#endif
                 delete *vit;
                 vit = virus_array.erase(vit);
             } else {
@@ -669,9 +705,11 @@ public:
                 if (new_fusion_check) {
                     for (auto it = fragments.begin(); it != fragments.end(); ++it) {
                         bool changed = (*it)->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT); // need for future fusing
+#ifndef CONSOLE_RUNNER
                         if (changed) {
                             logger->write_change_mass(tick, *it);
                         }
+#endif
                     }
                 }
             }
@@ -679,14 +717,18 @@ public:
                 Player *player = fragments.front();
                 QString old_id = player->id_to_str();
                 bool changed = player->clear_fragments();
+#ifndef CONSOLE_RUNNER
                 if (changed) {
                     logger->write_change_id(tick, old_id, player);
                 }
+#endif
                 continue;
             }
         }
         for (Player *p : fused_players) {
+#ifndef CONSOLE_RUNNER
             logger->write_kill_cmd(tick, p);
+#endif
             delete p;
             player_array.removeAll(p);
         }
@@ -696,15 +738,19 @@ public:
         Constants &ins = Constants::instance();
         for (Ejection *eject : eject_array) {
             bool changed = eject->move(ins.GAME_WIDTH, ins.GAME_HEIGHT);
+#ifndef CONSOLE_RUNNER
             if (changed) {
                 logger->write_change_pos(tick, eject);
             }
+#endif
         }
         for (Virus *virus : virus_array) {
             bool changed = virus->move(ins.GAME_WIDTH, ins.GAME_HEIGHT);
+#ifndef CONSOLE_RUNNER
             if (changed) {
                 logger->write_change_pos(tick, virus);
             }
+#endif
         }
 
         QSet<int> playerIds;
@@ -724,18 +770,22 @@ public:
 
         for (Player *player : player_array) {
             bool changed = player->move(ins.GAME_WIDTH, ins.GAME_HEIGHT);
+#ifndef CONSOLE_RUNNER
             if (changed) {
                 logger->write_change_pos(tick, player);
             }
+#endif
         }
     }
 
     void update_players_radius() {
         for (Player *player : player_array) {
             bool changed = player->update_by_mass(Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
+#ifndef CONSOLE_RUNNER
             if (changed) {
                 logger->write_change_mass(tick, player);
             }
+#endif
         }
     }
 
@@ -744,7 +794,9 @@ public:
         for (Virus *virus : virus_array) {
             if (virus->can_split()) {
                 Virus *new_virus = virus->split_now(id_counter);
+#ifndef CONSOLE_RUNNER
                 logger->write_add_cmd(tick, new_virus);
+#endif
                 append_viruses.append(new_virus);
                 id_counter++;
             }
@@ -756,7 +808,9 @@ public:
         for (Player *player : player_array) {
             if (player->can_shrink()) {
                 player->shrink_now();
+#ifndef CONSOLE_RUNNER
                 logger->write_change_mass(tick, player);
+#endif
             }
         }
     }
@@ -768,6 +822,47 @@ public:
     QMap<int, int> get_scores() const {
         return player_scores;
     }
+#ifdef CONSOLE_RUNNER
+    QJsonObject scores_to_json() {
+        QJsonObject json;
+        for (auto tuple : player_scores.toStdMap()) {
+//            tuple.first()
+            json.insert(QString::number(tuple.first), tuple.second);
+        }
+        return json;
+    }
+
+    QString toJsonString() {
+        QJsonObject json;
+        json.insert("scores", scores_to_json());
+        QJsonArray players;
+        for (auto player : player_array) {
+            players.append(player->toJson());
+        }
+        json.insert("players", players);
+
+        QJsonArray foods;
+        for (auto food : food_array) {
+            foods.append(food->toJson());
+        }
+        json.insert("foods", foods);
+
+        QJsonArray viruses;
+        for (auto virus : virus_array) {
+            viruses.append(virus->toJson());
+        }
+        json.insert("viruses", viruses);
+
+        QJsonArray ejects;
+        for (auto eject : eject_array) {
+            ejects.append(eject->toJson());
+        }
+        json.insert("ejects", ejects);
+
+        QJsonDocument jsonDoc(json);
+        return QString(jsonDoc.toJson(QJsonDocument::Compact)) + "\n";
+    }
+#endif
 };
 
 #endif // MECHANIC_H
