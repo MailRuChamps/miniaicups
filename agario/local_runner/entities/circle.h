@@ -28,7 +28,7 @@ public:
         double rvy = y - mcy;
         double rv_len = qSqrt(sqr(rvx) + sqr(rvy));
         double dist_from_map_center_to_direct_pos = qSqrt(sqr(w) + sqr(h)) * 0.75;
-        if (rv_len<dist_from_map_center_to_direct_pos) return;
+        if (rv_len < dist_from_map_center_to_direct_pos) return;
         double k = dist_from_map_center_to_direct_pos / rv_len;
         x = mcx + rvx * k;
         y = mcy + rvy * k;
