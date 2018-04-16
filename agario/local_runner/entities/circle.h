@@ -18,19 +18,7 @@ public:
     bool split;
     bool eject;
 
-    void limit() {
-
-        if (this->x > Constants::instance().GAME_WIDTH) {
-            this->x = Constants::instance().GAME_WIDTH;
-        } else if (this->x < 0) {
-            this->x = 0;
-        }
-        if (this->y > Constants::instance().GAME_HEIGHT) {
-            this->y = Constants::instance().GAME_HEIGHT;
-        } else if (this->y < 0) {
-            this->y = 0;
-        }
-    }
+    void limit() {}
 };
 
 
