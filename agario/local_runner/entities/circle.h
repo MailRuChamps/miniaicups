@@ -17,19 +17,21 @@ public:
     double x, y;
     bool split;
     bool eject;
-
+    
+    static double sqr(double x) {return x * x;}
     void limit() {
-
-        if (this->x > Constants::instance().GAME_WIDTH) {
-            this->x = Constants::instance().GAME_WIDTH;
-        } else if (this->x < 0) {
-            this->x = 0;
-        }
-        if (this->y > Constants::instance().GAME_HEIGHT) {
-            this->y = Constants::instance().GAME_HEIGHT;
-        } else if (this->y < 0) {
-            this->y = 0;
-        }
+        double w = Constants::instance().GAME_WIDTH;
+        double h = Constants::instance().GAME_WIDTH;
+        double mcx = w * 0.5;
+        double mcy = h * 0.5;
+        double rvx = x - mcx;
+        double rvy = y - mcy;
+        double rv_len = qSqrt(sqr(rvx) + sqr(rvy));
+        double dist_from_map_center_to_direct_pos = qSqrt(sqr(w) + sqr(h)) * 1.25;
+        if (rv_len<dist_from_map_center_to_direct_pos || !rv_len) return;
+        double k = dist_from_map_center_to_direct_pos / rv_len;
+        x = mcx + rvx * k;
+        y = mcy + rvy * k;
     }
 };
 
