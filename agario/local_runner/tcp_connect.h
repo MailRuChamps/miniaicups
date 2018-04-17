@@ -267,6 +267,7 @@ public slots:
             objectsArray.append(circle->toJson());
         }
         QJsonObject json;
+        json.insert("Elapsed", sum_waiting);
         json.insert("Mine", mineArray);
         json.insert("Objects", objectsArray);
 
