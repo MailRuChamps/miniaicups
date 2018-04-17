@@ -21,7 +21,7 @@ public:
     static double sqr(double x) {return x * x;}
     void limit() {
         double w = Constants::instance().GAME_WIDTH;
-        double h = Constants::instance().GAME_WIDTH;
+        double h = Constants::instance().GAME_HEIGHT;
         double mcx = w * 0.5;
         double mcy = h * 0.5;
         double rvx = x - mcx;
