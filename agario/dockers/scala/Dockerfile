@@ -13,8 +13,9 @@ RUN apt-get update -y && \
     mkdir -p /opt/client/src/main/scala
 
 COPY build.sbt /opt/client
+COPY Main.scala /opt/client/src/main/scala/.
 COPY assembly.sbt /opt/client/project/assembly.sbt
-RUN sbt compile && rm -rf target
+RUN sbt assembly && rm -rf target && rm -rf /opt/client/src/main/scala/*
 
 ENV SOLUTION_CODE_ENTRYPOINT=Main.scala
 ENV COMPILED_FILE_PATH=/opt/client/target/scala-2.11/Strategy-assembly-0.1.0.jar
