@@ -84,7 +84,7 @@ public:
             speed -= Constants::instance().VISCOSITY;
         } else {
             // иначе выставляем максимальную скорость и выходим из режима полёта
-            speed = usual_speed;
+            if (0.0 != speed) speed = usual_speed;
             is_fast = false;
         }
     }
