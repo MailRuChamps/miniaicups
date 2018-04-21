@@ -25,6 +25,7 @@ protected:
     bool is_ready;
     bool answered;
     bool is_active;
+    bool timelimit_supported;
 
     QByteArray got_data;
 
@@ -52,7 +53,8 @@ public:
         waiting(false),
         sum_waiting(0),
         is_active(false),
-        answered(false)
+        answered(false),
+        timelimit_supported(false)
     {
         timerId = startTimer(100);
         connect(socket, SIGNAL(readyRead()), this, SLOT(read_data()));
@@ -164,6 +166,9 @@ public slots:
                 return;
             }
             got_data.clear();
+            if (json.contains("TimelimitSupported")) {
+                timelimit_supported = json.value("TimelimitSupported").toBool(false);
+            }
             QJsonDocument doc(json);
             dump_logger->write_raw_with_old_tick(doc.toJson(QJsonDocument::Compact)+ "\n");
             QStringList keys = json.keys();
@@ -268,6 +273,11 @@ public slots:
         QJsonObject json;
         json.insert("Mine", mineArray);
         json.insert("Objects", objectsArray);
+        if (timelimit_supported) {
+            auto remaining = std::chrono::seconds(Constants::instance().SUM_RESP_TIMEOUT) - sum_waiting;
+            int remainingMS = std::chrono::duration_cast<std::chrono::milliseconds>(remaining).count();
+            json.insert("TimelimitRemaining", remainingMS);
+        }
 
         QJsonDocument jsonDoc(json);
         return QString(jsonDoc.toJson(QJsonDocument::Compact)) + "\n";
