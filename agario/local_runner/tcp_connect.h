@@ -2,14 +2,14 @@
 #define TCP_CONNECT_H
 
 #include "logger.h"
-#include <QTimerEvent>
 #include <QDateTime>
+#include <QElapsedTimer>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
 #include <QJsonValue>
 #include <QTcpSocket>
-
+#include <QTimerEvent>
 
 class ClientWrapper : public QObject
 {
@@ -29,9 +29,10 @@ protected:
 
     // timeouts implementation
     int timerId;
-    int wait_timeout;
     bool waiting;
     int sum_waiting;
+    int protocol_version;
+    QElapsedTimer elapsed_timer;
 
 signals:
     void ready();
@@ -42,17 +43,16 @@ signals:
     void sprite(QString, QString);
 
 public:
-    explicit ClientWrapper(QTcpSocket *_socket) :
-        socket(_socket),
-        logger(new Logger),
-        dump_logger(new Logger),
-        is_ready(false),
-        wait_timeout(0),
-        waiting(false),
-        sum_waiting(0),
-        is_active(false),
-        answered(false)
-    {
+    explicit ClientWrapper(QTcpSocket *_socket)
+        : socket(_socket)
+        , logger(new Logger)
+        , dump_logger(new Logger)
+        , is_ready(false)
+        , answered(false)
+        , is_active(false)
+        , waiting(false)
+        , sum_waiting(0)
+        , protocol_version(1) {
         timerId = startTimer(100);
         connect(socket, SIGNAL(readyRead()), this, SLOT(read_data()));
         connect(socket, SIGNAL(disconnected()), this, SLOT(client_disconnected()));
@@ -77,10 +77,8 @@ public:
     }
 
     void timerEvent(QTimerEvent *event) {
-
         if (event->timerId() == timerId && waiting && is_active) {
-            wait_timeout++;
-            if (wait_timeout > Constants::instance().RESP_TIMEOUT * 10) {
+            if (elapsed_timer.elapsed() > Constants::instance().RESP_TIMEOUT * 1000) {
                 bool is_expired = accumulate_wait();
                 if (is_expired) return;
 
@@ -93,10 +91,9 @@ public:
 
     bool accumulate_wait() {
         waiting = false;
-        sum_waiting += wait_timeout;
-        wait_timeout = 0;
+        sum_waiting += elapsed_timer.restart();
 
-        if (sum_waiting > Constants::instance().SUM_RESP_TIMEOUT * 10) {
+        if (sum_waiting > Constants::instance().SUM_RESP_TIMEOUT * 1000) {
             is_active = false;
             emit error(SUM_RESP_EXPIRED);
             this->socket->disconnectFromHost();
@@ -136,10 +133,8 @@ public slots:
         got_data = got_data.left(MAX_RESP_LEN);
         if (answered) return;
         answered = true;
-        bool is_expired = accumulate_wait();
-        if (is_expired) return;
 
-        if (! is_ready) {
+        if (!is_ready) {
             QJsonObject json = parse_answer(got_data);
             if (json.isEmpty()) {
                 emit error("Can't parse json: " + got_data);
@@ -147,7 +142,7 @@ public slots:
             }
             got_data.clear();
             QStringList keys = json.keys();
-            if (! keys.contains("solution_id")) {
+            if (!keys.contains("solution_id")) {
                 emit error("No required key 'solution_id'");
                 return;
             }
@@ -157,8 +152,10 @@ public slots:
             dump_logger->init_file(solution_id, DUMP_FILE);
             is_ready = true;
             emit ready();
-        }
-        else {
+        } else {
+            bool is_expired = accumulate_wait();
+            if (is_expired)
+                return;
             QJsonObject json = parse_answer(got_data);
             if (json.isEmpty()) {
                 emit error("Can't parse json: " + got_data);
@@ -166,15 +163,15 @@ public slots:
             }
             got_data.clear();
             QJsonDocument doc(json);
-            dump_logger->write_raw_with_old_tick(doc.toJson(QJsonDocument::Compact)+ "\n");
+            dump_logger->write_raw_with_old_tick(doc.toJson(QJsonDocument::Compact) + "\n");
             QStringList keys = json.keys();
             if (keys.contains("error")) {
                 QString err_msg = json.value("error").toString();
                 emit error(err_msg.left(MAX_DEBUG_LEN));
-//                logger->write_error(player_id, error);
+                //                logger->write_error(player_id, error);
                 return;
             }
-            if (! keys.contains("X") || ! keys.contains("Y")) {
+            if (!keys.contains("X") || !keys.contains("Y")) {
                 emit error("No required key 'X' or 'Y'");
                 return;
             }
@@ -183,6 +180,9 @@ public slots:
             double y = json.value("Y").toDouble(0.0);
 
             Direct result(x, y);
+            if (keys.contains("protocol_version")) {
+                protocol_version = json.value("protocol_version").toInt(1);
+            }
             if (keys.contains("Split")) {
                 result.split = json.value("Split").toBool(false);
             }
@@ -198,7 +198,7 @@ public slots:
             }
             if (keys.contains("Sprite")) {
                 QJsonObject spriteJson = json.value("Sprite").toObject();
-                if (! spriteJson.empty()) {
+                if (!spriteJson.empty()) {
                     QString player = spriteJson.value("Id").toString("");
                     QString msg = spriteJson.value("S").toString("");
                     if (player != "" && msg != "") {
@@ -233,9 +233,9 @@ public slots:
 
     void send_config() {
         QJsonDocument jsonDoc(Constants::instance().toJson());
-        QString message = QString(jsonDoc.toJson(QJsonDocument::Compact)) + "\n";
+        QByteArray message = jsonDoc.toJson(QJsonDocument::Compact) + "\n";
 
-        int sent = socket->write(message.toStdString().c_str());
+        qint64 sent = socket->write(message);
         if (sent == 0) {
             emit error("Fatal error: can't send config");
         }
@@ -243,12 +243,12 @@ public slots:
         socket->flush();
     }
 
-    void send_state(const PlayerArray &fragments, const CircleArray &visibles, int tick=0) {
+    void send_state(const PlayerArray &fragments, const CircleArray &visibles, int tick = 0) {
         waiting = true;
-        wait_timeout = 0;
+        elapsed_timer.restart();
 
-        QString message = prepare_state(fragments, visibles);
-        int sent = socket->write(message.toStdString().c_str());
+        QByteArray message = prepare_state(fragments, visibles);
+        qint64 sent = socket->write(message);
         if (sent == 0) {
             emit error("Fatal error: can't send state");
         }
@@ -257,7 +257,7 @@ public slots:
         answered = false;
     }
 
-    QString prepare_state(const PlayerArray &fragments, const CircleArray &visibles) {
+    QByteArray prepare_state(const PlayerArray &fragments, const CircleArray &visibles) {
         QJsonArray mineArray;
         for (Player *player : fragments) {
             mineArray.append(player->toJson(true));
@@ -269,9 +269,12 @@ public slots:
         QJsonObject json;
         json.insert("Mine", mineArray);
         json.insert("Objects", objectsArray);
+        if (protocol_version > 1) {
+            json.insert("SumWaiting", sum_waiting);
+        }
 
         QJsonDocument jsonDoc(json);
-        return QString(jsonDoc.toJson(QJsonDocument::Compact)) + "\n";
+        return jsonDoc.toJson(QJsonDocument::Compact) + "\n";
     }
 
     Logger *get_logger() const {
@@ -283,6 +286,6 @@ public slots:
     }
 };
 
-typedef QVector<ClientWrapper*> ClientWrappers;
+typedef QVector<ClientWrapper *> ClientWrappers;
 
 #endif // TCP_CONNECT_H
