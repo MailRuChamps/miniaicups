@@ -9,6 +9,7 @@
 #include <QJsonArray>
 #include <QJsonValue>
 #include <QTcpSocket>
+#include <chrono>
 
 
 class ClientWrapper : public QObject
@@ -29,9 +30,10 @@ protected:
 
     // timeouts implementation
     int timerId;
-    int wait_timeout;
     bool waiting;
-    int sum_waiting;
+    using steady_clock = std::chrono::steady_clock;
+    steady_clock::time_point tick_start;
+    steady_clock::duration sum_waiting;
 
 signals:
     void ready();
@@ -47,7 +49,6 @@ public:
         logger(new Logger),
         dump_logger(new Logger),
         is_ready(false),
-        wait_timeout(0),
         waiting(false),
         sum_waiting(0),
         is_active(false),
@@ -79,8 +80,7 @@ public:
     void timerEvent(QTimerEvent *event) {
 
         if (event->timerId() == timerId && waiting && is_active) {
-            wait_timeout++;
-            if (wait_timeout > Constants::instance().RESP_TIMEOUT * 10) {
+            if (tick_start + std::chrono::seconds(Constants::instance().RESP_TIMEOUT) < steady_clock::now()) {
                 bool is_expired = accumulate_wait();
                 if (is_expired) return;
 
@@ -93,10 +93,9 @@ public:
 
     bool accumulate_wait() {
         waiting = false;
-        sum_waiting += wait_timeout;
-        wait_timeout = 0;
+        sum_waiting += steady_clock::now() - tick_start;
 
-        if (sum_waiting > Constants::instance().SUM_RESP_TIMEOUT * 10) {
+        if (sum_waiting > std::chrono::seconds(Constants::instance().SUM_RESP_TIMEOUT)) {
             is_active = false;
             emit error(SUM_RESP_EXPIRED);
             this->socket->disconnectFromHost();
@@ -245,7 +244,7 @@ public slots:
 
     void send_state(const PlayerArray &fragments, const CircleArray &visibles, int tick=0) {
         waiting = true;
-        wait_timeout = 0;
+        tick_start = std::chrono::steady_clock::now();
 
         QString message = prepare_state(fragments, visibles);
         int sent = socket->write(message.toStdString().c_str());
