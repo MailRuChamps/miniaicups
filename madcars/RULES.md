@@ -90,27 +90,29 @@ max_speed = 70
 
 Параметры для машины типа SquareWheelsBuggy (наследуется от Buggy):
 ```python
-   max_speed = 50
-   car_body_mass = 230
+max_speed = 50
+car_body_mass = 230
 ```
 
 Параметры для машины типа Bus:
-    car_body_poly = [
-        (0, 6),
-        (8, 62),
-        (136, 62),
-        (153, 32),
-        (153, 5),
-        (110, 0),
-        (23, 0)
-    ]
-    car_body_mass = 700
+```python
+car_body_poly = [
+    (0, 6),
+    (8, 62),
+    (136, 62),
+    (153, 32),
+    (153, 5),
+    (110, 0),
+    (23, 0)
+]
+car_body_mass = 700
     
-    button_position = (137, 59)
-    button_angle = -math.atan(3/1.7)
-    button_hw = (1, 28)
+button_position = (137, 59)
+button_angle = -math.atan(3/1.7)
+button_hw = (1, 28)
     
-    max_speed = 45
+max_speed = 45
+```
 
 Для колес каждой машины также задаются масса, позиция и радиус. Полную информацию об этом можно найти в папке `mechanic/game_objects` в файлах `base_car.py` и `cars.py`.
 
