@@ -152,44 +152,51 @@ base_segments = [
 ```
 
 Параметры для карты PillHubbleMap (наследуется от PillMap):
-    additional_arcs = [
-        ((600, -150), 300, math.pi/3.2, math.pi/1.45, 30)
-    ]
+```python
+additional_arcs = [
+    ((600, -150), 300, math.pi/3.2, math.pi/1.45, 30)
+]
+```
 
 Параметры для карты PillHillMap (наследуется от PillMap):
-    additional_arcs = [
-        ((300, 300), 200, -math.pi / 2, -math.pi / 6, 30),
-        ((900, 300), 200, math.pi * 3 / 2, math.pi * 7 / 6, 30),
-    ]
-    
-    additional_segments = [
-        ((465, 195), (735, 195))
-    ]
+```python
+additional_arcs = [
+    ((300, 300), 200, -math.pi / 2, -math.pi / 6, 30),
+    ((900, 300), 200, math.pi * 3 / 2, math.pi * 7 / 6, 30),
+]
+additional_segments = [
+    ((465, 195), (735, 195))
+]
+```
 
 Параметры для карты PillCarcassMap (наследуется от PillMap):
-    additional_segments = [
-        ((300, 400), (900, 400))
-    ]
+```python
+additional_segments = [
+    ((300, 400), (900, 400))
+]
+```
 
 Параметры для карты IslandMap:
-    base_segments = [
-        ((100, 100), (1100, 100)),
-    ]
+```python
+base_segments = [
+    ((100, 100), (1100, 100)),
+]
+```
 
 Параметры для карты IslandHoleMap:
-    base_segments = [
-        ((10, 400), (50, 200)),
-        ((50, 200), (300, 200)),
-    
-        ((380, 150), (820, 150)),
-        ((900, 200), (1150, 200)),
-        ((1150, 200), (1190, 400))
-    ]
-    
-    base_arcs = [
-        ((300, 100), 100, math.pi / 6, math.pi / 2, 30),
-        ((900, 100), 100, math.pi / 2, math.pi * 5 / 6, 30),
-    ]
+```python
+base_segments = [
+    ((10, 400), (50, 200)),
+    ((50, 200), (300, 200)),
+    ((380, 150), (820, 150)),
+    ((900, 200), (1150, 200)),
+    ((1150, 200), (1190, 400))
+]
+base_arcs = [
+    ((300, 100), 100, math.pi / 6, math.pi / 2, 30),
+    ((900, 100), 100, math.pi / 2, math.pi * 5 / 6, 30),
+]
+```
 
 Полная информация о картах может быть найдена в файле `mechanic/game_objects/maps.py`.
 
