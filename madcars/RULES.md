@@ -69,22 +69,23 @@
 
 Параметры для машины типа Buggy:
 ```python 
-car_body_poly = [(0, 6),
-        (0, 25),
-        (33, 42),
-        (85, 42),
-        (150, 20),
-        (150, 0),
-        (20, 0)
-    ]
+car_body_poly = [
+    (0, 6),
+    (0, 25),
+    (33, 42),
+    (85, 42),
+    (150, 20),
+    (150, 0),
+    (20, 0)
+]
+
+car_body_mass = 200
     
-    car_body_mass = 200
+button_position = (40, 42)
     
-    button_position = (40, 42)
+button_hw = (1, 38)
     
-    button_hw = (1, 38)
-    
-    max_speed = 70
+max_speed = 70
 ```
 
 Параметры для машины типа SquareWheelsBuggy (наследуется от Buggy):
