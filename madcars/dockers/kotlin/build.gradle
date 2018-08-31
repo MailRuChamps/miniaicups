@@ -1,0 +1,47 @@
+group 'KotlinStrategy'
+version '1.0'
+
+buildscript {
+    ext.kotlin_version = '1.2.30'
+
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
+    }
+}
+
+apply plugin: 'kotlin'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compile 'org.json:json:20180130'
+}
+
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+}
+
+shadowJar() {
+    archiveName = 'kotlinStrategy.jar'
+    mergeServiceFiles()
+    manifest {
+        attributes 'Main-Class': 'MainKt'
+    }
+}
+
+build.dependsOn shadowJar
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
