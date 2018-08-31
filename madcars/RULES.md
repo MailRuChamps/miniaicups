@@ -84,8 +84,10 @@
     ```
 
 Параметры для машины типа SquareWheelsBuggy (наследуется от Buggy):
-    max_speed = 50
-    car_body_mass = 230
+   ```python
+   max_speed = 50
+   car_body_mass = 230
+   ```
 
 Параметры для машины типа Bus:
     car_body_poly = [
