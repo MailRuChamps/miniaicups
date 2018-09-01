@@ -168,6 +168,8 @@ mod model {
         pub front_wheel_damp_length: f64,
         pub front_wheel_damp_stiffness: f64,
         pub front_wheel_damp_damping: f64,
+
+        pub squared_wheels: Option<bool>,
     }
 
     /// Car state
