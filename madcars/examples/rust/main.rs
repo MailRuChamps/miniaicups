@@ -244,10 +244,14 @@ mod strategy {
             // Print to console (stderr)
             eprintln!("Processing tick #{}", self.tick);
 
-            if (self.tick % 3) != 0 {
+            let t = self.tick % 9;
+
+            if t < 4 {
                 Command::Left
-            } else {
+            } else if t > 5 {
                 Command::Right
+            } else {
+                Command::Stop
             }
         }
     }
