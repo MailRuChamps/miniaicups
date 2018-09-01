@@ -241,9 +241,6 @@ mod strategy {
         fn on_tick(&mut self, _my_car: Car, _enemy_car: Car, _deadline_pos: f64) -> Command {
             self.tick += 1;
 
-            // Print to console (stderr)
-            eprintln!("Processing tick #{}", self.tick);
-
             let t = self.tick % 9;
 
             if t < 4 {
