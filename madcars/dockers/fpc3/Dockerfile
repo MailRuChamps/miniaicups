@@ -1,7 +1,7 @@
 FROM ubuntu:16.04
 MAINTAINER Igor Kuznetsov <garry_smith@mail.ru>
 
-RUN apt-get install fpc
+RUN apt-get update && apt-get install -y fpc
 
 ENV COMPILED_FILE_PATH=/opt/client/main
 ENV SOLUTION_CODE_PATH=/opt/client/solution
