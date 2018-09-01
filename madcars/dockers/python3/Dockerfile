@@ -1,7 +1,7 @@
 FROM ubuntu:16.04
 MAINTAINER Boris Kolganov <b.kolganov@corp.mail.ru>
 
-RUN apt-get update && apt-get install -y python3 python3-pip && pip3 install -U numpy scipy cython scikit-learn keras pandas tensorflow==1.5.0
+RUN apt-get update && apt-get install -y python3 python3-pip && pip3 install -U numpy scipy cython scikit-learn keras pandas tensorflow==1.5.0 http://download.pytorch.org/whl/cpu/torch-0.4.1-cp36-cp36m-linux_x86_64.whl torchvision
 
 ENV SOLUTION_CODE_ENTRYPOINT=main.py
 ENV SOLUTION_CODE_PATH=/opt/client/solution
