@@ -12,8 +12,11 @@ var
 begin
   while True do
   begin
-    ReadLn(Z);
-    Cmd := COMMANDS[Random(2)];
-    WriteLn('{"command": "' + Cmd + '", "debug": "' + Cmd + '"}');
+    if not Eof(input) then
+    begin
+      ReadLn(input, Z);
+      Cmd := COMMANDS[Random(2)];
+      WriteLn(output, '{"command": "' + Cmd + '", "debug": "' + Cmd + '"}');
+    end;
   end;
 end.
