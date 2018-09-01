@@ -30,8 +30,13 @@ fn run<T: Strategy>(mut strategy: T) {
         // Process the message
         let response = handle_message(msg, &mut strategy);
 
+        // Check whether there's a response
+        if response.is_none() {
+            continue;
+        }
+
         // Encode response to JSON
-        let mut output = serde_json::to_string(&response).unwrap();
+        let mut output = serde_json::to_string(&response.unwrap()).unwrap();
         output.push_str("\n");
 
         // Write response JSON to stdout
@@ -40,9 +45,9 @@ fn run<T: Strategy>(mut strategy: T) {
 }
 
 /// Handle input message
-fn handle_message<T: Strategy>(msg: Message, strategy: &mut T) -> Response {
-    // Handle each message type, produce command
-    let (cmd, debug_msg) = match msg.msg_type {
+fn handle_message<T: Strategy>(msg: Message, strategy: &mut T) -> Option<Response> {
+    // Handle each message type, produce optional response
+    match msg.msg_type {
         MessageType::NewMatch => {
             // Extract message parameters
             let (my_lives, enemy_lives, proto_map, proto_car) = (
@@ -55,8 +60,8 @@ fn handle_message<T: Strategy>(msg: Message, strategy: &mut T) -> Response {
             // Call strategy's initialization function
             strategy.begin_match(my_lives, enemy_lives, proto_map, proto_car);
 
-            // Return 'stop' command and a debug message
-            (Command::Stop, "Starting new match!")
+            // This message shouldn't be answered
+            None
         }
 
         MessageType::Tick => {
@@ -71,14 +76,11 @@ fn handle_message<T: Strategy>(msg: Message, strategy: &mut T) -> Response {
             let cmd = strategy.on_tick(my_car, enemy_car, deadline_pos);
 
             // Pass strategy's returned command plus a debug message
-            (cmd, "Drive ahead!!")
+            Some(Response {
+                command: cmd,
+                debug: Some("Drive ahead!!".to_string()),
+            })
         }
-    };
-
-    // Create a response
-    Response {
-        command: cmd,
-        debug: Some(debug_msg.to_string()),
     }
 }
 
