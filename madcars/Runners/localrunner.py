@@ -9,7 +9,9 @@ from asyncio import events
 from mechanic.game import Game
 from mechanic.strategy import KeyboardClient, FileClient
 
-window = pyglet.window.Window(1200, 800, vsync=False)
+scale_factor = 0.7;
+
+window = pyglet.window.Window(1200 * scale_factor, 800 * scale_factor, vsync=False)
 draw_options = pymunk.pyglet_util.DrawOptions()
 _ = pyglet.clock.ClockDisplay(interval=0.016)
 
@@ -56,6 +58,9 @@ events.set_event_loop(loop)
 @window.event
 def on_draw():
     pyglet.gl.glClearColor(255,255,255,255)
+    
+    pyglet.gl.glPushMatrix()
+    pyglet.gl.glScalef(scale_factor, scale_factor, scale_factor)
     window.clear()
     game.draw(draw_options)
     game.tick()
@@ -75,6 +80,8 @@ def on_draw():
                               color=(255, 0, 0, 255),
                               x=600, y=500,
                               anchor_x='center', anchor_y='center').draw()
+                
+    pyglet.gl.glPopMatrix()
 
 
 pyglet.app.run()
