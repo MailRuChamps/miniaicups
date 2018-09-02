@@ -149,7 +149,7 @@ mod model {
         pub car_body_elasticity: f64,
         pub max_speed: f64,
         pub max_angular_speed: f64,
-        pub drive: f64,
+        pub drive: u32, // Drive type: 1=FF, 2=FR, 3=AWD
 
         pub rear_wheel_mass: f64,
         pub rear_wheel_position: Point2D,
