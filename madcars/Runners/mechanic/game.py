@@ -55,6 +55,7 @@ class Game(object):
 
         self.space = pymunk.Space()
         self.space.gravity = (0.0, -700)
+        self.space.damping = 0.85
         self.scores = defaultdict(int)
         self.matches = self.parse_games(games_list)
         self.current_match = None

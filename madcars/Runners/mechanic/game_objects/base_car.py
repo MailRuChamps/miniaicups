@@ -26,6 +26,7 @@ class Car(object):
 
     max_speed = 300
     max_angular_speed = 2
+    torque = 20000000
     drive = FR
 
     rear_wheel_mass = 60
@@ -173,14 +174,14 @@ class Car(object):
 
     def go_right(self):
         if self.in_air():
-            self.car_body.angular_velocity = self.max_angular_speed
+            self.car_body.torque = self.torque
 
         for motor in self.motors:
             motor.rate = -self.max_speed
 
     def go_left(self):
         if self.in_air():
-            self.car_body.angular_velocity = self.max_angular_speed * -1
+            self.car_body.torque = -self.torque
 
         for motor in self.motors:
             motor.rate = self.max_speed
@@ -220,6 +221,7 @@ class Car(object):
                 'car_body_elasticity': cls.car_body_elasticity,
                 'max_speed': cls.max_speed,
                 'max_angular_speed': cls.max_angular_speed,
+                'torque': cls.torque,
                 'drive': cls.drive,
 
                 'rear_wheel_mass': cls.rear_wheel_mass,

@@ -22,6 +22,7 @@ class Buggy(Car):
     button_hw = (1, 38)
 
     max_speed = 70
+    torque = 14000000
 
     drive = Car.FR
 
@@ -61,6 +62,7 @@ class Bus(Car):
     button_hw = (1, 28)
 
     max_speed = 45
+    torque = 35000000
 
     drive = Car.AWD
 
