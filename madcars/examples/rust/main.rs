@@ -30,8 +30,13 @@ fn run<T: Strategy>(mut strategy: T) {
         // Process the message
         let response = handle_message(msg, &mut strategy);
 
+        // Check whether there's a response
+        if response.is_none() {
+            continue;
+        }
+
         // Encode response to JSON
-        let mut output = serde_json::to_string(&response).unwrap();
+        let mut output = serde_json::to_string(&response.unwrap()).unwrap();
         output.push_str("\n");
 
         // Write response JSON to stdout
@@ -40,9 +45,9 @@ fn run<T: Strategy>(mut strategy: T) {
 }
 
 /// Handle input message
-fn handle_message<T: Strategy>(msg: Message, strategy: &mut T) -> Response {
-    // Handle each message type, produce command
-    let (cmd, debug_msg) = match msg.msg_type {
+fn handle_message<T: Strategy>(msg: Message, strategy: &mut T) -> Option<Response> {
+    // Handle each message type, produce optional response
+    match msg.msg_type {
         MessageType::NewMatch => {
             // Extract message parameters
             let (my_lives, enemy_lives, proto_map, proto_car) = (
@@ -55,8 +60,8 @@ fn handle_message<T: Strategy>(msg: Message, strategy: &mut T) -> Response {
             // Call strategy's initialization function
             strategy.begin_match(my_lives, enemy_lives, proto_map, proto_car);
 
-            // Return 'stop' command and a debug message
-            (Command::Stop, "Starting new match!")
+            // This message shouldn't be answered
+            None
         }
 
         MessageType::Tick => {
@@ -71,14 +76,11 @@ fn handle_message<T: Strategy>(msg: Message, strategy: &mut T) -> Response {
             let cmd = strategy.on_tick(my_car, enemy_car, deadline_pos);
 
             // Pass strategy's returned command plus a debug message
-            (cmd, "Drive ahead!!")
+            Some(Response {
+                command: cmd,
+                debug: Some("Drive ahead!!".to_string()),
+            })
         }
-    };
-
-    // Create a response
-    Response {
-        command: cmd,
-        debug: Some(debug_msg.to_string()),
     }
 }
 
@@ -146,8 +148,8 @@ mod model {
         pub car_body_friction: f64,
         pub car_body_elasticity: f64,
         pub max_speed: f64,
-        pub max_angular_speed: f64,
-        pub drive: f64,
+        pub torque: f64,
+        pub drive: u32, // Drive type: 1=FF, 2=FR, 3=AWD
 
         pub rear_wheel_mass: f64,
         pub rear_wheel_position: Point2D,
@@ -168,6 +170,8 @@ mod model {
         pub front_wheel_damp_length: f64,
         pub front_wheel_damp_stiffness: f64,
         pub front_wheel_damp_damping: f64,
+
+        pub squared_wheels: Option<bool>,
     }
 
     /// Car state
@@ -237,13 +241,14 @@ mod strategy {
         fn on_tick(&mut self, _my_car: Car, _enemy_car: Car, _deadline_pos: f64) -> Command {
             self.tick += 1;
 
-            // Print to console (stderr)
-            eprintln!("Processing tick #{}", self.tick);
+            let t = self.tick % 9;
 
-            if (self.tick % 3) != 0 {
+            if t < 4 {
                 Command::Left
-            } else {
+            } else if t > 5 {
                 Command::Right
+            } else {
+                Command::Stop
             }
         }
     }
