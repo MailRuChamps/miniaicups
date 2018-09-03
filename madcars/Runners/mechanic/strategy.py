@@ -147,10 +147,9 @@ class TcpClient(Client):
                 raise ConnectionError('Connection closed')
             self.execution_time += (datetime.datetime.now() - before)
             if self.execution_time > self.EXECUTION_LIMIT:
-                return {'debug': 'sum timeout'}
-        except asyncio.TimeoutError as e:
-            return {'debug': 'read timeout error'}
-
+                raise Exception('sum timeout error')
+        except asyncio.TimeoutError:
+            raise asyncio.TimeoutError('read timeout error')
         try:
             z = json.loads(z.decode())
         except ValueError:

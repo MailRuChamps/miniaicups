@@ -42,6 +42,11 @@ class Player(object):
                 elif turn == 'right':
                     self.car.go_right()
         except Exception as e:
+            args = e.args
+            if len(args) > 0:
+                self.debug_log.append({'tick': tick, 'message': args[0]})
+            else:
+                self.debug_log.append({'tick': tick, 'message': str(e)})
             print('read exception', self.client.get_solution_id(), e)
             self.is_disconnected = True
             self.client.close()
