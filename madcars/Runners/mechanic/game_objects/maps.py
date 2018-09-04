@@ -32,16 +32,19 @@ class Map(object):
             self.objects.append(segment)
 
     def create_box(self, space):
-        left = pymunk.Segment(space.static_body, (0, 0), (0, self.max_height), 1)
+        bo = self.segment_height - 1  # box offset
+        left = pymunk.Segment(space.static_body, (-bo, -bo), (-bo, self.max_height + bo), self.segment_height)
         left.sensor = True
 
-        top = pymunk.Segment(space.static_body, (0, self.max_height), (self.max_width, self.max_height), 1)
+        top = pymunk.Segment(space.static_body, (-bo, self.max_height + bo),
+                             (self.max_width + bo, self.max_height + bo), 10)
         top.sensor = True
 
-        right = pymunk.Segment(space.static_body, (self.max_width, self.max_height), (self.max_width, 0), 1)
+        right = pymunk.Segment(space.static_body, (self.max_width + bo, self.max_height + bo),
+                               (self.max_width + bo, -bo), 10)
         right.sensor = True
 
-        bottom = pymunk.Segment(space.static_body, (self.max_width, 0), (0, 0), 1)
+        bottom = pymunk.Segment(space.static_body, (self.max_width + bo, -bo), (-bo, -bo), 10)
         bottom.sensor = True
 
         self.objects.extend([left, top, right, bottom])

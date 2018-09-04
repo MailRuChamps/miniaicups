@@ -28,7 +28,6 @@ class Buggy(Car):
 
     rear_wheel_mass = 50
     rear_wheel_position = (29, -5)
-    rear_wheel_joint = (150, 0)
     rear_wheel_damp_position = (29, 20)
     rear_wheel_damp_stiffness = 5e4
     rear_wheel_damp_damping = 3e3
@@ -37,7 +36,6 @@ class Buggy(Car):
 
     front_wheel_mass = 5
     front_wheel_position = (122, -5)
-    front_wheel_joint = (0, 6)
     front_wheel_damp_position = (122, 20)
     front_wheel_damp_length = 25
     front_wheel_radius = 12
@@ -69,7 +67,6 @@ class Bus(Car):
     rear_wheel_radius = 13
     rear_wheel_position = (38, -5)
     rear_wheel_friction = 0.9
-    rear_wheel_joint = (153, 5)
     rear_wheel_damp_position = (38, 30)
     rear_wheel_damp_length = 35
     rear_wheel_damp_stiffness = 10e4
@@ -77,7 +74,6 @@ class Bus(Car):
 
     front_wheel_radius = 13
     front_wheel_position = (125, -5)
-    front_wheel_joint = (0, 6)
     front_wheel_damp_position = (125, 30)
     front_wheel_damp_length = 35
     front_wheel_damp_stiffness = 10e4
@@ -108,7 +104,6 @@ class SquareWheelsBuggy(Buggy):
         wheel_position = getattr(self, wheel_side + '_wheel_position')
         wheel_friction = getattr(self, wheel_side + '_wheel_friction')
         wheel_elasticity = getattr(self, wheel_side + '_wheel_elasticity')
-        wheel_joint = getattr(self, wheel_side + '_wheel_joint')
         wheel_damp_position = getattr(self, wheel_side + '_wheel_damp_position')
         wheel_damp_length = getattr(self, wheel_side + '_wheel_damp_length')
         wheel_damp_stiffness = getattr(self, wheel_side + '_wheel_damp_stiffness')
@@ -124,8 +119,12 @@ class SquareWheelsBuggy(Buggy):
         wheel_shape.elasticity = wheel_elasticity
         wheel_objects.append(wheel_shape)
 
-        wheel_joint = pymunk.PinJoint(wheel_body, self.car_body, anchor_b=(wheel_joint[0] * self.x_modification, wheel_joint[1]))
-        wheel_objects.append(wheel_joint)
+        wheel_grove = pymunk.GrooveJoint(self.car_body, wheel_body,
+                                         (wheel_damp_position[0] * self.x_modification, wheel_damp_position[1]),
+                                         (wheel_damp_position[0] * self.x_modification,
+                                          wheel_damp_position[1] - wheel_damp_length * 1.5),
+                                         (0, 0))
+        wheel_objects.append(wheel_grove)
 
         wheel_damp = pymunk.DampedSpring(wheel_body, self.car_body, anchor_a=(0, 0),
                                          anchor_b=(wheel_damp_position[0] * self.x_modification, wheel_damp_position[1]),
@@ -133,12 +132,6 @@ class SquareWheelsBuggy(Buggy):
                                          stiffness=wheel_damp_stiffness,
                                          damping=wheel_damp_damping)
         wheel_objects.append(wheel_damp)
-
-        wheel_stop = pymunk.Poly(self.car_body, [(0, 0), (0, 1),(wheel_radius * 2 * self.x_modification, 1), (wheel_radius * 2 * self.x_modification, 0)],
-                                 transform=pymunk.Transform(tx=wheel_damp_position[0] * self.x_modification - wheel_radius * self.x_modification, ty=wheel_damp_position[1]))
-        wheel_objects.append(wheel_stop)
-
-        wheel_stop.color = 0, 255, 0
 
         wheel_motor = None
         if (wheel_side == 'rear' and self.drive in [self.AWD, self.FR]) or (wheel_side == 'front' and self.drive in [self.AWD, self.FF]):

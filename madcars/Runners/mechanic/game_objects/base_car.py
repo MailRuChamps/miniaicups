@@ -84,7 +84,6 @@ class Car(object):
         wheel_position = getattr(self, wheel_side + '_wheel_position')
         wheel_friction = getattr(self, wheel_side + '_wheel_friction')
         wheel_elasticity = getattr(self, wheel_side + '_wheel_elasticity')
-        wheel_joint = getattr(self, wheel_side + '_wheel_joint')
         wheel_damp_position = getattr(self, wheel_side + '_wheel_damp_position')
         wheel_damp_length = getattr(self, wheel_side + '_wheel_damp_length')
         wheel_damp_stiffness = getattr(self, wheel_side + '_wheel_damp_stiffness')
@@ -100,8 +99,12 @@ class Car(object):
         wheel_shape.elasticity = wheel_elasticity
         wheel_objects.append(wheel_shape)
 
-        wheel_joint = pymunk.PinJoint(wheel_body, self.car_body, anchor_b=(wheel_joint[0] * self.x_modification, wheel_joint[1]))
-        wheel_objects.append(wheel_joint)
+        wheel_grove = pymunk.GrooveJoint(self.car_body, wheel_body,
+                                         (wheel_damp_position[0] * self.x_modification, wheel_damp_position[1]),
+                                         (wheel_damp_position[0] * self.x_modification,
+                                          wheel_damp_position[1] - wheel_damp_length * 1.5),
+                                         (0, 0))
+        wheel_objects.append(wheel_grove)
 
         wheel_damp = pymunk.DampedSpring(wheel_body, self.car_body, anchor_a=(0, 0),
                                          anchor_b=(wheel_damp_position[0] * self.x_modification, wheel_damp_position[1]),
@@ -110,16 +113,9 @@ class Car(object):
                                          damping=wheel_damp_damping)
         wheel_objects.append(wheel_damp)
 
-        wheel_stop = pymunk.Poly(self.car_body, [(0, 0), (0, 1), (wheel_radius * 2 * self.x_modification, 1), (wheel_radius * 2 * self.x_modification, 0)],
-                                 transform=pymunk.Transform(tx=wheel_damp_position[0] * self.x_modification - wheel_radius * self.x_modification, ty=wheel_damp_position[1]))
-        wheel_objects.append(wheel_stop)
-
-        wheel_stop.color = 0, 255, 0
-
         wheel_motor = None
         if (wheel_side == 'rear' and self.drive in [self.AWD, self.FR]) or (wheel_side == 'front' and self.drive in [self.AWD, self.FF]):
             wheel_motor = pymunk.SimpleMotor(wheel_body, self.car_body, 0)
-            # wheel_objects.append(motor)
 
         return wheel_body, wheel_motor, wheel_objects
 
