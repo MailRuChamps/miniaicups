@@ -287,7 +287,7 @@ while True:
         * `rear_wheel_position` - положение заднего колеса в координатах относительно кузова машины
         * `rear_wheel_friction` - трение заднего колеса
         * `rear_wheel_elasticity` - эластичность заднего колеса
-        * `rear_wheel_joint` - положение жесткого соединения заднего колеса
+        * `rear_wheel_groove_offset` - смещение крепления заднего колеса относительно кузова
         * `rear_wheel_damp_position` - положение пружины заднего колеса
         * `rear_wheel_damp_length` - длина пружины заднего колеса
         * `rear_wheel_damp_stiffness` - жесткость пружины заднего колеса
@@ -298,7 +298,7 @@ while True:
         * `front_wheel_position` - положение переднего колеса в координатах относительно кузова машины
         * `front_wheel_friction` -  трение переднего колеса
         * `front_wheel_elasticity` - эластичность переднего колеса
-        * `front_wheel_joint` - положение жесткого соединения переднего колеса
+        * `front_wheel_groove_offset` - смещение крепления переднего колеса относительно кузова
         * `front_wheel_damp_position` - положение пружины переднего колеса
         * `front_wheel_damp_length` - длина пружины переднего колеса
         * `front_wheel_damp_stiffness` - жесткость пружины переднего колеса
