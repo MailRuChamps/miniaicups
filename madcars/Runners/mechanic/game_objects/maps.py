@@ -37,14 +37,14 @@ class Map(object):
         left.sensor = True
 
         top = pymunk.Segment(space.static_body, (-bo, self.max_height + bo),
-                             (self.max_width + bo, self.max_height + bo), 10)
+                             (self.max_width + bo, self.max_height + bo), self.segment_height)
         top.sensor = True
 
         right = pymunk.Segment(space.static_body, (self.max_width + bo, self.max_height + bo),
-                               (self.max_width + bo, -bo), 10)
+                               (self.max_width + bo, -bo), self.segment_height)
         right.sensor = True
 
-        bottom = pymunk.Segment(space.static_body, (self.max_width + bo, -bo), (-bo, -bo), 10)
+        bottom = pymunk.Segment(space.static_body, (self.max_width + bo, -bo), (-bo, -bo), self.segment_height)
         bottom.sensor = True
 
         self.objects.extend([left, top, right, bottom])

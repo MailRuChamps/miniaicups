@@ -104,6 +104,7 @@ class SquareWheelsBuggy(Buggy):
         wheel_position = getattr(self, wheel_side + '_wheel_position')
         wheel_friction = getattr(self, wheel_side + '_wheel_friction')
         wheel_elasticity = getattr(self, wheel_side + '_wheel_elasticity')
+        wheel_grove_offset = getattr(self, wheel_side + '_wheel_groove_offset')
         wheel_damp_position = getattr(self, wheel_side + '_wheel_damp_position')
         wheel_damp_length = getattr(self, wheel_side + '_wheel_damp_length')
         wheel_damp_stiffness = getattr(self, wheel_side + '_wheel_damp_stiffness')
@@ -120,7 +121,7 @@ class SquareWheelsBuggy(Buggy):
         wheel_objects.append(wheel_shape)
 
         wheel_grove = pymunk.GrooveJoint(self.car_body, wheel_body,
-                                         (wheel_damp_position[0] * self.x_modification, wheel_damp_position[1]),
+                                         (wheel_damp_position[0] * self.x_modification, wheel_damp_position[1] - wheel_grove_offset),
                                          (wheel_damp_position[0] * self.x_modification,
                                           wheel_damp_position[1] - wheel_damp_length * 1.5),
                                          (0, 0))

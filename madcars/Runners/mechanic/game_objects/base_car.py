@@ -35,6 +35,7 @@ class Car(object):
     rear_wheel_friction = 1
     rear_wheel_elasticity = 0.8
     rear_wheel_joint = (0, 0)
+    rear_wheel_groove_offset = 5
     rear_wheel_damp_position = (0, 0)
     rear_wheel_damp_length = 20
     rear_wheel_damp_stiffness = 6e4
@@ -46,6 +47,7 @@ class Car(object):
     front_wheel_friction = 1
     front_wheel_elasticity = 0.8
     front_wheel_joint = (0, 0)
+    front_wheel_groove_offset = 5
     front_wheel_damp_position = (0, 0)
     front_wheel_damp_length = 20
     front_wheel_damp_stiffness = 6e4
@@ -84,6 +86,7 @@ class Car(object):
         wheel_position = getattr(self, wheel_side + '_wheel_position')
         wheel_friction = getattr(self, wheel_side + '_wheel_friction')
         wheel_elasticity = getattr(self, wheel_side + '_wheel_elasticity')
+        wheel_grove_offset = getattr(self, wheel_side + '_wheel_groove_offset')
         wheel_damp_position = getattr(self, wheel_side + '_wheel_damp_position')
         wheel_damp_length = getattr(self, wheel_side + '_wheel_damp_length')
         wheel_damp_stiffness = getattr(self, wheel_side + '_wheel_damp_stiffness')
@@ -100,7 +103,7 @@ class Car(object):
         wheel_objects.append(wheel_shape)
 
         wheel_grove = pymunk.GrooveJoint(self.car_body, wheel_body,
-                                         (wheel_damp_position[0] * self.x_modification, wheel_damp_position[1]),
+                                         (wheel_damp_position[0] * self.x_modification, wheel_damp_position[1] - wheel_grove_offset),
                                          (wheel_damp_position[0] * self.x_modification,
                                           wheel_damp_position[1] - wheel_damp_length * 1.5),
                                          (0, 0))
