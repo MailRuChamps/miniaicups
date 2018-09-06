@@ -1,0 +1,23 @@
+# How much frame to skip when fast forward arrow pressed
+ui.fast_skip_speed = 20
+
+# If true, visualiser can be closed by Esc key
+ui.close_with_esc = 0
+
+# Background color, rgb format
+ui.clear_color = (0.144, 0.270, 0.270)
+
+# Grid cells count in each dimension (X, Y)
+scene.grid_cells_count = (32, 32)
+
+# Scene size
+scene.grid_dim = (1200.000, 900.000)
+
+# Grid color, rgb format
+scene.grid_color = (0.322, 0.336, 0.392)
+
+# Scene background color, rgb format
+scene.scene_color = (0.757, 0.856, 0.882)
+
+# If true, grid will be shown by default
+scene.show_grid = 1

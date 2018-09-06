@@ -1,16 +1,22 @@
 # Визуализация файлов VISIO
 
 1. Установить [rewind-viewer](https://github.com/kswaldemar/rewind-viewer#build)
-2. Запустить `rewind-viewer`:
+2. Скопировать конфиг `rewind-viewer` в директорию рядом с исполняемым файлом:
+
+```
+$ cp .../miniaicups/madcars/visualizer/rewindviewer.cfg.example .../path/to/rewindviewer/rewindviewer.cfg
+```
+
+3. Запустить `rewind-viewer`:
 
 ```
 $ ./rewindviewer
 ```
 
-3. Запустить скрипт визуализации:
+4. Запустить скрипт визуализации:
 
 ```
-$ python3 .../miniaicups/madcars/visualizer/show.py .../miniaicups/madcars/Runners/visio.gz
+$ .../miniaicups/madcars/visualizer/show.py .../miniaicups/madcars/Runners/visio.gz
 ```
 
 Дополнения и исправления приветствуются! Спасибо.
