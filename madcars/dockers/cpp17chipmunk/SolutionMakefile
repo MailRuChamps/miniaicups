@@ -1,0 +1,8 @@
+CXXFLAGS=-std=c++17 -O3 -m64 -pipe -w -pthread
+CXX=g++-7
+
+SRCS = $(shell find ./ -type f -name '*.cpp')
+OBJS = $(shell find ./ -type f -name '*.o')
+
+all: ${SRCS} ${OBJS}
+	${CXX} ${CXXFLAGS} -o ${COMPILED_FILE_PATH} ${SRCS} ${OBJS} -I${SOLUTION_LIBRARY_PATH}/include
