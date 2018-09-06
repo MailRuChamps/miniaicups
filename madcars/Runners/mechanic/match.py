@@ -4,7 +4,7 @@ from functools import partial
 import os
 from pymunk import Vec2d
 
-from mechanic.constants import TICKS_TO_DEADLINE
+from mechanic.constants import TICKS_TO_DEADLINE, REST_TICKS
 from mechanic.game_objects.base_car import Car
 from mechanic.game_objects.deadline import DeadLine
 
@@ -21,6 +21,9 @@ class Match:
 
         self.map_objects.append(self.deadline.get_object_for_space())
         self.dead_players = set()
+
+        self.is_rest = False
+        self.rest_counter = 0
 
         self.match_log = []
 
@@ -40,7 +43,8 @@ class Match:
 
     @asyncio.coroutine
     def apply_turn_wrapper(self, player, game_tick):
-        yield from player.apply_turn(game_tick)
+        if not self.is_rest:
+            yield from player.apply_turn(game_tick)
 
     @asyncio.coroutine
     def tick(self, game_tick):
@@ -55,6 +59,13 @@ class Match:
             self.deadline.move()
         else:
             self.ticks_to_deadline -= 1
+
+        if not self.is_rest and self.smbd_die():
+            self.rest_counter = REST_TICKS
+            self.is_rest = True
+
+        if self.rest_counter > 0:
+            self.rest_counter -= 1
 
     def get_objects_for_space(self):
         return self.map_objects + self.cars_objects
@@ -116,20 +127,25 @@ class Match:
             }
         })
 
-        for p in self.players:
-            my_car, enemy_car = self.get_players_car(p)
-            p.send_message('tick', {
-                'my_car': my_car,
-                'enemy_car': enemy_car,
-                'deadline_position': self.deadline.get_position()
-            })
+        if not self.is_rest:
+            for p in self.players:
+                my_car, enemy_car = self.get_players_car(p)
+                p.send_message('tick', {
+                    'my_car': my_car,
+                    'enemy_car': enemy_car,
+                    'deadline_position': self.deadline.get_position()
+                })
 
     def lose_callback(self, player, arbiter, space, _):
-        self.dead_players.add(player)
+        if not self.is_rest:
+            self.dead_players.add(player)
         return False
 
     def smbd_die(self):
         return bool(self.dead_players)
+
+    def is_match_ended(self):
+        return self.rest_counter == 0 and bool(self.dead_players) and self.is_rest
 
     def end_match(self):
         for p in self.dead_players:

@@ -107,7 +107,7 @@ class Game(object):
         yield from self.current_match.tick(self.tick_num)
         self.space.step(0.016)
 
-        if self.current_match.smbd_die():
+        if self.current_match.is_match_ended():
             self.game_log.extend(self.current_match.end_match())
 
             if not all([p.is_alive() for p in self.all_players]):
