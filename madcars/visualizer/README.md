@@ -10,7 +10,7 @@ $ ./rewindviewer
 3. Запустить скрипт визуализации:
 
 ```
-$ python3 .../miniaicups/madcars/Runners/visual/show.py .../miniaicups/madcars/Runners/visio.gz
+$ python3 .../miniaicups/madcars/visualizer/show.py .../miniaicups/madcars/Runners/visio.gz
 ```
 
 Дополнения и исправления приветствуются! Спасибо.
