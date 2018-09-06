@@ -3,11 +3,9 @@
 import gzip
 import sys
 import json
-import math
 
 from rewind import RewindClient
 from drawer import Drawer
-from vector import Vector
 from deadline import Deadline
 from car import Car
 from track import Track
@@ -55,6 +53,11 @@ if __name__ == '__main__':
 				visualizer.set_track(m)
 				visualizer.set_cars(car_left, car_right)
 			elif msg["type"] == "end_game":
+				rewind.message("""Score:
+Player 1: {}
+Player 2: {}
+""".format(msg["params"]["1"], msg["params"]["2"]))
+				visualizer.draw(rewind)
 				break
 			else:
 				visualizer.set_deadline(Deadline(msg["params"]["deadline_position"]))
