@@ -106,6 +106,7 @@ class Game(object):
     def tick(self):
         yield from self.current_match.tick(self.tick_num)
         self.space.step(0.016)
+        self.current_match.end_tick()
 
         if self.current_match.is_match_ended():
             self.game_log.extend(self.current_match.end_match())
