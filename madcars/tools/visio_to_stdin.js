@@ -3,9 +3,13 @@
 // example: node visio_to_stdin.js 1 visio
 var fs=require('fs');
 var process=require('process');
+//var log=s=>process.stderr.write(s);
+var log=s=>{}
+log("begin");
 if(process.argv.length<3)console.log("process.argv.length!=3");
-var your_side=process.argv.length<3?0:process.argv[3];
-var fn=process.argv.length<4?"visio":process.argv[4];
+var your_side=process.argv.length<3?0:process.argv[2];
+var fn=process.argv.length<4?"visio":process.argv[3];
+log(JSON.stringify({your_side:your_side,fn:fn}));
 var s=fs.readFileSync(fn)+"";
 var obj=JSON.parse(s);
 var arr=obj.visio_info;
@@ -14,7 +18,7 @@ arr.map((e,i)=>{
   var p=e.params;
   //if(i>10){e.params=[];return;}
   if(e.type=="tick"){
-    var t={"my_car":p.cars[a],"enemy_car":p.cars[b]};
+    var t={"my_car":p.cars[a],"enemy_car":p.cars[b],deadline_position:p.deadline_position};
     e.params=t;
     return;
   }
