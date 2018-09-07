@@ -1,19 +1,17 @@
-// usage:   node visio_to_stdin.js [player] [visio]
-// example: node visio_to_stdin.js 0 visio
-// example: node visio_to_stdin.js 1 visio
+// usage:     node visio_to_stdin.js [player] [visio]
+// example 1: node visio_to_stdin.js 1 visio
+// example 2: node visio_to_stdin.js 2 visio
 var fs=require('fs');
 var process=require('process');
-//var log=s=>process.stderr.write(s);
-var log=s=>{}
-log("begin");
+var log=s=>{if(1)process.stderr.write(s+"\n");}
 if(process.argv.length<3)console.log("process.argv.length!=3");
 var your_side=process.argv.length<3?0:process.argv[2];
 var fn=process.argv.length<4?"visio":process.argv[3];
-log(JSON.stringify({your_side:your_side,fn:fn}));
+var a=your_side;var b=your_side==1?2:1;
+log(JSON.stringify({your_side:your_side,fn:fn,me:a,enemy:b}));
 var s=fs.readFileSync(fn)+"";
 var obj=JSON.parse(s);
 var arr=obj.visio_info;
-var a=your_side;var b=(a+1)%2;a++;b++;
 arr.map((e,i)=>{
   var p=e.params;
   //if(i>10){e.params=[];return;}
