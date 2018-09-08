@@ -1,18 +1,17 @@
+package ai.cup
 
+import com.rojoma.json.v3.ast.{JNumber, JString, JValue}
 import com.rojoma.json.v3.util.JsonUtil
-import com.rojoma.json.v3.ast._
-
 
 object Main {
-
 	def onTick(parsed : Map[String, Array[Map[String, JValue]]]) : Map[String, JValue] = {
 
-		if (parsed.get("Mine").size > 0) {
+		if (parsed.get("Mine").isDefined) {
 
-			val foods = findFood(parsed.get("Objects").get)
+			val foods = findFood(parsed("Objects"))
 
-			if (foods.size > 0) {
-				Map("X" -> foods.head.get("X").get.cast[JNumber].get, "Y" -> foods.head.get("Y").get.cast[JNumber].get)
+			if (foods.length > 0) {
+				Map("X" -> foods.head("X").cast[JNumber].get, "Y" -> foods.head("Y").cast[JNumber].get)
 			} else {
 				Map("X" -> JNumber(300), "Y" -> JNumber(300), "Debug" -> JString("No food"))
 			}
@@ -23,7 +22,7 @@ object Main {
 	}
 
 	def findFood(objects : Array[Map[String, JValue]]) : Array[Map[String, JValue]] = {
-		objects.filter(t => t.get("T").get == JString("F"))
+		objects.filter(t => t("T") == JString("F"))
 	}
 
 	def main(args : Array[String]) {
@@ -34,8 +33,8 @@ object Main {
 			val json = scala.io.StdIn.readLine().trim
 			val data = JsonUtil.parseJson[Map[String, Array[Map[String, JValue]]]](json)
 
-			val reponse = onTick(data.right.get)
-			println(JsonUtil.renderJson(reponse))
+			val response = onTick(data.right.get)
+			println(JsonUtil.renderJson(response))
 		}
 	}
 }

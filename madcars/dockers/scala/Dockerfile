@@ -13,8 +13,9 @@ RUN apt-get update -y && \
     mkdir -p /opt/client/src/main/scala
 
 COPY build.sbt /opt/client
-COPY Main.scala /opt/client/src/main/scala/.
-COPY assembly.sbt /opt/client/project/assembly.sbt
+COPY src /opt/client/src
+COPY project/assembly.sbt /opt/client/project/assembly.sbt
+COPY project/build.properties /opt/client/project/build.properties
 RUN sbt assembly && rm -rf target && rm -rf /opt/client/src/main/scala/*
 
 ENV SOLUTION_CODE_ENTRYPOINT=Main.scala
