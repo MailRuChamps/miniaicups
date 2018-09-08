@@ -1,4 +1,5 @@
 import asyncio
+import random
 
 
 class Player(object):
@@ -41,6 +42,10 @@ class Player(object):
                     self.car.go_left()
                 elif turn == 'right':
                     self.car.go_right()
+                else:
+                    action = random.choice((self.car.stop, self.car.go_left, self.car.go_right))
+                    action()
+
         except Exception as e:
             args = e.args
             if len(args) > 0:
