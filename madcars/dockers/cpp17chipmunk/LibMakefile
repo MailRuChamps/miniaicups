@@ -1,0 +1,14 @@
+CC    = cc
+FLAGS        = -std=gnu99 -ffast-math -DCHIPMUNK_FFI -g -DCP_USE_CGPOINTS=0 -DNDEBUG -fPIC -O3 -m64
+
+SOURCES = $(shell echo ./src/*.c)
+INCLUDE = ./include
+
+OBJECTS = $(SOURCES:.c=.o)
+
+all: $(OBJECTS)
+
+$(OBJECTS): %.o: %.c
+	$(CC) $(FLAGS) -I$(INCLUDE) -c $< -o $@
+
+
