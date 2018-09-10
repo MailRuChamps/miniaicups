@@ -5,12 +5,10 @@ class DeadLine:
     ASC = 0
     DESC = 1
 
-    def __init__(self, type, max_length, max_height, space):
+    def __init__(self, type, max_length, max_height):
         self.type = type
-        fp = (0, 0)
-        sp = (max_length, 0)
         self.line_body = pymunk.Body(0, 0, pymunk.Body.KINEMATIC)
-        self.line = pymunk.Segment(self.line_body, fp, sp, 2)
+        self.line = pymunk.Poly(self.line_body, [(0, 2), (max_length, 2), (max_length, -max_height), (0, -max_height)])
         self.line.sensor = True
         self.line.body.position = (0, 10 if self.type == self.ASC else max_height - 10)
 

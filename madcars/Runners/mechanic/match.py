@@ -17,7 +17,7 @@ class Match:
         self.players = players
         self.map_objects = map(space).get_objects_for_space()
         self.cars_objects = []
-        self.deadline = DeadLine(DeadLine.ASC, 1800, 800, space)
+        self.deadline = DeadLine(DeadLine.ASC, 1800, 800)
 
         self.map_objects.append(self.deadline.get_object_for_space())
         self.dead_players = set()
