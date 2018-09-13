@@ -5,7 +5,7 @@ while (1) {
     $parsed = json_decode($line);
     $commands = array('right', 'left', 'stop');
     $rand_key = array_rand($commands);
-    $command = array('command' => 'right', 'debug' => 'debug_msg');
+    $command = array('command' => $rand_key, 'debug' => 'debug_msg');
     print json_encode($command)."\n";
 }
 
