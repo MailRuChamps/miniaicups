@@ -65,7 +65,7 @@ def on_draw():
     window.clear()
     game.draw(draw_options)
     if not game.game_complete:
-        future_message = loop.run_until_complete(game.tick())
+        loop.run_until_complete(game.tick())
     else:
         winner = game.get_winner()
         if winner:

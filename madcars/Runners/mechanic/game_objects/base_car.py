@@ -76,6 +76,8 @@ class Car(object):
 
         self.point_query_nearest = point_query_nearest
 
+        self.its_alive = True
+
     def create_wheel(self, wheel_side):
         if wheel_side not in ['rear', 'front']:
             raise Exception('Wheel position must be front or rear')
@@ -196,11 +198,18 @@ class Car(object):
     def get_button_collision_type(self):
         return self.button_collision_type
 
-    def fast_dump(self):
-        return [(self.car_body.position.x, self.car_body.position.y),
-             self.car_body.angle, self.x_modification,
-             (self.rear_wheel_body.position.x, self.rear_wheel_body.position.y, self.rear_wheel_body.angle),
-             (self.front_wheel_body.position.x, self.front_wheel_body.position.y, self.front_wheel_body.angle)]
+    def die(self):
+        self.its_alive = False
+        self.car_shape.color = 255, 0, 0
+
+    def fast_dump(self, visio=False):
+        result = [(self.car_body.position.x, self.car_body.position.y),
+                  self.car_body.angle, self.x_modification,
+                  (self.rear_wheel_body.position.x, self.rear_wheel_body.position.y, self.rear_wheel_body.angle),
+                  (self.front_wheel_body.position.x, self.front_wheel_body.position.y, self.front_wheel_body.angle)]
+        if visio:
+            result.append(self.its_alive)
+        return result
 
     @classmethod
     def proto_dump(cls, visio=False):
@@ -210,7 +219,6 @@ class Car(object):
             'front_wheel_radius': cls.front_wheel_radius,
             'button_poly': cls.get_button_poly(),
             'external_id': cls.external_id,
-
         }
 
         if not visio:
