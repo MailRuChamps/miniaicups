@@ -13,12 +13,14 @@ from mechanic.constants import MAX_EXECUTION_TIME, REQUEST_MAX_TIME
 
 
 class Client(object):
+    @asyncio.coroutine
     def get_command(self):
         pass
 
     def close(self):
         pass
 
+    @asyncio.coroutine
     def send_message(self, t, d):
         pass
 
@@ -69,6 +71,7 @@ class FileClient(Client):
         else:
             self.path_to_log = path_to_log
 
+    @asyncio.coroutine
     def send_message(self, t, d):
         msg = {
             'type': t,
@@ -130,6 +133,7 @@ class TcpClient(Client):
 
         return bool(self.solution_id)
 
+    @asyncio.coroutine
     def send_message(self, t, d):
         msg = {
             'type': t,
@@ -137,6 +141,7 @@ class TcpClient(Client):
         }
         msg_bytes = '{}\n'.format(json.dumps(msg)).encode()
         self.writer.write(msg_bytes)
+        yield from self.writer.drain()
 
     @asyncio.coroutine
     def get_command(self):

@@ -39,8 +39,6 @@ class Match:
             co.begin = partial(self.lose_callback, player)
             player.set_car(c)
 
-        self.send_new_match_message()
-
     @asyncio.coroutine
     def apply_turn_wrapper(self, player, game_tick):
         if not self.is_rest:
@@ -55,7 +53,7 @@ class Match:
         if self.rest_counter > 0:
             self.rest_counter -= 1
 
-        self.send_tick(game_tick)
+        yield from self.send_tick(game_tick)
         futures = []
         for p in self.players:
             futures.append(asyncio.ensure_future(self.apply_turn_wrapper(p, game_tick)))
@@ -95,6 +93,7 @@ class Match:
         else:
             return {p.id: p.car.fast_dump(visio=True) for p in self.players}
 
+    @asyncio.coroutine
     def send_new_match_message(self):
         proto_map = self.map.get_proto()
         proto_car = self.car.proto_dump()
@@ -110,13 +109,14 @@ class Match:
 
         for p in self.players:
             my_lives, enemy_lives = self.get_players_lives(p)
-            p.send_message('new_match', {
+            yield from p.send_message('new_match', {
                 'my_lives': my_lives,
                 'enemy_lives': enemy_lives,
                 'proto_map': proto_map,
                 'proto_car': proto_car,
             })
 
+    @asyncio.coroutine
     def send_tick(self, game_tick):
         self.match_log.append({
             'type': 'tick',
@@ -130,7 +130,7 @@ class Match:
         if not self.is_rest:
             for p in self.players:
                 my_car, enemy_car = self.get_players_car(p)
-                p.send_message('tick', {
+                yield from p.send_message('tick', {
                     'my_car': my_car,
                     'enemy_car': enemy_car,
                     'deadline_position': self.deadline.get_position()

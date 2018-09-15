@@ -56,11 +56,12 @@ class Player(object):
             self.is_disconnected = True
             self.client.close()
 
+    @asyncio.coroutine
     def send_message(self, t, d):
         if self.is_disconnected:
             return
         try:
-            self.client.send_message(t, d)
+            yield from self.client.send_message(t, d)
         except Exception as e:
             print('write exception', self.client.get_solution_id(), e)
             self.is_disconnected = True
