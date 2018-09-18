@@ -95,28 +95,30 @@ var main=fn=>
 }
 
 var zlib = require("zlib");
-
+var drop_visio=e=>{var t=e.split("/visio");return t.length==2&&t[1].length==0?t[0]:"fail";}
+var exec_sync_guard=e=>drop_visio(e).split("/").map(e=>!e.split(/[0123456789]+/).join("").length?"":"no_way").join("").length==0;
 if(is_num(fn))
 {
   var ptr="https://storage.aicups.ru/public/visio/";
   var dref='data-href="'+ptr;
   var cb=s=>{
     var p=s.split(dref)[1].split('"')[0];
+    if(!exec_sync_guard(p))throw new Error("wrong response. p="+p);
     //xhr_get(ptr+p,s=>{
-      fn+=".visio";
-      var fngz=fn+".gz";
-      if(!fs.existsSync(fn)){
-        execSync("curl "+ptr+p+">"+fngz);
-        
-        //execSync("gunzip --version -d "+fngz);
-        var gunzip=zlib.createGunzip();
-        var out=fs.createWriteStream(fn);
-        fs.createReadStream(fngz).pipe(gunzip).pipe(out);
-        out.on('close',()=>main(fn));
-        //out.on('end',()=>main(fn));
-      }else{main(fn);}
-      //fs.writeFileSync(fn,s.toString("binary"));
-     // main(fn);
+    fn+=".visio";
+    var fngz=fn+".gz";
+    if(!fs.existsSync(fn)){
+      execSync("curl "+ptr+p+">"+fngz);
+      
+      //execSync("gunzip --version -d "+fngz);
+      var gunzip=zlib.createGunzip();
+      var out=fs.createWriteStream(fn);
+      fs.createReadStream(fngz).pipe(gunzip).pipe(out);
+      out.on('close',()=>main(fn));
+      //out.on('end',()=>main(fn));
+    }else{main(fn);}
+    //fs.writeFileSync(fn,s.toString("binary"));
+    // main(fn);
     //},log);
   }
   xhr_get("https://aicups.ru/session/"+fn+"/?a=get_viso_url",cb,log);
