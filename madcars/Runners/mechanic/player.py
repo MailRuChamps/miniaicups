@@ -53,6 +53,7 @@ class Player(object):
             else:
                 self.debug_log.append({'tick': tick, 'message': str(e)})
             print('read exception', self.client.get_solution_id(), e)
+            self.car.stop()
             self.is_disconnected = True
             self.client.close()
 
