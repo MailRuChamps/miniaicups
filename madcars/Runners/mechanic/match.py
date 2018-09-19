@@ -118,12 +118,15 @@ class Match:
 
     @asyncio.coroutine
     def send_tick(self, game_tick):
+        self.match_seed = random.randint(0, 2**128)
+
         self.match_log.append({
             'type': 'tick',
             'params': {
                 'cars': self.get_players_car(),
                 'deadline_position': self.deadline.get_position(),
-                'tick_num': game_tick
+                'tick_num': game_tick,
+                'seed': self.match_seed
             }
         })
 
@@ -133,7 +136,8 @@ class Match:
                 yield from p.send_message('tick', {
                     'my_car': my_car,
                     'enemy_car': enemy_car,
-                    'deadline_position': self.deadline.get_position()
+                    'deadline_position': self.deadline.get_position(),
+                    'seed': self.match_seed
                 })
 
     def lose_callback(self, player, arbiter, space, _):
