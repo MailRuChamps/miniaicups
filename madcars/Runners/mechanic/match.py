@@ -2,6 +2,7 @@ import asyncio
 from functools import partial
 
 import os
+import random
 from pymunk import Vec2d
 
 from mechanic.constants import TICKS_TO_DEADLINE, REST_TICKS
