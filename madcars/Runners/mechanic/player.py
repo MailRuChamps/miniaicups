@@ -45,6 +45,8 @@ class Player(object):
                 else:
                     action = random.choice((self.car.stop, self.car.go_left, self.car.go_right))
                     action()
+            else:
+                raise Exception('invalid turn')
 
         except Exception as e:
             args = e.args
