@@ -2,6 +2,7 @@ import asyncio
 from functools import partial
 
 import os
+import random
 from pymunk import Vec2d
 
 from mechanic.constants import TICKS_TO_DEADLINE, REST_TICKS
@@ -97,13 +98,15 @@ class Match:
     def send_new_match_message(self):
         proto_map = self.map.get_proto()
         proto_car = self.car.proto_dump()
+        self.match_seed = random.randint(0, 2**128)
 
         self.match_log.append({
             'type': 'new_match',
             'params': {
                 'lives': self.get_players_lives(),
                 'proto_map': proto_map,
-                'proto_car': proto_car
+                'proto_car': proto_car,
+                'seed': self.match_seed
             }
         })
 
@@ -114,6 +117,7 @@ class Match:
                 'enemy_lives': enemy_lives,
                 'proto_map': proto_map,
                 'proto_car': proto_car,
+                'seed': self.match_seed
             })
 
     @asyncio.coroutine
