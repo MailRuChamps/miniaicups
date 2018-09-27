@@ -154,7 +154,13 @@ class TcpClient(Client):
             if self.execution_time > self.EXECUTION_LIMIT:
                 raise Exception('sum timeout error')
         except asyncio.TimeoutError:
-            raise asyncio.TimeoutError('read timeout error')
+            dt=(datetime.datetime.now() - before);
+            self.execution_time += dt
+            msg = {
+                'REQUEST_MAX_TIME': REQUEST_MAX_TIME,
+                'dt': dt
+            }
+            raise asyncio.TimeoutError('read timeout error: ' + json.dumps(msg))
         try:
             z = json.loads(z.decode())
         except ValueError:
