@@ -152,7 +152,12 @@ class TcpClient(Client):
                 raise ConnectionError('Connection closed')
             self.execution_time += (datetime.datetime.now() - before)
             if self.execution_time > self.EXECUTION_LIMIT:
-                raise Exception('sum timeout error')
+                dt = (datetime.datetime.now() - before);
+                msg = {
+                    'EXECUTION_LIMIT': self.EXECUTION_LIMIT,
+                    'execution_time': self.execution_time
+                }
+                raise Exception('sum timeout error: ' + json.dumps(msg))
         except asyncio.TimeoutError:
             raise asyncio.TimeoutError('read timeout error')
         try:
