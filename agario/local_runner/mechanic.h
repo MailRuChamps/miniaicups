@@ -439,7 +439,6 @@ public:
     void apply_direct_for(int sId, Direct direct) {
 //        logger->write_direct(tick, sId, direct);
         PlayerArray fragments = get_players_by_id(sId);
-        int yet_cnt = fragments.length();
 
         for (Player *frag : fragments) {
             frag->apply_direct(direct, Constants::instance().GAME_WIDTH, Constants::instance().GAME_HEIGHT);
@@ -583,9 +582,8 @@ public:
     }
 
     void burst_on_viruses() { // TODO: improve target selection
-        PlayerArray targets = player_array;
 
-        auto nearest_to = [this, &targets] (Virus *virus) {
+        auto nearest_to = [this] (Virus *virus) {
             double nearest_dist = INFINITY;
             Player *nearest_player = NULL;
 
@@ -614,7 +612,6 @@ public:
                 player_scores[player->getId()] += SCORE_FOR_BURST;
                 PlayerArray fragments = player->burst_now(max_fId, yet_cnt);
                 player_array.append(fragments);
-                targets.removeAll(player);
 
                 for (Player *frag : fragments) {
                     logger->write_add_cmd(tick, frag);
