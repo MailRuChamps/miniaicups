@@ -485,6 +485,9 @@ public:
             if (fuse_timer > 0) {
                 objData.insert("TTF", QJsonValue(fuse_timer));
             }
+            if (is_fast) {
+                objData.insert("F", QJsonValue(int(1)));
+            }
         }
         else {
             objData.insert("T", QJsonValue("P"));
