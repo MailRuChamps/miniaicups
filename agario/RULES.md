@@ -159,6 +159,7 @@ class Strategy():
 Класс стратегии в этом примере нужен только для "чистоты" и "самоописательности" кода.
 После старта игры, сервер-механика рассылает всем подключившимся решениям конфигурацию игрового мира. В неё входят параметры, варьируемые от игры к игре, а именно:
 
+* TICKS_MS - средний бюджет CPU Time для стратегии на один тик в миллисекундах (int) (от 16 до 20);
 * ключи GAME_WIDTH и GAME_HEIGHT - размеры мира (int);
 * GAME_TICKS - длительность игры в тиках (int);
 * FOOD_MASS - масса еды (float) (меняется от 1.0 до 4.0);
@@ -172,7 +173,7 @@ class Strategy():
 
 Пример конфигурации мира в `json`:
 ```
-{"FOOD_MASS":1,"GAME_HEIGHT":660,"GAME_TICKS":75000,"GAME_WIDTH":660,"INERTION_FACTOR":10,"MAX_FRAGS_CNT":10,"SPEED_FACTOR":25,"TICKS_TIL_FUSION":250,"VIRUS_RADIUS":22,"VIRUS_SPLIT_MASS":80,"VISCOSITY":0.25}
+{"TICKS_MS":16,"FOOD_MASS":1,"GAME_HEIGHT":660,"GAME_TICKS":75000,"GAME_WIDTH":660,"INERTION_FACTOR":10,"MAX_FRAGS_CNT":10,"SPEED_FACTOR":25,"TICKS_TIL_FUSION":250,"VIRUS_RADIUS":22,"VIRUS_SPLIT_MASS":80,"VISCOSITY":0.25}
 ```
 
 Решение может проанализировать эту конфигурацию и как-либо "подготовиться" к игре. От момента подключения всех 4 участников, до момента старта, гарантированно пройдет 20 секунд затишья.
