@@ -148,7 +148,16 @@ class Match:
     def is_match_ended(self):
         return self.rest_counter == 0 and bool(self.dead_players) and self.is_rest
 
+    def end_tick(self):
+        if not self.is_rest and self.smbd_die():
+            for p in self.dead_players:
+                p.die()
+            self.match_log.append({
+                'type': 'smbd_die',
+                'params': {
+                    'lives': self.get_players_lives(),
+                }
+            })
+
     def end_match(self):
-        for p in self.dead_players:
-            p.die()
         return self.match_log
