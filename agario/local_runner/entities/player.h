@@ -192,8 +192,9 @@ public:
         }
         mass += BURST_BONUS;
     }
-
-    QVector<Player*> burst_now(int max_fId, int yet_cnt) {
+    
+    template<class MECHANIC>
+    QVector<Player*> burst_now(MECHANIC*mech, int yet_cnt) {
         QVector<Player*> fragments;
         int new_frags_cnt = int(mass / MIN_BURST_MASS) - 1;
 
@@ -203,7 +204,7 @@ public:
         double new_radius = mass2radius(new_mass);
 
         for (int I = 0; I < new_frags_cnt; I++) {
-            int new_fId = max_fId + I + 1;
+            int new_fId = mech->make_new_fragment_id(id);
             Player *new_fragment = new Player(id, x, y, new_radius, new_mass, new_fId);
             new_fragment->set_color(color);
             fragments.append(new_fragment);
@@ -231,15 +232,16 @@ public:
         return false;
     }
 
-    Player *split_now(int max_fId) {
+    template<class MECHANIC>
+    Player *split_now(MECHANIC*mech) {
         double new_mass = mass / 2;
         double new_radius = mass2radius(new_mass);
 
-        Player *new_player = new Player(id, x, y, new_radius, new_mass, max_fId + 1);
+        Player *new_player = new Player(id, x, y, new_radius, new_mass, mech->make_new_fragment_id(id));
         new_player->set_color(color);
         new_player->set_impulse(SPLIT_START_SPEED, angle);
 
-        fragmentId = max_fId + 2;
+        fragmentId = mech->make_new_fragment_id(id);
         fuse_timer = Constants::instance().TICKS_TIL_FUSION;
         mass = new_mass;
         radius = new_radius;
