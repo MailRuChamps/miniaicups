@@ -121,5 +121,9 @@ if(is_num(fn))
     // main(fn);
     //},log);
   }
-  xhr_get("https://aicups.ru/session/"+fn+"/?a=get_viso_url",cb,log);
-}
+  if(!fs.existsSync(fn)){
+    xhr_get("https://aicups.ru/session/"+fn+"/?a=get_visio_url",cb,log);
+  }else{
+    main(fn);
+  }
+}else main(fn);
