@@ -11,20 +11,15 @@
 Решения можно присылать на любом языке программирования из списка поддерживаемых:
 
 * C++11 / .zip, .h, .cpp
-* C++14 / .zip, .h, .hpp, .cpp
 * C++17 / .zip, .h, .hpp, .cpp
 * C# / .zip, .cs
-* Java1.8 / .zip, .java
-* Kotlin / .zip, .kt
-* Haskell / .zip, .hs
+* Java1.9 / .zip, .java
 * Go / .zip, .go
 * Python 2.7 / .zip, .py
 * Python 3.6 / .zip, .py
 * PHP7 / .zip, .php
 * Node JS / .zip, .js
-* Elixir / .zip, .ex
-* Rust / .zip, .rs
-* Scala / .zip, .scala
+* Swift / .zip, .swift
 
 Детальные инструкции по созданию своего решения, формату входных и выходных данных, сопутствующих пакетах и библиотеках можно прочитать в [разделе 2](#2-создание-решения). После того как решение было загружено и обработано, его результат можно посмотреть в визуализаторе на сайте. Попутно будут выводиться отладочный вывод и случившиеся ошибки.
 
@@ -128,9 +123,11 @@
 ```python
 import json
 import random
+
+config = input() # получение конфигурации игры
     
 while True:    
-    z = input()  # получение ответа от сервера
+    state = input()  # получение тика
     commands = ['left', 'right', 'up', 'down']  # доступные команды
     cmd = random.choice(commands)  # случайный выбор действия
     print(json.dumps({"command": cmd, 'debug': cmd})  # отправка результата
