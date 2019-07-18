@@ -10,16 +10,23 @@
 
 Решения можно присылать на любом языке программирования из списка поддерживаемых:
 
-* C++11 / .zip, .h, .cpp
-* C++17 / .zip, .h, .hpp, .cpp
-* C# / .zip, .cs
-* Java1.9 / .zip, .java
-* Go / .zip, .go
-* Python 2.7 / .zip, .py
-* Python 3.6 / .zip, .py
-* PHP7 / .zip, .php
-* Node JS / .zip, .js
-* Swift / .zip, .swift
+* C#	     .zip,.cs
+* C++11	     .zip,.h,.cpp
+* C++14	     .zip,.h,.hpp,.cpp
+* C++17	     .zip,.h,.hpp,.cpp
+* Elixir     .zip,.ex
+* Go	     .zip,.go
+* Haskell    .zip,.hs
+* Java1.8    .zip,.java
+* Java1.9    .zip, .java
+* Kotlin     .zip,.kt
+* Node JS    .zip,.js
+* PHP7	     .zip,.php
+* Python 2.7 .zip,.py
+* Python 3.6 .zip,.py
+* Rust	     .zip,.rs
+* Scala	     .zip,.scala
+* Swift	     .zip, .swift
 
 Детальные инструкции по созданию своего решения, формату входных и выходных данных, сопутствующих пакетах и библиотеках можно прочитать в [разделе 2](#2-создание-решения). После того как решение было загружено и обработано, его результат можно посмотреть в визуализаторе на сайте. Попутно будут выводиться отладочный вывод и случившиеся ошибки.
 
