@@ -1,4 +1,4 @@
-FROM stest.tech-mail.ru/aicups/paperio_base
+FROM stor.highloadcup.ru/aicups/paperio_base
 MAINTAINER Boris Kolganov <b.kolganov@corp.mail.ru>
 
 ENV MONO_GC_PARAMS max-heap-size=256M

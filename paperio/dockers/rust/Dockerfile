@@ -1,4 +1,4 @@
-FROM stest.tech-mail.ru/aicups/paperio_base
+FROM stor.highloadcup.ru/aicups/paperio_base
 
 RUN apt-get update -y && apt-get install -y build-essential curl &&  curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
 ENV SOLUTION_CODE_PATH=/opt/client/solution \

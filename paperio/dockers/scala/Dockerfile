@@ -1,4 +1,4 @@
-FROM stest.tech-mail.ru/aicups/paperio_base
+FROM stor.highloadcup.ru/aicups/paperio_base
 MAINTAINER Konstantin Aristov <kostya.74.74@gmail.com>
 
 WORKDIR /opt/client

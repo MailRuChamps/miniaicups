@@ -1,4 +1,4 @@
-FROM stest.tech-mail.ru/aicups/paperio_base
+FROM stor.highloadcup.ru/aicups/paperio_base
 MAINTAINER Evgeniy Zuykin <eugenzuy@gmail.com>
 RUN apt-get update -y && \
     apt-get install -y software-properties-common && \

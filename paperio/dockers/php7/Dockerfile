@@ -1,4 +1,4 @@
-FROM stest.tech-mail.ru/aicups/paperio_base
+FROM stor.highloadcup.ru/aicups/paperio_base
 MAINTAINER Boris Kolganov <b.kolganov@corp.mail.ru>
 
 RUN DEBIAN_FRONTEND=noninteractive LC_ALL=en_US.UTF-8 add-apt-repository -y ppa:ondrej/php && \
