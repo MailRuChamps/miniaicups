@@ -47,6 +47,7 @@ class Territory:
         return captured
 
     def get_voids_between_lines_and_territory(self, lines):
+        
         boundary = self.get_boundary()
         voids = []
         for cur in lines:
@@ -72,6 +73,7 @@ class Territory:
         return voids
 
     def capture_voids_between_lines(self, lines):
+        # print(lines)
         captured = []
         for index, cur in enumerate(lines):
             for point in get_neighboring(cur):
@@ -88,7 +90,7 @@ class Territory:
             if lines[-1] in self.points:
                 voids = self.get_voids_between_lines_and_territory(lines)
 
-                captured.extend(self.capture_voids_between_lines(lines))
+                # captured.extend(self.capture_voids_between_lines(lines))
 
                 for line in lines:
                     if line not in self.points:

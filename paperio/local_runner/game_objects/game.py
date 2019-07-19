@@ -252,7 +252,7 @@ class Game:
         return len(self.players) == 0
 
     def save_scores(self):
-        d = {p.client.get_solution_id(): p.score for p in self.losers}
+        d = {p.client.get_solution_id(): p.score for p in self.losers + self.players}
 
         with open(self.SCORES_LOCATION, 'w') as f:
             f.write(json.dumps(d))
@@ -303,6 +303,11 @@ class LocalGame(Game):
         self.scene = scene
         self.timeout = timeout
 
+    def show_text(self):
+        for player in self.players:
+            for text in player.text:
+                self.scene.draw_text(text.get('x'), text.get('y'), text.get('text'))
+
     def show_bonuses(self):
         for player in self.players:
             if len(player.bonuses) > 0:
@@ -319,6 +324,7 @@ class LocalGame(Game):
         for player in self.players:
             label = '{} результат: {}'.format(player.name, player.score)
             self.scene.append_label_to_leaderboard(label, player.color)
+            self.scene.append_label_to_leaderboard(player.dbg, player.color)
 
     def draw_bonuses(self):
         for bonus in self.bonuses:
@@ -347,6 +353,7 @@ class LocalGame(Game):
         self.scene.draw_leaderboard()
         self.show_losers()
         self.show_score()
+        self.show_text()
         self.show_bonuses()
         self.scene.reset_leaderboard()
 

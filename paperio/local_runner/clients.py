@@ -211,7 +211,9 @@ class TcpClient(Client):
 
 
 class FileClient(Client):
-    def __init__(self, path_to_script, path_to_log=None):
+
+    def __init__(self, scene, path_to_script, path_to_log=None):
+        self.scene = scene
         self.process = Popen(path_to_script, stdout=PIPE, stdin=PIPE)
         self.last_message = None
         if path_to_log is None:
@@ -248,3 +250,7 @@ class FileClient(Client):
             'is_private': True,
             'location': self.path_to_log
         }
+
+
+    def get_solution_id(self):
+        return 228

@@ -13,6 +13,8 @@ class Player:
         self.id = id
         self.x = x
         self.y = y
+        self.dbg = ""
+        self.text = []
         self.color = [i - 25 if i >= 25 else i for i in color[:-1]] + [color[-1]]
         self.line_color = list(color[:-1]) + [160]
         self.territory = Territory(x, y, color)
@@ -107,7 +109,11 @@ class Player:
             if client_answer:
                 debug_info = client_answer.get('debug')
                 error_info = client_answer.get('error')
+                text = client_answer.get('text')
+                if text:
+                    self.text = text
                 if debug_info:
+                    self.dbg = debug_info
                     self.debug_log.append({
                         'tick': tick,
                         'message': debug_info[:200]

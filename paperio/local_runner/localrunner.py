@@ -35,7 +35,7 @@ for i in range(1, LR_CLIENTS_MAX_COUNT + 1):
         elif arg == 'simple_bot':
             client = SimplePythonClient()
         else:
-            client = FileClient(arg.split(), getattr(args, 'p{}l'.format(i)))
+            client = FileClient(scene, arg.split(), getattr(args, 'p{}l'.format(i)))
 
         clients.append(client)
 
@@ -60,13 +60,23 @@ class Runner:
             Runner.stop_game()
             TERRITORY_CACHE.clear()
             Runner.run_game()
+        if symbol == key.SPACE:
+            pyglet.clock.unschedule(Runner.game_loop_wrapper)
+            if Runner.started:
+                pyglet.clock.schedule_interval(Runner.game_loop_wrapper, 10)
+            else: 
+                pyglet.clock.schedule_interval(Runner.game_loop_wrapper, 1 / 200)
+            Runner.started = 1 - Runner.started
+            
 
     @staticmethod
     def stop_game():
+        Runner.started = 0
         pyglet.clock.unschedule(Runner.game_loop_wrapper)
 
     @staticmethod
     def run_game():
+        Runner.started = 1
         Runner.game = LocalGame(clients, scene, args.timeout == 'on')
         Runner.game.send_game_start()
         pyglet.clock.schedule_interval(Runner.game_loop_wrapper, 1 / 200)
