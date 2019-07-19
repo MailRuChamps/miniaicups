@@ -250,7 +250,3 @@ class FileClient(Client):
             'is_private': True,
             'location': self.path_to_log
         }
-
-
-    def get_solution_id(self):
-        return 228

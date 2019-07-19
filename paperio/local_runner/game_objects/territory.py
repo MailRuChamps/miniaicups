@@ -90,7 +90,7 @@ class Territory:
             if lines[-1] in self.points:
                 voids = self.get_voids_between_lines_and_territory(lines)
 
-                # captured.extend(self.capture_voids_between_lines(lines))
+                captured.extend(self.capture_voids_between_lines(lines))
 
                 for line in lines:
                     if line not in self.points:
