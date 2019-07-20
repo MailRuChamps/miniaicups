@@ -1,3 +1,4 @@
+import os
 import random
 import pyglet
 from constants import WIDTH, X_CELLS_COUNT, Y_CELLS_COUNT
@@ -166,7 +167,9 @@ IMAGE_CACHE = {}
 
 def load_image(path):
     if path not in IMAGE_CACHE:
-        img = pyglet.image.load(path)
+        base_dir = os.path.dirname(os.path.realpath(__file__))
+        absolute_path = os.path.join(base_dir, path)
+        img = pyglet.image.load(absolute_path)
         img.anchor_x = round(img.width / 2)
         img.anchor_y = round(img.height / 2)
         IMAGE_CACHE[path] = img
