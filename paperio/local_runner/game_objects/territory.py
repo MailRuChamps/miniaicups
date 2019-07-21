@@ -77,7 +77,7 @@ class Territory:
             for point in get_neighboring(cur):
                 if point in lines:
                     end_index = lines.index(point)
-                    path = lines[index:end_index]
+                    path = lines[index:end_index + 1]
                     if len(path) >= 8:
                         captured.extend(self._capture(path))
         return captured
