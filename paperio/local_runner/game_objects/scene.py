@@ -7,6 +7,7 @@ from helpers import draw_quadrilateral, draw_line
 class Scene:
     background_color = (220 / 255, 240 / 255, 244 / 255, 1)
     border_color = (144, 163, 174, 255)
+    grid_color = (144, 163, 174, 64)
     game_over_label_color = (95, 99, 104, 255)
 
     leaderboard_color = (255, 255, 255, 128)
@@ -53,6 +54,17 @@ class Scene:
     def show_game_over(self, timeout=False):
         self.game_over_label.text = 'TIMEOUT' if timeout else 'GAME OVER'
         self.game_over_label.draw()
+
+    def draw_grid(self):
+        y = WIDTH
+        while (y < WINDOW_HEIGHT):
+            draw_line((0, y), (WINDOW_WIDTH, y), self.grid_color, 2)
+            y += WIDTH
+
+        x = WIDTH
+        while (x < WINDOW_WIDTH):
+            draw_line((x, 0), (x, WINDOW_HEIGHT), self.grid_color, 2)
+            x += WIDTH
 
     def draw_border(self):
         draw_line((0, 0), (0, WINDOW_HEIGHT), self.border_color)

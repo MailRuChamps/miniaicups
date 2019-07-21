@@ -368,13 +368,16 @@ class LocalGame(Game):
         for player in self.players:
             player.draw_position()
 
+        self.draw_bonuses()
+
+        self.scene.draw_grid()
+
+        self.draw_leaderboard()
+
         if len(self.players) == 0:
             self.scene.show_game_over()
         elif self.timeout and self.tick >= MAX_TICK_COUNT:
             self.scene.show_game_over(timeout=True)
-
-        self.draw_bonuses()
-        self.draw_leaderboard()
 
     async def game_loop(self, *args, **kwargs):
         self.scene.clear()
