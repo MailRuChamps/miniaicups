@@ -21,8 +21,10 @@ class Scene:
                                         x=WINDOW_WIDTH / 2, y=WINDOW_HEIGHT / 2,
                                         anchor_x='center', anchor_y='center')
 
-    def __init__(self):
-        self.window = pyglet.window.Window(height=WINDOW_HEIGHT, width=WINDOW_WIDTH)
+    def __init__(self, scale):
+        self.window = pyglet.window.Window(height=int(WINDOW_HEIGHT * scale / 100),
+                                           width=int(WINDOW_WIDTH * scale / 100),
+                                           resizable=True)
         pyglet.options['debug_gl'] = False
         pyglet.gl.glClearColor(*self.background_color)
         pyglet.gl.glEnable(pyglet.gl.GL_BLEND)
@@ -30,6 +32,7 @@ class Scene:
 
     def clear(self):
         self.window.clear()
+        self.draw_border()
 
     def append_label_to_leaderboard(self, label, color):
         if len(self.labels_buffer) > self.leaderboard_rows_count:

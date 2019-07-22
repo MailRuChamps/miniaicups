@@ -3,6 +3,7 @@ import argparse
 import os
 
 import pyglet
+from pyglet.gl import *
 from pyglet.window import key
 
 from helpers import TERRITORY_CACHE, load_image
@@ -11,8 +12,8 @@ from constants import LR_CLIENTS_MAX_COUNT, MAX_TICK_COUNT
 from game_objects.scene import Scene
 from game_objects.game import LocalGame
 
+from constants import WINDOW_WIDTH, WINDOW_HEIGHT
 
-scene = Scene()
 loop = events.new_event_loop()
 events.set_event_loop(loop)
 
@@ -24,8 +25,11 @@ for i in range(1, LR_CLIENTS_MAX_COUNT + 1):
     parser.add_argument('--p{}l'.format(i), type=str, nargs='?', help='Path to log for player {}'.format(i))
 
 parser.add_argument('-t', '--timeout', type=str, nargs='?', help='off/on timeout', default='on')
+parser.add_argument('-s', '--scale', type=int, nargs='?', help='window scale (%)', default=100)
 
 args = parser.parse_args()
+
+scene = Scene(args.scale)
 
 clients = []
 for i in range(1, LR_CLIENTS_MAX_COUNT + 1):
@@ -61,6 +65,19 @@ class Runner:
             Runner.stop_game()
             TERRITORY_CACHE.clear()
             Runner.run_game()
+
+    @scene.window.event
+    def on_resize(width, height):
+        glViewport(0, 0, width, height)
+        glMatrixMode(gl.GL_PROJECTION)
+        glLoadIdentity()
+
+        factScale = max(WINDOW_WIDTH / width, WINDOW_HEIGHT / height)
+        xMargin = (width * factScale - WINDOW_WIDTH) / 2
+        yMargin = (height * factScale - WINDOW_HEIGHT) / 2
+        glOrtho(-xMargin, WINDOW_WIDTH + xMargin, -yMargin, WINDOW_HEIGHT + yMargin, -1, 1)
+        glMatrixMode(gl.GL_MODELVIEW)
+        return pyglet.event.EVENT_HANDLED
 
     @staticmethod
     def stop_game():
