@@ -51,6 +51,16 @@ class Scene:
         draw_line((WINDOW_WIDTH, WINDOW_HEIGHT), (WINDOW_WIDTH, 0), self.border_color)
         draw_line((WINDOW_WIDTH, 0), (0, 0), self.border_color)
 
+    def draw_text(self, x, y, text):
+        pyglet.text.Label(text, 
+            font_name='Times New Roman',
+            font_size=16,
+            color=self.game_over_label_color,
+            x=x,
+            y=y,
+            anchor_x='center',
+            anchor_y='center').draw()
+
     def draw_leaderboard(self):
         draw_quadrilateral((WINDOW_WIDTH - self.leaderboard_width, WINDOW_HEIGHT - self.leaderboard_height,
                             WINDOW_WIDTH, WINDOW_HEIGHT - self.leaderboard_height,
