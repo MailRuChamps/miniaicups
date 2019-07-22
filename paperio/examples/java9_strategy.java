@@ -14,7 +14,7 @@ public class Main {
         String[] commands = {"left", "right", "up", "down"};
         Scanner scanner = new Scanner(System.in);
         while (true) {
-            String input = scanner.next();
+            String input = scanner.nextLine();
             String command = Main.getRandom(commands);
             System.out.printf("{\"command\": \"%s\"}\n", command);
         }

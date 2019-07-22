@@ -177,7 +177,7 @@ def load_image(path):
     return IMAGE_CACHE[path]
 
 
-def draw_square_with_image(point, color, image_path, label=None, width=WIDTH):
+def draw_square_with_image(point, color, image_path, width=WIDTH):
     draw_square(point, color, width)
 
     x, y = point
@@ -186,13 +186,6 @@ def draw_square_with_image(point, color, image_path, label=None, width=WIDTH):
     sprite = pyglet.sprite.Sprite(img=img, x=x, y=y)
     sprite.scale = 0.75 * (width / max(sprite.height, sprite.width))
     sprite.draw()
-
-    if label is not None:
-        pyglet.text.Label('{}'.format(label), font_name='Times New Roman',
-                          font_size=round(WIDTH / 7),
-                          color=(95, 99, 104, 255),
-                          x=x + round(WIDTH / 2), y=y + round(WIDTH / 2),
-                          anchor_x='right', anchor_y='top').draw()
 
 
 def get_random_coordinates():

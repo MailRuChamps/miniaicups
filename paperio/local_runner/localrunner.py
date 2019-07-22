@@ -1,10 +1,11 @@
 from asyncio import events
 import argparse
+import os
 
 import pyglet
 from pyglet.window import key
 
-from helpers import TERRITORY_CACHE
+from helpers import TERRITORY_CACHE, load_image
 from clients import KeyboardClient, SimplePythonClient, FileClient
 from constants import LR_CLIENTS_MAX_COUNT, MAX_TICK_COUNT
 from game_objects.scene import Scene
@@ -66,7 +67,17 @@ class Runner:
         pyglet.clock.unschedule(Runner.game_loop_wrapper)
 
     @staticmethod
+    def load_sprites():
+        base_dir = os.path.dirname(os.path.realpath(__file__))
+        absolute_path = os.path.join(base_dir, 'sprites')
+        sprites = os.listdir(absolute_path)
+        for sprite in sprites:
+            if sprite.endswith('png'):
+                load_image('sprites/{}'.format(sprite))
+
+    @staticmethod
     def run_game():
+        Runner.load_sprites()
         Runner.game = LocalGame(clients, scene, args.timeout == 'on')
         Runner.game.send_game_start()
         pyglet.clock.schedule_interval(Runner.game_loop_wrapper, 1 / 200)
