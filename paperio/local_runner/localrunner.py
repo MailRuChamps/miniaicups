@@ -68,13 +68,14 @@ class Runner:
 
     @scene.window.event
     def on_resize(width, height):
-        glViewport(0, 0, width, height)
+        (actual_width, actual_height) = scene.window.get_viewport_size()
+        glViewport(0, 0, actual_width, actual_height)
         glMatrixMode(gl.GL_PROJECTION)
         glLoadIdentity()
 
-        factScale = max(WINDOW_WIDTH / width, WINDOW_HEIGHT / height)
-        xMargin = (width * factScale - WINDOW_WIDTH) / 2
-        yMargin = (height * factScale - WINDOW_HEIGHT) / 2
+        factScale = max(WINDOW_WIDTH / actual_width, WINDOW_HEIGHT / actual_height)
+        xMargin = (actual_width * factScale - WINDOW_WIDTH) / 2
+        yMargin = (actual_height * factScale - WINDOW_HEIGHT) / 2
         glOrtho(-xMargin, WINDOW_WIDTH + xMargin, -yMargin, WINDOW_HEIGHT + yMargin, -1, 1)
         glMatrixMode(gl.GL_MODELVIEW)
         return pyglet.event.EVENT_HANDLED
