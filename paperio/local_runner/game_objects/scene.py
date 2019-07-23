@@ -7,6 +7,7 @@ from helpers import draw_quadrilateral, draw_line
 class Scene:
     background_color = (220 / 255, 240 / 255, 244 / 255, 1)
     border_color = (144, 163, 174, 255)
+    border_width = 2
     game_over_label_color = (95, 99, 104, 255)
 
     leaderboard_color = (255, 255, 255, 128)
@@ -32,7 +33,6 @@ class Scene:
 
     def clear(self):
         self.window.clear()
-        self.draw_border()
 
     def append_label_to_leaderboard(self, label, color):
         if len(self.labels_buffer) > self.leaderboard_rows_count:
@@ -58,10 +58,10 @@ class Scene:
         self.game_over_label.draw()
 
     def draw_border(self):
-        draw_line((0, 0), (0, WINDOW_HEIGHT), self.border_color)
-        draw_line((0, WINDOW_HEIGHT), (WINDOW_WIDTH, WINDOW_HEIGHT), self.border_color)
-        draw_line((WINDOW_WIDTH, WINDOW_HEIGHT), (WINDOW_WIDTH, 0), self.border_color)
-        draw_line((WINDOW_WIDTH, 0), (0, 0), self.border_color)
+        draw_line((0, 0), (0, WINDOW_HEIGHT), self.border_color, self.border_width)
+        draw_line((0, WINDOW_HEIGHT), (WINDOW_WIDTH, WINDOW_HEIGHT), self.border_color, self.border_width)
+        draw_line((WINDOW_WIDTH, WINDOW_HEIGHT), (WINDOW_WIDTH, 0), self.border_color, self.border_width)
+        draw_line((WINDOW_WIDTH, 0), (0, 0), self.border_color, self.border_width)
 
     def draw_leaderboard(self):
         draw_quadrilateral((WINDOW_WIDTH - self.leaderboard_width, WINDOW_HEIGHT - self.leaderboard_height,

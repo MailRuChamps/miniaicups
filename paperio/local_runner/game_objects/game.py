@@ -14,7 +14,6 @@ from game_objects.bonuses import Nitro, Slowdown, Bonus, Saw
 
 
 class Game:
-    border_color = (144, 163, 174, 255)
     available_bonuses = [b for b in [Nitro, Slowdown, Saw] if b.visio_name in AVAILABLE_BONUSES]
 
     RESULT_LOCATION = os.environ.get('GAME_LOG_LOCATION', './result')
@@ -321,8 +320,6 @@ class Game:
 
 
 class LocalGame(Game):
-    border_color = (144, 163, 174, 255)
-
     def __init__(self, clients, scene, timeout):
         super().__init__(clients)
         self.scene = scene
@@ -367,6 +364,8 @@ class LocalGame(Game):
 
         for player in self.players:
             player.draw_position()
+
+        self.scene.draw_border()
 
         if len(self.players) == 0:
             self.scene.show_game_over()
