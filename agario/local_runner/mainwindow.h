@@ -67,6 +67,7 @@ public:
         connect(ui->cbx_forces, SIGNAL(stateChanged(int)), this, SLOT(update()));
         connect(ui->cbx_speed, SIGNAL(stateChanged(int)), this, SLOT(update()));
         connect(ui->cbx_fog, SIGNAL(stateChanged(int)), this, SLOT(update()));
+        connect(ui->cbx_notimeout, SIGNAL(stateChanged(int)), this, SLOT(update_notimeout()));
 
         connect(ui->btn_strategies_settings, &QPushButton::clicked, sm, &QDialog::show);
 
@@ -167,6 +168,22 @@ public slots:
         mechanic->clear_objects(false);
         ui->btn_start_pause->setText("Старт");
         this->update();
+    }
+
+    void update_notimeout() {
+        static int originalTimeout;
+        static int originalSumTimeout;
+        auto &c = Constants::instance();
+        if (ui->cbx_notimeout->isChecked()) {
+            originalTimeout = c.RESP_TIMEOUT;
+            originalSumTimeout = c.SUM_RESP_TIMEOUT;
+            c.RESP_TIMEOUT = 999999;
+            c.SUM_RESP_TIMEOUT = 999999;
+        } else {
+            // assuming static values already filled by previous call
+            c.RESP_TIMEOUT = originalTimeout;
+            c.SUM_RESP_TIMEOUT = originalSumTimeout;
+        }
     }
 
     void pause_game() {

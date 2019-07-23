@@ -36,7 +36,7 @@ class Bonus:
         return x, y
 
     def draw(self):
-        draw_square_with_image((self.x, self.y), self.color, self.image_path, self.active_ticks)
+        draw_square_with_image((self.x, self.y), self.color, self.image_path)
 
     def is_ate(self, player, captured):
         return (self.x, self.y) == (player.x, player.y) or (self.x, self.y) in captured

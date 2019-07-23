@@ -7,7 +7,7 @@ from helpers import batch_draw, draw_square
 
 class Player:
     speed = SPEED
-    direction = LEFT
+    direction = None
 
     def __init__(self, id, x, y, name, color, client):
         self.id = id
