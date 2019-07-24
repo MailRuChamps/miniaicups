@@ -7,6 +7,8 @@ from helpers import draw_quadrilateral, draw_line
 class Scene:
     background_color = (220 / 255, 240 / 255, 244 / 255, 1)
     border_color = (144, 163, 174, 255)
+    grid_color = (144, 163, 174, 64)
+    border_width = 2
     game_over_label_color = (95, 99, 104, 255)
 
     leaderboard_color = (255, 255, 255, 128)
@@ -21,8 +23,10 @@ class Scene:
                                         x=WINDOW_WIDTH / 2, y=WINDOW_HEIGHT / 2,
                                         anchor_x='center', anchor_y='center')
 
-    def __init__(self):
-        self.window = pyglet.window.Window(height=WINDOW_HEIGHT, width=WINDOW_WIDTH)
+    def __init__(self, scale):
+        self.window = pyglet.window.Window(height=int(WINDOW_HEIGHT * scale / 100),
+                                           width=int(WINDOW_WIDTH * scale / 100),
+                                           resizable=True)
         pyglet.options['debug_gl'] = False
         pyglet.gl.glClearColor(*self.background_color)
         pyglet.gl.glEnable(pyglet.gl.GL_BLEND)
@@ -54,11 +58,22 @@ class Scene:
         self.game_over_label.text = 'TIMEOUT' if timeout else 'GAME OVER'
         self.game_over_label.draw()
 
+    def draw_grid(self):
+        y = WIDTH
+        while (y < WINDOW_HEIGHT):
+            draw_line((0, y), (WINDOW_WIDTH, y), self.grid_color, 2)
+            y += WIDTH
+
+        x = WIDTH
+        while (x < WINDOW_WIDTH):
+            draw_line((x, 0), (x, WINDOW_HEIGHT), self.grid_color, 2)
+            x += WIDTH
+
     def draw_border(self):
-        draw_line((0, 0), (0, WINDOW_HEIGHT), self.border_color)
-        draw_line((0, WINDOW_HEIGHT), (WINDOW_WIDTH, WINDOW_HEIGHT), self.border_color)
-        draw_line((WINDOW_WIDTH, WINDOW_HEIGHT), (WINDOW_WIDTH, 0), self.border_color)
-        draw_line((WINDOW_WIDTH, 0), (0, 0), self.border_color)
+        draw_line((0, 0), (0, WINDOW_HEIGHT), self.border_color, self.border_width)
+        draw_line((0, WINDOW_HEIGHT), (WINDOW_WIDTH, WINDOW_HEIGHT), self.border_color, self.border_width)
+        draw_line((WINDOW_WIDTH, WINDOW_HEIGHT), (WINDOW_WIDTH, 0), self.border_color, self.border_width)
+        draw_line((WINDOW_WIDTH, 0), (0, 0), self.border_color, self.border_width)
 
     def draw_leaderboard(self):
         draw_quadrilateral((WINDOW_WIDTH - self.leaderboard_width, WINDOW_HEIGHT - self.leaderboard_height,

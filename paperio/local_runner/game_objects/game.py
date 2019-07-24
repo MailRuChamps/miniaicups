@@ -14,7 +14,6 @@ from game_objects.bonuses import Nitro, Slowdown, Bonus, Saw
 
 
 class Game:
-    border_color = (144, 163, 174, 255)
     available_bonuses = [b for b in [Nitro, Slowdown, Saw] if b.visio_name in AVAILABLE_BONUSES]
 
     RESULT_LOCATION = os.environ.get('GAME_LOG_LOCATION', './result')
@@ -107,9 +106,9 @@ class Game:
             is_loss = True
 
         for p in players:
-            if (p.x, p.y) in player.lines:
+            if (p.x, p.y) in player.lines[:-1]:
                 if p != player:
-                    p.score += LINE_KILL_SCORE
+                    p.tick_score += LINE_KILL_SCORE
                 is_loss = True
 
         for p in players:
@@ -180,9 +179,10 @@ class Game:
         return [b.get_state() for b in self.bonuses]
 
     def collision_resolution(self, players_to_captured):
-        res = {p: copy.copy(c) for p, c in players_to_captured.items()}
-        for p1, captured1 in players_to_captured.items():
-            for p2, captured2 in players_to_captured.items():
+        p_to_c = {p: c for p, c in players_to_captured.items() if not p.is_ate(players_to_captured)}
+        res = {p: copy.copy(c) for p, c in p_to_c.items()}
+        for p1, captured1 in p_to_c.items():
+            for p2, captured2 in p_to_c.items():
                 if p1 != p2:
                     res[p1].difference_update(captured2)
         return res
@@ -205,11 +205,6 @@ class Game:
         for player in self.players:
             player.move()
 
-        for index, player in enumerate(self.players):
-            is_loss = self.check_loss(player, self.players)
-            if is_loss:
-                self.losers.append(self.players[index])
-
         players_to_captured = {}
         for player in self.players:
             player.remove_saw_bonus()
@@ -221,10 +216,20 @@ class Game:
                 players_to_captured[player] = captured
                 if len(captured) > 0:
                     player.lines.clear()
-                    player.score += NEUTRAL_TERRITORY_SCORE * len(captured)
+                    player.tick_score += NEUTRAL_TERRITORY_SCORE * len(captured)
 
+        for player in self.players:
+            is_loss = self.check_loss(player, self.players)
+            if is_loss:
+                self.losers.append(player)
 
         players_to_captured = self.collision_resolution(players_to_captured)
+
+        for player in self.players:
+            is_loss = player.is_ate(players_to_captured)
+            if is_loss:
+                self.losers.append(player)
+
         for player in self.players:
             if (player.x - round(WIDTH / 2)) % WIDTH == 0 and (player.y - round(WIDTH / 2)) % WIDTH == 0:
                 captured = players_to_captured.get(player, set())
@@ -248,11 +253,11 @@ class Game:
                                             'loser': p.id,
                                             'killed': True
                                         })
-                                        player.score += SAW_KILL_SCORE
+                                        player.tick_score += SAW_KILL_SCORE
                                     else:
                                         removed = p.territory.split(line, player.direction, p)
                                         if len(removed) > 0:
-                                            player.score += SAW_SCORE
+                                            player.tick_score += SAW_SCORE
                                             Saw.append_territory(removed, p.territory.color)
                                             Saw.log.append({
                                                 'player': player.id,
@@ -265,11 +270,15 @@ class Game:
                     for p in self.players:
                         if p != player:
                             removed = p.territory.remove_points(captured)
-                            player.score += (ENEMY_TERRITORY_SCORE - NEUTRAL_TERRITORY_SCORE) * len(removed)
+                            player.tick_score += (ENEMY_TERRITORY_SCORE - NEUTRAL_TERRITORY_SCORE) * len(removed)
 
         for player in self.losers:
             if player in self.players:
                 self.players.remove(player)
+
+        for player in self.players:
+            player.score += player.tick_score
+            player.tick_score = 0
 
         self.generate_bonus()
 
@@ -321,8 +330,6 @@ class Game:
 
 
 class LocalGame(Game):
-    border_color = (144, 163, 174, 255)
-
     def __init__(self, clients, scene, timeout):
         super().__init__(clients)
         self.scene = scene
@@ -368,13 +375,15 @@ class LocalGame(Game):
         for player in self.players:
             player.draw_position()
 
+        self.scene.draw_border()
+        self.draw_bonuses()
+        # self.scene.draw_grid()
+        self.draw_leaderboard()
+
         if len(self.players) == 0:
             self.scene.show_game_over()
         elif self.timeout and self.tick >= MAX_TICK_COUNT:
             self.scene.show_game_over(timeout=True)
-
-        self.draw_bonuses()
-        self.draw_leaderboard()
 
     async def game_loop(self, *args, **kwargs):
         self.scene.clear()

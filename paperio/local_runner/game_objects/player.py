@@ -20,6 +20,7 @@ class Player:
         self.bonuses = []
         self.name = name
         self.score = 0
+        self.tick_score = 0
 
         self.debug_log = []
         self.client = client
@@ -155,3 +156,9 @@ class Player:
 
         if self.direction == RIGHT:
             return self._get_line(WIDTH, 0)
+
+    def is_ate(self, players_to_captured):
+        for p, captured in players_to_captured.items():
+            if self != p and (self.x, self.y) in captured:
+                return True
+        return False
