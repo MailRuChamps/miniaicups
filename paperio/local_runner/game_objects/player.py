@@ -8,7 +8,6 @@ from helpers import batch_draw, draw_square
 class Player:
     speed = SPEED
     direction = None
-    prev_direction = None
 
     def __init__(self, id, x, y, name, color, client):
         self.id = id
@@ -28,8 +27,6 @@ class Player:
         self.is_disconnected = False
 
     def change_direction(self, command):
-        self.prev_direction = self.direction
-
         if command == UP and self.direction != DOWN:
             self.direction = UP
 
@@ -184,9 +181,9 @@ class Player:
         return (x, y), (x, y) != (self.x, self.y)
 
     def get_prev_position(self):
-        if self.prev_direction is None:
+        if self.direction is None:
             return self.x, self.y
-        return self.diff_position(self.prev_direction, self.x, self.y, WIDTH)
+        return self.diff_position(self.direction, self.x, self.y, WIDTH)
 
     def is_ate(self, players_to_captured):
         for p, captured in players_to_captured.items():

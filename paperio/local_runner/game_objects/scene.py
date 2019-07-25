@@ -4,6 +4,28 @@ from constants import WINDOW_HEIGHT, WINDOW_WIDTH, WIDTH
 from helpers import draw_quadrilateral, draw_line
 
 
+class Grid:
+    def __init__(self, color):
+        self.batch = pyglet.graphics.Batch()
+
+        y = WIDTH
+        while (y < WINDOW_HEIGHT):
+            self.batch.add(2, pyglet.gl.GL_LINES, None,
+                      ('v2i', (0, y, WINDOW_WIDTH, y)),
+                      ('c4B', 2 * color))
+            y += WIDTH
+
+        x = WIDTH
+        while (x < WINDOW_WIDTH):
+            self.batch.add(2, pyglet.gl.GL_LINES, None,
+                      ('v2i', (x, 0, x, WINDOW_HEIGHT)),
+                      ('c4B', 2 * color))
+            x += WIDTH
+
+    def draw(self):
+        self.batch.draw()
+
+
 class Scene:
     background_color = (220 / 255, 240 / 255, 244 / 255, 1)
     border_color = (144, 163, 174, 255)
@@ -31,9 +53,11 @@ class Scene:
         pyglet.gl.glClearColor(*self.background_color)
         pyglet.gl.glEnable(pyglet.gl.GL_BLEND)
         pyglet.gl.glBlendFunc(pyglet.gl.GL_SRC_ALPHA, pyglet.gl.GL_ONE_MINUS_SRC_ALPHA)
+        self.grid = Grid(self.grid_color)
 
     def clear(self):
         self.window.clear()
+        self.draw_grid()
 
     def append_label_to_leaderboard(self, label, color):
         if len(self.labels_buffer) > self.leaderboard_rows_count:
@@ -59,15 +83,7 @@ class Scene:
         self.game_over_label.draw()
 
     def draw_grid(self):
-        y = WIDTH
-        while (y < WINDOW_HEIGHT):
-            draw_line((0, y), (WINDOW_WIDTH, y), self.grid_color, 2)
-            y += WIDTH
-
-        x = WIDTH
-        while (x < WINDOW_WIDTH):
-            draw_line((x, 0), (x, WINDOW_HEIGHT), self.grid_color, 2)
-            x += WIDTH
+        self.grid.draw()
 
     def draw_border(self):
         draw_line((0, 0), (0, WINDOW_HEIGHT), self.border_color, self.border_width)
