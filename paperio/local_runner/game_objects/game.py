@@ -221,6 +221,9 @@ class Game:
         if futures:
             await asyncio.wait(futures)
 
+        if hasattr(self, 'send_tick_to_rewind_viewer'):
+            self.send_tick_to_rewind_viewer()
+
         for player in self.players:
             player.move()
 

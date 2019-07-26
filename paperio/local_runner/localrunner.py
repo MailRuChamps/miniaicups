@@ -12,7 +12,7 @@ from pyglet.window import key
 
 from helpers import TERRITORY_CACHE, load_image
 from clients import Client, KeyboardClient, SimplePythonClient, FileClient
-from constants import LR_CLIENTS_MAX_COUNT, MAX_TICK_COUNT, WINDOW_WIDTH, WINDOW_HEIGHT
+from constants import LR_CLIENTS_MAX_COUNT, MAX_TICK_COUNT, WINDOW_WIDTH, WINDOW_HEIGHT, WIDTH
 from game_objects.scene import Scene
 from game_objects.game import LocalGame, Game
 from game_objects.bonuses import Bonus
@@ -32,8 +32,67 @@ parser.add_argument('-t', '--timeout', type=str, nargs='?', help='off/on timeout
 parser.add_argument('-s', '--scale', type=int, nargs='?', help='window scale (%%)', default=100)
 parser.add_argument('--replay', help='Replay visio.gz (no gui)')
 parser.add_argument('--no-gui', help='Disable default gui', action='store_true')
+parser.add_argument('-r', '--rewind-viewer', help='RewindViewer', action='store_true')
 
 args = parser.parse_args()
+
+if args.rewind_viewer:
+    from RewindClient import RewindClient
+    rewind_client = RewindClient()
+
+    def send_tick_to_rewind_viewer(game: LocalGame):
+        W2 = WIDTH//2
+        TERRITORY_LAYER = 1
+        BONUS_LAYER = 2
+        GRID_LAYER = 3
+        TRAIL_LAYER = 4
+        PLAYER_LAYER = 5
+        DIRECTION_DELTA = {
+            'left': (-1, 0),
+            'right': (1, 0),
+            'up': (0, 1),
+            'down': (0, -1),
+        }
+        SPRITES = {
+            'n': ((-W2+3, -W2+3, W2-3, W2-3), (0, W2-3, W2-3, W2-3), (W2-3, 0, W2-3, W2-3)),
+            's': ((-W2+3, W2-3, W2-3, -W2+3), (0, -W2+3, W2-3, -W2+3), (W2-3, 0, W2-3, -W2+3)),
+            'saw': ((-W2+3, 0, 0, W2-3), (0, W2-3, W2-3, 0), (W2-3, 0, 0, -W2+3), (0, -W2+3, -W2+3, 0)),
+        }
+
+        def color2rv(c):
+            return c[2] | (c[1] << 8) | (c[0] << 16) | (c[3] << 24)
+
+        rc = rewind_client
+        for x in range(32):
+            rc.line(x*WIDTH, 0, x*WIDTH, 31*WIDTH, 0xffffff, GRID_LAYER)
+        for y in range(32):
+            rc.line(0, y*WIDTH, 31*WIDTH, y*WIDTH, 0xffffff, GRID_LAYER)
+        for p in game.players:
+            for (x, y) in p.territory.points:
+                rc.rectangle(x-W2, y-W2, x+W2, y+W2, color2rv(p.territory.color), TERRITORY_LAYER)
+            for (x, y) in p.lines:
+                rc.circle(x, y, int(0.1*WIDTH), color2rv(p.line_color), TRAIL_LAYER)
+            rc.circle(p.x, p.y, int(0.2*WIDTH), 0, PLAYER_LAYER)
+            rc.circle(p.x, p.y, int(0.2*WIDTH)-2, color2rv(p.color), PLAYER_LAYER)
+            dx, dy = DIRECTION_DELTA.get(p.direction, (0, 0))
+            rc.line(p.x, p.y, p.x+dx*int(0.2*WIDTH), p.y+dy*int(0.2*WIDTH), 0, PLAYER_LAYER)
+        message = [f'Tick {game.tick}']
+        for p in sorted(game.players + game.losers, key=lambda p: p.id):
+            message += (
+                '#{} @{} score {:3}'.format(p.id, '(dead    )' if p in game.losers else f'({p.x:3}, {p.y:3})', p.score),
+                '' if not p.bonuses else '  bonus: {}'.format(', '.join(f'{b.visio_name} ({b.get_remaining_ticks()} cells)' for b in p.bonuses)),
+            )
+            pos = int(31.5*WIDTH), int((31.5-p.id)*WIDTH)
+            rc.circle(*pos, int(0.4*WIDTH), color2rv(p.color), PLAYER_LAYER)
+            rc.popup(*pos, int(0.4*WIDTH), p.name)
+        for b in game.bonuses:
+            for dx1, dy1, dx2, dy2 in SPRITES[b.visio_name]:
+                rc.line(b.x+dx1, b.y+dy1, b.x+dx2, b.y+dy2, 0, BONUS_LAYER)
+            rc.circle(b.x, b.y, int(0.1*WIDTH), 0, BONUS_LAYER)
+            rc.popup(b.x, b.y, int(0.4*WIDTH), b.visio_name)
+        rc.message('\n'.join(message))
+        rc.end_frame()
+    Game.send_tick_to_rewind_viewer = send_tick_to_rewind_viewer
 
 if args.replay:
     args.no_gui = True
