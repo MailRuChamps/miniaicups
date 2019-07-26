@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from asyncio import events
 import argparse
 import os
