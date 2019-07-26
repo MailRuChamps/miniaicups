@@ -2,16 +2,20 @@
 from asyncio import events
 import argparse
 import os
+import gzip
+import json
+import sys
 
 import pyglet
 from pyglet.gl import *
 from pyglet.window import key
 
 from helpers import TERRITORY_CACHE, load_image
-from clients import KeyboardClient, SimplePythonClient, FileClient
+from clients import Client, KeyboardClient, SimplePythonClient, FileClient
 from constants import LR_CLIENTS_MAX_COUNT, MAX_TICK_COUNT, WINDOW_WIDTH, WINDOW_HEIGHT
 from game_objects.scene import Scene
-from game_objects.game import LocalGame
+from game_objects.game import LocalGame, Game
+from game_objects.bonuses import Bonus
 
 
 loop = events.new_event_loop()
@@ -26,23 +30,74 @@ for i in range(1, LR_CLIENTS_MAX_COUNT + 1):
 
 parser.add_argument('-t', '--timeout', type=str, nargs='?', help='off/on timeout', default='on')
 parser.add_argument('-s', '--scale', type=int, nargs='?', help='window scale (%%)', default=100)
+parser.add_argument('--replay', help='Replay visio.gz (no gui)')
+parser.add_argument('--no-gui', help='Disable default gui', action='store_true')
 
 args = parser.parse_args()
 
-scene = Scene(args.scale)
+if args.replay:
+    args.no_gui = True
+    visio = json.load(gzip.open(args.replay))
+    start_game = visio['visio_info'][0]
+    assert(start_game['type'] == 'start_game')
+    # FIXME: load WIDTH, SPEED, etc from `start_game`
 
-clients = []
-for i in range(1, LR_CLIENTS_MAX_COUNT + 1):
-    arg = getattr(args, 'player{}'.format(i))
-    if arg:
-        if arg == 'keyboard':
-            client = KeyboardClient(scene.window)
-        elif arg == 'simple_bot':
-            client = SimplePythonClient()
+    BONUS_CLASSES = {bc.visio_name: bc for bc in Bonus.__subclasses__()}
+    org_send_game_tick = Game.send_game_tick
+
+    def send_game_tick(self: Game):
+        try:
+            self.bonuses = []
+            for b in visio['visio_info'][game.tick]['bonuses']:
+                bb = BONUS_CLASSES[b['type']](b['position'])
+                bb.active_ticks = b['active_ticks']
+                self.bonuses.append(bb)
+        except:
+            pass
+        org_send_game_tick(self)
+    Game.send_game_tick = send_game_tick
+
+    class ReplayClient(Client):
+        def __init__(self, id):
+            self.id = id
+
+        async def get_command(self):
+            try:
+                direction = visio['visio_info'][game.tick+1]['players'][self.id]['direction']
+            except:
+                direction = 'left'
+            return {"command": direction}
+
+        def get_solution_id(self):
+            return visio['config'][self.id]
+    clients = [ReplayClient(id) for id in visio['config'].keys()]
+else:
+    if not args.no_gui:
+        scene = Scene(args.scale)
+    clients = []
+    for i in range(1, LR_CLIENTS_MAX_COUNT + 1):
+        arg = getattr(args, 'player{}'.format(i))
+        if arg:
+            if arg == 'keyboard':
+                client = KeyboardClient(scene.window)
+            elif arg == 'simple_bot':
+                client = SimplePythonClient()
+            else:
+                client = FileClient(arg.split(), getattr(args, 'p{}l'.format(i)))
+
+            clients.append(client)
+
+if args.no_gui:
+    game = Game(clients)
+    loop.run_until_complete(game.game_loop_wrapper())
+    if args.replay:
+        for a, b in zip(visio['visio_info'], game.game_log):
+            if a != json.loads(json.dumps(b)):  # json roundtrip to convert tuples to lists and int dict keys to strings
+                print("Replay '{}' failed on tick {}".format(args.replay, a.get("tick_num", None)))
+                sys.exit(1)
         else:
-            client = FileClient(arg.split(), getattr(args, 'p{}l'.format(i)))
-
-        clients.append(client)
+            print("OK")
+    sys.exit(0)
 
 if len(clients) == 0:
     clients.append(KeyboardClient(scene.window))
