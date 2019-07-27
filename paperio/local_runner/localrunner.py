@@ -44,6 +44,7 @@ if args.rewind_viewer:
     rewind_client = RewindClient()
 
     org_append_tick_to_game_log = Game.append_tick_to_game_log
+
     def append_tick_to_game_log(game: Game):
         W2 = WIDTH//2
         TERRITORY_LAYER = 1
@@ -101,6 +102,7 @@ if args.rewind_viewer:
 
 if args.replay:
     visio = json.load(gzip.open(args.replay))
+    assert(visio.get('visio_version', 0) >= 2)
     start_game = visio['visio_info'][0]
     assert(start_game['type'] == 'start_game')
     # FIXME: load WIDTH, SPEED, etc from `start_game`
