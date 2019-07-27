@@ -30,11 +30,14 @@ for i in range(1, LR_CLIENTS_MAX_COUNT + 1):
 
 parser.add_argument('-t', '--timeout', type=str, nargs='?', help='off/on timeout', default='on')
 parser.add_argument('-s', '--scale', type=int, nargs='?', help='window scale (%%)', default=100)
-parser.add_argument('--replay', help='Replay visio.gz (no gui)')
+parser.add_argument('--replay', help='Replay visio.gz')
 parser.add_argument('--no-gui', help='Disable default gui', action='store_true')
 parser.add_argument('-r', '--rewind-viewer', help='RewindViewer', action='store_true')
 
 args = parser.parse_args()
+
+if not args.no_gui:
+    scene = Scene(args.scale)
 
 if args.rewind_viewer:
     from RewindClient import RewindClient
@@ -97,19 +100,21 @@ if args.rewind_viewer:
     Game.append_tick_to_game_log = append_tick_to_game_log
 
 if args.replay:
-    args.no_gui = True
     visio = json.load(gzip.open(args.replay))
     start_game = visio['visio_info'][0]
     assert(start_game['type'] == 'start_game')
     # FIXME: load WIDTH, SPEED, etc from `start_game`
 
+    last_tick = 0
     BONUS_CLASSES = {bc.visio_name: bc for bc in Bonus.__subclasses__()}
     org_send_game_tick = Game.send_game_tick
 
     def send_game_tick(self: Game):
+        global last_tick
+        last_tick = self.tick
         try:
             self.bonuses = []
-            for b in visio['visio_info'][game.tick]['bonuses']:
+            for b in visio['visio_info'][self.tick]['bonuses']:
                 bb = BONUS_CLASSES[b['type']](b['position'])
                 bb.active_ticks = b['active_ticks']
                 self.bonuses.append(bb)
@@ -124,7 +129,7 @@ if args.replay:
 
         async def get_command(self):
             try:
-                direction = visio['visio_info'][game.tick+1]['players'][self.id]['direction']
+                direction = visio['visio_info'][last_tick+1]['players'][self.id]['direction']
             except:
                 direction = 'left'
             return {"command": direction}
@@ -133,8 +138,6 @@ if args.replay:
             return visio['config'][self.id]
     clients = [ReplayClient(id) for id in visio['config'].keys()]
 else:
-    if not args.no_gui:
-        scene = Scene(args.scale)
     clients = []
     for i in range(1, LR_CLIENTS_MAX_COUNT + 1):
         arg = getattr(args, 'player{}'.format(i))
