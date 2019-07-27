@@ -158,7 +158,7 @@ class Game:
         for player in self.players:
             player.send_message('end_game', {})
 
-    def send_game_tick(self):
+    def append_tick_to_game_log(self):
         self.game_log.append({
             'type': 'tick',
             'players': self.get_players_states(),
@@ -167,6 +167,9 @@ class Game:
             'saw': Saw.log
         })
 
+        Saw.log = []
+
+    def send_game_tick(self):
         for player in self.players:
             if (player.x - round(WIDTH / 2)) % WIDTH == 0 and (player.y - round(WIDTH / 2)) % WIDTH == 0:
                 player.send_message('tick', {
@@ -174,8 +177,6 @@ class Game:
                     'bonuses': self.get_bonuses_states(),
                     'tick_num': self.tick,
                 })
-
-        Saw.log = []
 
     async def game_loop_wrapper(self, *args, **kwargs):
         self.send_game_start()
@@ -221,8 +222,7 @@ class Game:
         if futures:
             await asyncio.wait(futures)
 
-        if hasattr(self, 'send_tick_to_rewind_viewer'):
-            self.send_tick_to_rewind_viewer()
+        self.append_tick_to_game_log()
 
         for player in self.players:
             player.move()

@@ -40,7 +40,8 @@ if args.rewind_viewer:
     from RewindClient import RewindClient
     rewind_client = RewindClient()
 
-    def send_tick_to_rewind_viewer(game: LocalGame):
+    org_append_tick_to_game_log = Game.append_tick_to_game_log
+    def append_tick_to_game_log(game: Game):
         W2 = WIDTH//2
         TERRITORY_LAYER = 1
         BONUS_LAYER = 2
@@ -92,7 +93,8 @@ if args.rewind_viewer:
             rc.popup(b.x, b.y, int(0.4*WIDTH), b.visio_name)
         rc.message('\n'.join(message))
         rc.end_frame()
-    Game.send_tick_to_rewind_viewer = send_tick_to_rewind_viewer
+        org_append_tick_to_game_log(game)
+    Game.append_tick_to_game_log = append_tick_to_game_log
 
 if args.replay:
     args.no_gui = True
