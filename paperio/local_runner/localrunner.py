@@ -131,14 +131,14 @@ if args.replay:
 
         async def get_command(self):
             try:
-                direction = visio['visio_info'][last_tick+1]['players'][self.id]['direction']
+                direction = visio['visio_info'][last_tick+0]['players'][self.id]['direction']
             except:
                 direction = 'left'
             return {"command": direction}
 
         def get_solution_id(self):
             return visio['config'][self.id]
-    clients = [ReplayClient(id) for id in visio['config'].keys()]
+    clients = [ReplayClient(id) for id in sorted(visio['config'].keys())]
 else:
     clients = []
     for i in range(1, LR_CLIENTS_MAX_COUNT + 1):
