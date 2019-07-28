@@ -179,7 +179,6 @@ class Runner:
     def game_loop_wrapper(dt):
         is_game_over = loop.run_until_complete(Runner.game.game_loop())
         if is_game_over or (args.timeout == 'on' and Runner.game.tick >= MAX_TICK_COUNT):
-            loop.run_until_complete(Runner.game.game_loop())
             Runner.game.send_game_end()
             Runner.game.game_save()
             Runner.stop_game()
