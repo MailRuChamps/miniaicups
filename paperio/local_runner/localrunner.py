@@ -7,13 +7,10 @@ import json
 import sys
 
 import pyglet
-from pyglet.gl import *
-from pyglet.window import key
 
 from helpers import TERRITORY_CACHE, load_image
 from clients import Client, KeyboardClient, SimplePythonClient, FileClient
 from constants import LR_CLIENTS_MAX_COUNT, MAX_TICK_COUNT, WINDOW_WIDTH, WINDOW_HEIGHT, WIDTH
-from game_objects.scene import Scene
 from game_objects.game import LocalGame, Game
 from game_objects.bonuses import Bonus
 
@@ -37,6 +34,9 @@ parser.add_argument('-r', '--rewind-viewer', help='RewindViewer', action='store_
 args = parser.parse_args()
 
 if not args.no_gui:
+    from pyglet.gl import *
+    from pyglet.window import key
+    from game_objects.scene import Scene
     scene = Scene(args.scale)
 
 if args.rewind_viewer:
@@ -158,8 +158,12 @@ if args.no_gui:
     loop.run_until_complete(game.game_loop_wrapper())
     if args.replay:
         for a, b in zip(visio['visio_info'], game.game_log):
+            if a.get('type', None) == 'end_game':
+                a.pop('events') # ignore events
+            if b.get('type', None) == 'end_game':
+                b.pop('events') # ignore events
             if a != json.loads(json.dumps(b)):  # json roundtrip to convert tuples to lists and int dict keys to strings
-                print("Replay '{}' failed on tick {}".format(args.replay, a.get("tick_num", None)))
+                print("Replay '{}' failed on {}:{}".format(args.replay, a.get("type", None), a.get("tick_num", None)))
                 sys.exit(1)
         else:
             print("OK")

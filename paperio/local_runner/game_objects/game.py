@@ -153,7 +153,8 @@ class Game:
     def send_game_end(self):
         self.game_log.append({
             'type': 'end_game',
-            'events': self.events
+            'events': self.events,
+            'scores': {p.client.get_solution_id(): p.score for p in self.losers + self.players}
         })
         for player in self.players:
             player.send_message('end_game', {})
