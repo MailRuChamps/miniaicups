@@ -48,7 +48,7 @@ class Bonus:
         pass
 
     def get_state(self):
-        return {'type': self.visio_name, 'position': (self.x, self.y)}
+        return {'type': self.visio_name, 'position': (self.x, self.y), 'active_ticks': self.active_ticks}
 
 
 class Nitro(Bonus):

@@ -1,0 +1,10 @@
+language: python
+cache: pip
+python:
+  - "3.6"
+# command to install dependencies
+install:
+  - pip install -r paperio/local_runner/requirements.txt
+# command to run tests
+script:
+  - 'cd paperio/local_runner && pytest --junit-xml=pytest/e2e.xml'
