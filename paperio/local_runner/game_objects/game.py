@@ -127,11 +127,13 @@ class Game:
                 is_loss = True
                 self.append_event('line crossed by other player', player, p)
 
-        for p in players:
-            if is_intersect((player.x, player.y), (p.x, p.y)) and p != player:
-                if len(player.lines) >= len(p.lines):
-                    is_loss = True
-                    self.append_event('faced with other player', player, p)
+        if len(player.lines) > 0:
+            for p in players:
+                if is_intersect((player.x, player.y), (p.x, p.y)) and p != player:
+                    if len(player.lines) >= len(p.lines):
+                        is_loss = True
+                        self.append_event('faced with other player', player, p)
+                        break
 
         if len(player.territory.points) == 0:
             is_loss = True
