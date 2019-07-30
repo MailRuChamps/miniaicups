@@ -99,6 +99,14 @@ class Player:
             'bonuses': self.get_bonuses_state()
         }
 
+    def get_state_for_event(self):
+        return {
+            'id': self.id,
+            'direction': self.direction,
+            'lines_length': len(self.lines),
+            'position': (self.x, self.y),
+        }
+
     async def get_command(self, tick):
         if self.is_disconnected:
             return
@@ -190,5 +198,5 @@ class Player:
             position, is_move = self.get_position()
             if self != p and position in captured and \
                     (is_move or self.get_prev_position() in captured):
-                return True
-        return False
+                return True, p
+        return False, None

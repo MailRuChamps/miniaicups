@@ -88,36 +88,54 @@ class Game:
         self.losers = []
         self.bonuses = []
         self.game_log = []
+        self.events = []
         self.tick = 1
+
+    def append_event(self, event, p1, p2=None):
+        row = {
+            'tick_num': self.tick,
+            'event': event,
+            'player': p1.get_state_for_event(),
+        }
+        if p2:
+            row['other'] = p2.get_state_for_event()
+        self.events.append(row)
 
     def check_loss(self, player, players):
         is_loss = False
 
         if player.y < 0 + round(WIDTH / 2):
             is_loss = True
+            self.append_event('faced the border', player)
 
         if player.y > WINDOW_HEIGHT - round(WIDTH / 2):
             is_loss = True
+            self.append_event('faced the border', player)
 
         if player.x < 0 + round(WIDTH / 2):
             is_loss = True
+            self.append_event('faced the border', player)
 
         if player.x > WINDOW_WIDTH - round(WIDTH / 2):
             is_loss = True
+            self.append_event('faced the border', player)
 
         for p in players:
             if (p.x, p.y) in player.lines[:-1]:
                 if p != player:
                     p.tick_score += LINE_KILL_SCORE
                 is_loss = True
+                self.append_event('line crossed by other player', player, p)
 
         for p in players:
             if is_intersect((player.x, player.y), (p.x, p.y)) and p != player:
                 if len(player.lines) >= len(p.lines):
                     is_loss = True
+                    self.append_event('faced with other player', player, p)
 
         if len(player.territory.points) == 0:
             is_loss = True
+            self.append_event('has no territory', player)
 
         return is_loss
 
@@ -134,7 +152,8 @@ class Game:
 
     def send_game_end(self):
         self.game_log.append({
-            'type': 'end_game'
+            'type': 'end_game',
+            'events': self.events
         })
         for player in self.players:
             player.send_message('end_game', {})
@@ -179,7 +198,7 @@ class Game:
         return [b.get_state() for b in self.bonuses]
 
     def collision_resolution(self, players_to_captured):
-        p_to_c = {p: c for p, c in players_to_captured.items() if not p.is_ate(players_to_captured)}
+        p_to_c = {p: c for p, c in players_to_captured.items() if not p.is_ate(players_to_captured)[0]}
         res = {p: copy.copy(c) for p, c in p_to_c.items()}
         for p1, captured1 in p_to_c.items():
             for p2, captured2 in p_to_c.items():
@@ -226,8 +245,9 @@ class Game:
         players_to_captured = self.collision_resolution(players_to_captured)
 
         for player in self.players:
-            is_loss = player.is_ate(players_to_captured)
+            is_loss, p = player.is_ate(players_to_captured)
             if is_loss:
+                self.append_event('eaten by other player', player, p)
                 self.losers.append(player)
 
         for player in self.players:
@@ -248,6 +268,7 @@ class Game:
                                 if p != player:
                                     if any([is_intersect((p.x, p.y), point) for point in line]):
                                         self.losers.append(p)
+                                        self.append_event('killed by saw', p, player)
                                         Saw.log.append({
                                             'player': player.id,
                                             'loser': p.id,
