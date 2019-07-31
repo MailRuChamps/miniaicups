@@ -1,4 +1,4 @@
-FROM stest.tech-mail.ru/aicups/paperio_base
+FROM stor.highloadcup.ru/aicups/paperio_base
 LABEL authors="Alexey Bolshakov <ua3mqj@gmail.com>, Sergey Samokhvalov <onlyforthesky@gmail.com>"
 
 COPY mix.exs /opt/client/default/mix.exs

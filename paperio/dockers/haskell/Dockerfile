@@ -1,4 +1,4 @@
-FROM stest.tech-mail.ru/aicups/paperio_base
+FROM stor.highloadcup.ru/aicups/paperio_base
 MAINTAINER Cthulhu <cthulhu.den@gmail.com>
 
 ENV PATH=/opt/ghc/bin:$PATH

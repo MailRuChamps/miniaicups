@@ -200,6 +200,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="cbx_notimeout">
+        <property name="text">
+         <string>Время неограничено</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="Line" name="line_3">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>

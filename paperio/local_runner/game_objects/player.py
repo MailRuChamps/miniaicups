@@ -7,7 +7,7 @@ from helpers import batch_draw, draw_square
 
 class Player:
     speed = SPEED
-    direction = LEFT
+    direction = None
 
     def __init__(self, id, x, y, name, color, client):
         self.id = id
@@ -20,6 +20,7 @@ class Player:
         self.bonuses = []
         self.name = name
         self.score = 0
+        self.tick_score = 0
 
         self.debug_log = []
         self.client = client
@@ -92,10 +93,18 @@ class Player:
         return {
             'score': self.score,
             'direction': self.direction,
-            'territory': list(self.territory.points),
+            'territory': list(sorted(self.territory.points)),
             'lines': copy(self.lines),
             'position': (self.x, self.y),
             'bonuses': self.get_bonuses_state()
+        }
+
+    def get_state_for_event(self):
+        return {
+            'id': self.id,
+            'direction': self.direction,
+            'lines_length': len(self.lines),
+            'position': (self.x, self.y),
         }
 
     async def get_command(self, tick):
@@ -155,3 +164,39 @@ class Player:
 
         if self.direction == RIGHT:
             return self._get_line(WIDTH, 0)
+
+    def diff_position(self, direction, x, y, val):
+        if direction == UP:
+            return x, y - val
+
+        if direction == DOWN:
+            return x, y + val
+
+        if direction == LEFT:
+            return x + val, y
+
+        if direction == RIGHT:
+            return x - val, y
+
+    def get_position(self):
+        if self.direction is None:
+            return self.x, self.y
+
+        x, y = self.x, self.y
+        while not ((x - round(WIDTH / 2)) % WIDTH == 0 and (y - round(WIDTH / 2)) % WIDTH == 0):
+            x, y = self.diff_position(self.direction, x, y, self.speed)
+
+        return (x, y), (x, y) != (self.x, self.y)
+
+    def get_prev_position(self):
+        if self.direction is None:
+            return self.x, self.y
+        return self.diff_position(self.direction, self.x, self.y, WIDTH)
+
+    def is_ate(self, players_to_captured):
+        for p, captured in players_to_captured.items():
+            position, is_move = self.get_position()
+            if self != p and position in captured and \
+                    (is_move or self.get_prev_position() in captured):
+                return True, p
+        return False, None
