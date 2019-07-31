@@ -127,11 +127,13 @@ class Game:
                 is_loss = True
                 self.append_event('line crossed by other player', player, p)
 
-        for p in players:
-            if is_intersect((player.x, player.y), (p.x, p.y)) and p != player:
-                if len(player.lines) >= len(p.lines):
-                    is_loss = True
-                    self.append_event('faced with other player', player, p)
+        if len(player.lines) > 0:
+            for p in players:
+                if is_intersect((player.x, player.y), (p.x, p.y)) and p != player:
+                    if len(player.lines) >= len(p.lines):
+                        is_loss = True
+                        self.append_event('faced with other player', player, p)
+                        break
 
         if len(player.territory.points) == 0:
             is_loss = True
@@ -153,12 +155,13 @@ class Game:
     def send_game_end(self):
         self.game_log.append({
             'type': 'end_game',
-            'events': self.events
+            'events': self.events,
+            'scores': {p.client.get_solution_id(): p.score for p in self.losers + self.players}
         })
         for player in self.players:
             player.send_message('end_game', {})
 
-    def send_game_tick(self):
+    def append_tick_to_game_log(self):
         self.game_log.append({
             'type': 'tick',
             'players': self.get_players_states(),
@@ -167,6 +170,9 @@ class Game:
             'saw': Saw.log
         })
 
+        Saw.log = []
+
+    def send_game_tick(self):
         for player in self.players:
             if (player.x - round(WIDTH / 2)) % WIDTH == 0 and (player.y - round(WIDTH / 2)) % WIDTH == 0:
                 player.send_message('tick', {
@@ -174,8 +180,6 @@ class Game:
                     'bonuses': self.get_bonuses_states(),
                     'tick_num': self.tick,
                 })
-
-        Saw.log = []
 
     async def game_loop_wrapper(self, *args, **kwargs):
         self.send_game_start()
@@ -220,6 +224,8 @@ class Game:
                 futures.append(asyncio.ensure_future(self.get_command_wrapper(player)))
         if futures:
             await asyncio.wait(futures)
+
+        self.append_tick_to_game_log()
 
         for player in self.players:
             player.move()
@@ -323,6 +329,7 @@ class Game:
 
     def save_visio(self):
         d = {
+            'visio_version': 2,
             'config': self.get_players_external_id(),
             'visio_info': self.game_log
         }
