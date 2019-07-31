@@ -24,7 +24,7 @@ class Game:
     SCORES_LOCATION = os.path.join(BASE_DIR, 'scores.json')
     DEBUG_LOCATION = os.path.join(BASE_DIR, '{}')
 
-    def get_busy_points(self):
+    def get_occupied_points(self):
         players_points = {(p.x, p.y) for p in self.players}
         bonuses_points = {(b.x, b.y) for b in self.bonuses}
         lines_poins = set()
@@ -33,14 +33,14 @@ class Game:
 
         return players_points | bonuses_points | lines_poins
 
-    def generate_bonus(self):
+    def try_generate_bonus(self):
         if len(self.available_bonuses) > 0:
             if random.randint(1, BONUS_CHANCE) == 1 and len(self.bonuses) < BONUSES_MAX_COUNT:
-                coors = Bonus.generate_coordinates(self.players, self.get_busy_points())
+                coors = Bonus.generate_coordinates(self.players, self.get_occupied_points())
                 bonus = random.choice(self.available_bonuses)(coors)
                 self.bonuses.append(bonus)
 
-    def get_coordinates(self, clients_count):
+    def get_coordinates_for_players(self, clients_count):
         dx = round(X_CELLS_COUNT / 6) * WIDTH
         dy = round(Y_CELLS_COUNT / 6) * WIDTH
 
@@ -80,7 +80,7 @@ class Game:
 
     def __init__(self, clients):
         players = []
-        coordinates = self.get_coordinates(len(clients))
+        coordinates = self.get_coordinates_for_players(len(clients))
         for index, client in enumerate(clients):
             players.append(Player(index + 1, *next(coordinates), 'Player {}'.format(index + 1), PLAYER_COLORS[index], client))
 
@@ -100,46 +100,6 @@ class Game:
         if p2:
             row['other'] = p2.get_state_for_event()
         self.events.append(row)
-
-    def check_loss(self, player, players):
-        is_loss = False
-
-        if player.y < 0 + round(WIDTH / 2):
-            is_loss = True
-            self.append_event('faced the border', player)
-
-        if player.y > WINDOW_HEIGHT - round(WIDTH / 2):
-            is_loss = True
-            self.append_event('faced the border', player)
-
-        if player.x < 0 + round(WIDTH / 2):
-            is_loss = True
-            self.append_event('faced the border', player)
-
-        if player.x > WINDOW_WIDTH - round(WIDTH / 2):
-            is_loss = True
-            self.append_event('faced the border', player)
-
-        for p in players:
-            if (p.x, p.y) in player.lines[:-1]:
-                if p != player:
-                    p.tick_score += LINE_KILL_SCORE
-                is_loss = True
-                self.append_event('line crossed by other player', player, p)
-
-        if len(player.lines) > 0:
-            for p in players:
-                if is_intersect((player.x, player.y), (p.x, p.y)) and p != player:
-                    if len(player.lines) >= len(p.lines):
-                        is_loss = True
-                        self.append_event('faced with other player', player, p)
-                        break
-
-        if len(player.territory.points) == 0:
-            is_loss = True
-            self.append_event('has no territory', player)
-
-        return is_loss
 
     def send_game_start(self):
         start_message = {
@@ -174,7 +134,7 @@ class Game:
 
     def send_game_tick(self):
         for player in self.players:
-            if (player.x - round(WIDTH / 2)) % WIDTH == 0 and (player.y - round(WIDTH / 2)) % WIDTH == 0:
+            if player.is_in_cell_center():
                 player.send_message('tick', {
                     'players': self.get_players_states(player),
                     'bonuses': self.get_bonuses_states(),
@@ -202,7 +162,7 @@ class Game:
         return [b.get_state() for b in self.bonuses]
 
     def collision_resolution(self, players_to_captured):
-        p_to_c = {p: c for p, c in players_to_captured.items() if not p.is_ate(players_to_captured)[0]}
+        p_to_c = {p: c for p, c in players_to_captured.items() if not p.is_head_pawned(players_to_captured)[0]}
         res = {p: copy.copy(c) for p, c in p_to_c.items()}
         for p1, captured1 in p_to_c.items():
             for p2, captured2 in p_to_c.items():
@@ -220,7 +180,7 @@ class Game:
 
         futures = []
         for player in self.players:
-            if (player.x - round(WIDTH / 2)) % WIDTH == 0 and (player.y - round(WIDTH / 2)) % WIDTH == 0:
+            if player.is_in_cell_center():
                 futures.append(asyncio.ensure_future(self.get_command_wrapper(player)))
         if futures:
             await asyncio.wait(futures)
@@ -234,7 +194,7 @@ class Game:
         for player in self.players:
             player.remove_saw_bonus()
 
-            if (player.x - round(WIDTH / 2)) % WIDTH == 0 and (player.y - round(WIDTH / 2)) % WIDTH == 0:
+            if player.is_in_cell_center():
                 player.update_lines()
 
                 captured = player.territory.capture(player.lines)
@@ -251,16 +211,16 @@ class Game:
         players_to_captured = self.collision_resolution(players_to_captured)
 
         for player in self.players:
-            is_loss, p = player.is_ate(players_to_captured)
+            is_loss, p = player.is_head_pawned(players_to_captured)
             if is_loss:
                 self.append_event('eaten by other player', player, p)
                 self.losers.append(player)
 
         for player in self.players:
-            if (player.x - round(WIDTH / 2)) % WIDTH == 0 and (player.y - round(WIDTH / 2)) % WIDTH == 0:
+            if player.is_in_cell_center():
                 captured = players_to_captured.get(player, set())
 
-                player.tick_action()
+                player.on_center_bonuses_tick()
 
                 for bonus in self.bonuses[:]:
                     if bonus.is_ate(player, captured):
@@ -268,30 +228,8 @@ class Game:
                         self.bonuses.remove(bonus)
 
                         if isinstance(bonus, Saw):
-                            line = player.get_direction_line()
-                            Saw.append_line(line)
-                            for p in self.players:
-                                if p != player:
-                                    if any([is_intersect((p.x, p.y), point) for point in line]):
-                                        self.losers.append(p)
-                                        self.append_event('killed by saw', p, player)
-                                        Saw.log.append({
-                                            'player': player.id,
-                                            'loser': p.id,
-                                            'killed': True
-                                        })
-                                        player.tick_score += SAW_KILL_SCORE
-                                    else:
-                                        removed = p.territory.split(line, player.direction, p)
-                                        if len(removed) > 0:
-                                            player.tick_score += SAW_SCORE
-                                            Saw.append_territory(removed, p.territory.color)
-                                            Saw.log.append({
-                                                'player': player.id,
-                                                'loser': p.id,
-                                                'points': removed,
-                                                'killed': False
-                                            })
+                            self.use_saw(player)
+                            
                 if captured:
                     player.territory.points.update(captured)
                     for p in self.players:
@@ -307,10 +245,112 @@ class Game:
             player.score += player.tick_score
             player.tick_score = 0
 
-        self.generate_bonus()
+        self.try_generate_bonus()
 
         self.tick += 1
         return len(self.players) == 0
+        
+    def check_loss(self, player, players):
+        if self.check_loss_line_crossed_and_give_score(player, players): # first due to scores
+            return True
+        elif self.check_loss_map_bounds(player):
+            return True
+        elif self.check_loss_head_intersection(player, players):
+            return True
+        elif len(player.territory.points) == 0:
+            self.append_event('has no territory', player)
+            return True
+        return False
+        
+    def check_loss_line_crossed_and_give_score(self, player, players):
+        is_loss = False
+        for p in players:
+            if p.pos() in player.lines[:-1]:
+                if p != player:
+                    p.tick_score += LINE_KILL_SCORE
+                is_loss = True
+                self.append_event('line crossed by other player', player, p)
+                # without fast exit due to scores
+                
+        return is_loss
+        
+    def check_loss_map_bounds(self, player):
+        if player.y < 0 + round(WIDTH / 2):
+            self.append_event('faced the border', player)
+            return True
+
+        if player.y > WINDOW_HEIGHT - round(WIDTH / 2):
+            self.append_event('faced the border', player)
+            return True
+
+        if player.x < 0 + round(WIDTH / 2):
+            self.append_event('faced the border', player)
+            return True
+
+        if player.x > WINDOW_WIDTH - round(WIDTH / 2):
+            self.append_event('faced the border', player)
+            return True
+            
+        return False
+        
+    def check_loss_head_intersection(self, player, players):
+        for p in players:
+            if p != player:
+
+                if len(player.lines) > 0:
+                    if is_intersect(player.pos(), p.pos()):
+                        if len(player.lines) >= len(p.lines):
+                            self.append_event('faced with other player (lines > 0)', player, p)
+                            return True
+                elif len(p.lines) == 0:
+                    # both on self'territory (0 line) ...
+                
+                    # both not in center (otherwise forward and backward will be invalid)
+                    if not player.is_in_cell_center() and not p.is_in_cell_center():
+                    
+                        # 1st move to 2nd, 2nd move to 1st
+                        # start move on the same tick
+                        # both will be killed (1st - now, 2nd - later)
+                        if player.get_forward_center_position() == p.get_backward_center_position() and \
+                                player.get_backward_center_position() == p.get_forward_center_position():
+                            self.append_event('faced with other player ([move] 1 <-> 2 [move])', player, p)
+                            return True
+                        # otherwise both will survive (includes case when 1st -> move to 2nd, and 2nd -> move to another point, and vise versa)
+                        
+                    # 1st move to 2nd, 2nd stay in center
+                    # 1st will be killed now, 2nd will survive (will no be killed - later)
+                    elif not player.is_in_cell_center() and player.get_forward_center_position() == p.pos():
+                        self.append_event('faced with other player ([move] 1 -> 2 [stop])', player, p)
+                        return True
+                        
+                    # otherwise in safe on self'territory (0 line)
+        return False
+        
+    def use_saw(self, player):
+        line = player.get_direction_line()
+        Saw.append_line(line)
+        for p in self.players:
+            if p != player:
+                if any([is_intersect(p.pos(), point) for point in line]):
+                    self.losers.append(p)
+                    self.append_event('killed by saw', p, player)
+                    Saw.log.append({
+                        'player': player.id,
+                        'loser': p.id,
+                        'killed': True
+                    })
+                    player.tick_score += SAW_KILL_SCORE
+                else:
+                    removed = p.territory.split(line, player.direction, p)
+                    if len(removed) > 0:
+                        player.tick_score += SAW_SCORE
+                        Saw.append_territory(removed, p.territory.color)
+                        Saw.log.append({
+                            'player': player.id,
+                            'loser': p.id,
+                            'points': removed,
+                            'killed': False
+                        })
 
     def save_scores(self):
         d = {p.client.get_solution_id(): p.score for p in self.losers + self.players}
