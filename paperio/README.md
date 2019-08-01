@@ -138,7 +138,7 @@ while True:
     state = input()  # получение тика
     commands = ['left', 'right', 'up', 'down']  # доступные команды
     cmd = random.choice(commands)  # случайный выбор действия
-    print(json.dumps({"command": cmd, 'debug': cmd})  # отправка результата
+    print(json.dumps({"command": cmd, 'debug': cmd}))  # отправка результата
 ```
 
 После старта игры, сервер-механика рассылает всем подключившимся решениям конфигурацию игры. В неё входят следующие параметры:
