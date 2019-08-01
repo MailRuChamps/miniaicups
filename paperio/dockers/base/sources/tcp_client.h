@@ -75,17 +75,19 @@ private slots:
     }
 
     void on_ready_read() {
-        QByteArray &&data = socket->readLine(0);
-        qDebug() << data;
-//        qDebug() << "Data:" << data;
-        if (first_read) {
-            solution->start(solution_run);
-            first_read = false;
-        }
-        int written = solution->write(data);
-        // qDebug() << "Written" << written;
-        if (written == -1) {
-            qDebug() << "Can not write to solution";
+        while (socket->canReadLine()) {
+            QByteArray &&data = socket->readLine(0);
+            qDebug() << data;
+            // qDebug() << "Data:" << data;
+            if (first_read) {
+                solution->start(solution_run);
+                first_read = false;
+            }
+            int written = solution->write(data);
+            // qDebug() << "Written" << written;
+            if (written == -1) {
+                qDebug() << "Can not write to solution";
+            }
         }
     }
 
@@ -98,12 +100,14 @@ private slots:
 
 public slots:
     void on_solution_out() {
-        QByteArray &&cmd = solution->readLine(MAX_RESP_LEN);
-        // qDebug() << cmd;
+        while (solution->canReadLine()) {
+            QByteArray &&cmd = solution->readLine(MAX_RESP_LEN);
+            // qDebug() << cmd;
 
-        int sent = socket->write(cmd);
-        if (sent == -1) {
-            qDebug() << "Can not send command";
+            int sent = socket->write(cmd);
+            if (sent == -1) {
+                qDebug() << "Can not send command";
+            }
         }
     }
 
