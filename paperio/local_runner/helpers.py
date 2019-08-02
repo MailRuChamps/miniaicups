@@ -1,7 +1,7 @@
 import os
 import random
 import pyglet
-from constants import WIDTH, X_CELLS_COUNT, Y_CELLS_COUNT
+from constants import UP, DOWN, LEFT, RIGHT, WIDTH, X_CELLS_COUNT, Y_CELLS_COUNT
 
 
 def show_coordinates(point):
@@ -198,3 +198,37 @@ def is_intersect(p1, p2, width=WIDTH):
     x1, y1 = p1
     x2, y2 = p2
     return abs(x1 - x2) < width and abs(y1 - y2) < width
+
+    
+def is_cell_center(x, y):
+    return ((x - round(WIDTH / 2)) % WIDTH == 0 and (y - round(WIDTH / 2)) % WIDTH == 0)
+    
+def get_inversed_direction(dir):
+    if dir == UP:
+        return DOWN
+
+    if dir == DOWN:
+        return UP
+
+    if dir == LEFT:
+        return RIGHT
+
+    if dir == RIGHT:
+        return LEFT
+        
+    return None
+    
+def get_incremented_pos_by_direction(x, y, dir, val):
+    if dir == UP:
+        return x, y + val
+
+    if dir == DOWN:
+        return x, y - val
+
+    if dir == LEFT:
+        return x - val, y
+
+    if dir == RIGHT:
+        return x + val, y
+        
+    return x, y

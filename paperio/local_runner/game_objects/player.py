@@ -2,7 +2,7 @@ from copy import copy
 from game_objects.territory import Territory
 from game_objects.bonuses import Saw
 from constants import UP, DOWN, LEFT, RIGHT, SPEED, WINDOW_HEIGHT, WINDOW_WIDTH, WIDTH
-from helpers import batch_draw, draw_square
+from helpers import batch_draw, draw_square, is_cell_center, get_inversed_direction, get_incremented_pos_by_direction
 
 
 class Player:
@@ -25,32 +25,15 @@ class Player:
         self.debug_log = []
         self.client = client
         self.is_disconnected = False
-
+        
     def change_direction(self, command):
-        if command == UP and self.direction != DOWN:
-            self.direction = UP
+        inversed_direction = get_inversed_direction(self.direction)
 
-        if command == DOWN and self.direction != UP:
-            self.direction = DOWN
-
-        if command == LEFT and self.direction != RIGHT:
-            self.direction = LEFT
-
-        if command == RIGHT and self.direction != LEFT:
-            self.direction = RIGHT
+        if command != inversed_direction and command != None:
+            self.direction = command
 
     def move(self):
-        if self.direction == UP:
-            self.y += self.speed
-
-        if self.direction == DOWN:
-            self.y -= self.speed
-
-        if self.direction == LEFT:
-            self.x -= self.speed
-
-        if self.direction == RIGHT:
-            self.x += self.speed
+        self.x, self.y = get_incremented_pos_by_direction(self.x, self.y, self.direction, self.speed)
 
     def draw_lines(self):
         batch_draw(self.lines, self.line_color)
@@ -78,7 +61,7 @@ class Player:
                 bonus.cancel(self)
                 self.bonuses.remove(bonus)
 
-    def tick_action(self):
+    def on_center_bonuses_tick(self):
         for bonus in self.bonuses[:]:
             bonus.tick += 1
 
@@ -165,38 +148,47 @@ class Player:
         if self.direction == RIGHT:
             return self._get_line(WIDTH, 0)
 
-    def diff_position(self, direction, x, y, val):
-        if direction == UP:
-            return x, y - val
-
-        if direction == DOWN:
-            return x, y + val
-
-        if direction == LEFT:
-            return x + val, y
-
-        if direction == RIGHT:
-            return x - val, y
-
-    def get_position(self):
+    def get_forward_center_position(self):
         if self.direction is None:
             return self.x, self.y
-
+            
+        if self.is_in_cell_center():
+            return self.x, self.y
+            
         x, y = self.x, self.y
-        while not ((x - round(WIDTH / 2)) % WIDTH == 0 and (y - round(WIDTH / 2)) % WIDTH == 0):
-            x, y = self.diff_position(self.direction, x, y, self.speed)
+        while not is_cell_center(x, y):
+            x, y = get_incremented_pos_by_direction(x, y, self.direction, self.speed)
 
-        return (x, y), (x, y) != (self.x, self.y)
+        return (x, y)
 
-    def get_prev_position(self):
+    def get_backward_center_position(self):
         if self.direction is None:
             return self.x, self.y
-        return self.diff_position(self.direction, self.x, self.y, WIDTH)
+            
+        inversed_direction = get_inversed_direction(self.direction)
+        
+        if self.is_in_cell_center():
+            return get_incremented_pos_by_direction(self.x, self.y, inversed_direction, WIDTH)
+            
+        x, y = self.x, self.y
+        while not is_cell_center(x, y):
+            x, y = get_incremented_pos_by_direction(x, y, inversed_direction, self.speed)
 
-    def is_ate(self, players_to_captured):
+        return (x, y)
+
+    def is_head_pawned(self, players_to_captured):
         for p, captured in players_to_captured.items():
-            position, is_move = self.get_position()
-            if self != p and position in captured and \
-                    (is_move or self.get_prev_position() in captured):
-                return True, p
+            if self != p:
+                if self.is_in_cell_center():
+                    if self.get_backward_center_position() in captured and self.get_forward_center_position() in captured:
+                        return True, p
+                else:
+                    if self.get_backward_center_position() in captured:
+                        return True, p
         return False, None
+        
+    def is_in_cell_center(self):
+        return is_cell_center(self.x, self.y)
+        
+    def pos(self):
+        return (self.x, self.y)
