@@ -235,10 +235,11 @@ class TcpClient(BasicProxyClient):
 
 class FileClient(BasicProxyClient):
 
-    def __init__(self, path_to_script, path_to_log=None):
+    def __init__(self, path_to_script, path_to_log=None, check_ai_timeout=False):
         super(FileClient, self).__init__()
         self.process = Popen(path_to_script, stdout=PIPE, stdin=PIPE)
         self.last_message = None
+        self.check_ai_timeout = check_ai_timeout
         if path_to_log is None:
             base_dir = os.getcwd()
             now = datetime.datetime.now().strftime('%Y_%m_%d-%H-%M-%S.log.gz')
@@ -253,11 +254,13 @@ class FileClient(BasicProxyClient):
 
     async def get_command(self):
         try:
-            self.begin_measure_time()
+            if self.check_ai_timeout:
+                self.begin_measure_time()
             #
             z = self.process.stdout.readline().decode('utf-8')
             #
-            self.end_measure_time()
+            if self.check_ai_timeout:
+                self.end_measure_time()
 
             return json.loads(z)
         except Exception as e:

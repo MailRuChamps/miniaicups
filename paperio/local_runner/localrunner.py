@@ -25,7 +25,8 @@ for i in range(1, LR_CLIENTS_MAX_COUNT + 1):
                         help='Path to executable with strategy for player {}'.format(i))
     parser.add_argument('--p{}l'.format(i), type=str, nargs='?', help='Path to log for player {}'.format(i))
 
-parser.add_argument('-t', '--timeout', type=str, nargs='?', help='off/on timeout', default='on')
+parser.add_argument('-t', '--timeout', type=str, nargs='?', help='off/on tick limit per game', default='on')
+parser.add_argument('--ai-timeout', type=str, nargs='?', help='off/on AI execution time limit', default='off')
 parser.add_argument('-s', '--scale', type=int, nargs='?', help='window scale (%%)', default=100)
 parser.add_argument('--replay', help='Replay visio.gz')
 parser.add_argument('--no-gui', help='Disable default gui', action='store_true')
@@ -149,7 +150,7 @@ else:
             elif arg == 'simple_bot':
                 client = SimplePythonClient()
             else:
-                client = FileClient(arg.split(), getattr(args, 'p{}l'.format(i)))
+                client = FileClient(arg.split(), getattr(args, 'p{}l'.format(i)), args.ai_timeout == 'on')
 
             clients.append(client)
 
