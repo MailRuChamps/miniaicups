@@ -79,7 +79,7 @@ class Scene:
         self.leaderboard_rows_count = 0
 
     def show_game_over(self, timeout=False):
-        self.game_over_label.text = 'TIMEOUT' if timeout else 'GAME OVER'
+        self.game_over_label.text = 'END TICK' if timeout else 'GAME OVER'
         self.game_over_label.draw()
 
     def draw_grid(self):
