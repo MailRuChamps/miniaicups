@@ -21,6 +21,8 @@ RIGHT = 'right'
 UP = 'up'
 DOWN = 'down'
 
+OPPOSITE_DIRECTION = {LEFT: RIGHT, RIGHT: LEFT, UP: DOWN, DOWN: UP, None: None}
+
 SPEED = toint(os.getenv('SPEED'), 5)
 WIDTH = toint(os.getenv('WIDTH'), 30) # должно делиться на 2
 BONUS_CHANCE = toint(os.getenv('BONUS_CHANCE'), 500) # 1 из BONUS_CHANCE
