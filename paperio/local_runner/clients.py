@@ -180,7 +180,8 @@ class TcpClient(Client):
     def send_message(self, t, d):
         msg = {
             'type': t,
-            'params': d
+            'params': d,
+            'time_left': round((self.EXECUTION_LIMIT-self.execution_time).total_seconds()*1000)
         }
         msg_bytes = '{}\n'.format(json.dumps(msg)).encode()
         self.writer.write(msg_bytes)

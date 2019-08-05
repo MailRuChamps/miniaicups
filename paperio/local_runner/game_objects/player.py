@@ -93,7 +93,7 @@ class Player:
         return {
             'score': self.score,
             'direction': self.direction,
-            'territory': list(self.territory.points),
+            'territory': list(sorted(self.territory.points)),
             'lines': copy(self.lines),
             'position': (self.x, self.y),
             'bonuses': self.get_bonuses_state()
