@@ -8,7 +8,7 @@ import random
 from helpers import is_intersect
 from constants import WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, PLAYER_COLORS, MAX_TICK_COUNT, BONUS_CHANCE, \
     BONUSES_MAX_COUNT, X_CELLS_COUNT, Y_CELLS_COUNT, SPEED, NEUTRAL_TERRITORY_SCORE, ENEMY_TERRITORY_SCORE, \
-    LINE_KILL_SCORE, SAW_KILL_SCORE, AVAILABLE_BONUSES, SAW_SCORE
+    LINE_KILL_SCORE, SAW_KILL_SCORE, AVAILABLE_BONUSES, SAW_SCORE, OPPOSITE_DIRECTION
 from game_objects.player import Player
 from game_objects.bonuses import Nitro, Slowdown, Bonus, Saw
 
@@ -134,6 +134,13 @@ class Game:
                         is_loss = True
                         self.append_event('faced with other player', player, p)
                         break
+        else:
+            zero_tail_opps = [opp for opp in players if opp != player and len(opp.lines) == 0]
+            for p in zero_tail_opps:
+                if is_intersect((player.x, player.y), (p.x, p.y)) and player.direction == OPPOSITE_DIRECTION[p.direction]:
+                    is_loss = True
+                    self.append_event('faced with other player', player, p)
+                    break
 
         if len(player.territory.points) == 0:
             is_loss = True
