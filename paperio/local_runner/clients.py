@@ -7,7 +7,7 @@ import random
 from subprocess import Popen, PIPE
 
 import pyglet
-from constants import LEFT, RIGHT, UP, DOWN, MAX_EXECUTION_TIME, REQUEST_MAX_TIME
+from constants import CONSTS
 
 
 class Client(object):
@@ -31,10 +31,10 @@ class KeyboardClient(Client):
     @property
     def KEY_COMMAND_MAP(self):
         return {
-            pyglet.window.key.MOTION_LEFT: LEFT,
-            pyglet.window.key.MOTION_RIGHT: RIGHT,
-            pyglet.window.key.MOTION_DOWN: DOWN,
-            pyglet.window.key.MOTION_UP: UP,
+            pyglet.window.key.MOTION_LEFT: CONSTS.LEFT,
+            pyglet.window.key.MOTION_RIGHT: CONSTS.RIGHT,
+            pyglet.window.key.MOTION_DOWN: CONSTS.DOWN,
+            pyglet.window.key.MOTION_UP: CONSTS.UP,
         }
 
     def __init__(self, window):
@@ -55,10 +55,10 @@ class KeyboardClient2(KeyboardClient):
     @property
     def KEY_COMMAND_MAP(self):
         return {
-            pyglet.window.key.A: LEFT,
-            pyglet.window.key.D: RIGHT,
-            pyglet.window.key.S: DOWN,
-            pyglet.window.key.W: UP,
+            pyglet.window.key.A: CONSTS.LEFT,
+            pyglet.window.key.D: CONSTS.RIGHT,
+            pyglet.window.key.S: CONSTS.DOWN,
+            pyglet.window.key.W: CONSTS.UP,
         }
 
     def __init__(self, window):
@@ -83,7 +83,7 @@ class SimplePythonClient(Client):
         self.position = None
 
     def change_command(self):
-        commands = [LEFT, DOWN, RIGHT, UP]
+        commands = [CONSTS.LEFT, CONSTS.DOWN, CONSTS.RIGHT, CONSTS.UP]
         command = commands[self.next_dir % 4]
         self.next_dir += 1
         self.command = command
@@ -91,16 +91,16 @@ class SimplePythonClient(Client):
     def get_next_point(self):
         x, y = self.position
 
-        if self.command == UP:
+        if self.command == CONSTS.UP:
             return x, y + self.width
 
-        if self.command == DOWN:
+        if self.command == CONSTS.DOWN:
             return x, y - self.width
 
-        if self.command == LEFT:
+        if self.command == CONSTS.LEFT:
             return x - self.width, y
 
-        if self.command == RIGHT:
+        if self.command == CONSTS.RIGHT:
             return x + self.width, y
 
     def is_border(self, point):
@@ -148,7 +148,7 @@ class SimplePythonClient(Client):
 
 
 class TcpClient(Client):
-    EXECUTION_LIMIT = datetime.timedelta(seconds=MAX_EXECUTION_TIME)
+    EXECUTION_LIMIT = datetime.timedelta(seconds=CONSTS.MAX_EXECUTION_TIME)
 
     def __init__(self, reader, writer):
         self.reader = reader
@@ -169,7 +169,7 @@ class TcpClient(Client):
         }
 
     async def set_solution_id(self):
-        hello_json = await asyncio.wait_for(self.reader.readline(), timeout=REQUEST_MAX_TIME)
+        hello_json = await asyncio.wait_for(self.reader.readline(), timeout=CONSTS.REQUEST_MAX_TIME)
         try:
             self.solution_id = json.loads(hello_json.decode('utf-8')).get('solution_id')
         except ValueError:
@@ -180,8 +180,7 @@ class TcpClient(Client):
     def send_message(self, t, d):
         msg = {
             'type': t,
-            'params': d,
-            'time_left': round((self.EXECUTION_LIMIT-self.execution_time).total_seconds()*1000)
+            'params': d
         }
         msg_bytes = '{}\n'.format(json.dumps(msg)).encode()
         self.writer.write(msg_bytes)
@@ -189,7 +188,7 @@ class TcpClient(Client):
     async def get_command(self):
         try:
             before = datetime.datetime.now()
-            z = await asyncio.wait_for(self.reader.readline(), timeout=REQUEST_MAX_TIME)
+            z = await asyncio.wait_for(self.reader.readline(), timeout=CONSTS.REQUEST_MAX_TIME)
             if not z:
                 raise ConnectionError('Connection closed')
             self.execution_time += (datetime.datetime.now() - before)

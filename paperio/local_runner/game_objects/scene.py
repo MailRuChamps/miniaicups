@@ -1,6 +1,6 @@
 import pyglet
 
-from constants import WINDOW_HEIGHT, WINDOW_WIDTH, WIDTH
+from constants import CONSTS
 from helpers import draw_quadrilateral, draw_line
 
 
@@ -8,19 +8,19 @@ class Grid:
     def __init__(self, color):
         self.batch = pyglet.graphics.Batch()
 
-        y = WIDTH
-        while (y < WINDOW_HEIGHT):
+        y = CONSTS.WIDTH
+        while (y < CONSTS.WINDOW_HEIGHT):
             self.batch.add(2, pyglet.gl.GL_LINES, None,
-                      ('v2i', (0, y, WINDOW_WIDTH, y)),
+                      ('v2i', (0, y, CONSTS.WINDOW_WIDTH, y)),
                       ('c4B', 2 * color))
-            y += WIDTH
+            y += CONSTS.WIDTH
 
-        x = WIDTH
-        while (x < WINDOW_WIDTH):
+        x = CONSTS.WIDTH
+        while (x < CONSTS.WINDOW_WIDTH):
             self.batch.add(2, pyglet.gl.GL_LINES, None,
-                      ('v2i', (x, 0, x, WINDOW_HEIGHT)),
+                      ('v2i', (x, 0, x, CONSTS.WINDOW_HEIGHT)),
                       ('c4B', 2 * color))
-            x += WIDTH
+            x += CONSTS.WIDTH
 
     def draw(self):
         self.batch.draw()
@@ -39,21 +39,22 @@ class Scene:
 
     leaderboard_rows_count = 0
     labels_buffer = []
-    game_over_label = pyglet.text.Label('GAME OVER', font_name='Times New Roman',
-                                        font_size=30,
-                                        color=game_over_label_color,
-                                        x=WINDOW_WIDTH / 2, y=WINDOW_HEIGHT / 2,
-                                        anchor_x='center', anchor_y='center')
 
     def __init__(self, scale):
-        self.window = pyglet.window.Window(height=int(WINDOW_HEIGHT * scale / 100),
-                                           width=int(WINDOW_WIDTH * scale / 100),
+        self.window = pyglet.window.Window(height=int(CONSTS.WINDOW_HEIGHT * scale / 100),
+                                           width=int(CONSTS.WINDOW_WIDTH * scale / 100),
                                            resizable=True)
         pyglet.options['debug_gl'] = False
         pyglet.gl.glClearColor(*self.background_color)
         pyglet.gl.glEnable(pyglet.gl.GL_BLEND)
         pyglet.gl.glBlendFunc(pyglet.gl.GL_SRC_ALPHA, pyglet.gl.GL_ONE_MINUS_SRC_ALPHA)
+
         self.grid = Grid(self.grid_color)
+        self.game_over_label = pyglet.text.Label('GAME OVER', font_name='Times New Roman',
+                                                 font_size=30,
+                                                 color=self.game_over_label_color,
+                                                 x=CONSTS.WINDOW_WIDTH / 2, y=CONSTS.WINDOW_HEIGHT / 2,
+                                                 anchor_x='center', anchor_y='center')
 
     def clear(self):
         self.window.clear()
@@ -69,8 +70,8 @@ class Scene:
                                   font_name='Times New Roman',
                                   font_size=16,
                                   color=color,
-                                  x=WINDOW_WIDTH - self.leaderboard_width + 20,
-                                  y=WINDOW_HEIGHT - 20 - WIDTH / 2 - 30 * self.leaderboard_rows_count,
+                                  x=CONSTS.WINDOW_WIDTH - self.leaderboard_width + 20,
+                                  y=CONSTS.WINDOW_HEIGHT - 20 - CONSTS.WIDTH / 2 - 30 * self.leaderboard_rows_count,
                                   anchor_x='left', anchor_y='center')
             )
         self.leaderboard_rows_count += 1
@@ -86,16 +87,16 @@ class Scene:
         self.grid.draw()
 
     def draw_border(self):
-        draw_line((0, 0), (0, WINDOW_HEIGHT), self.border_color, self.border_width)
-        draw_line((0, WINDOW_HEIGHT), (WINDOW_WIDTH, WINDOW_HEIGHT), self.border_color, self.border_width)
-        draw_line((WINDOW_WIDTH, WINDOW_HEIGHT), (WINDOW_WIDTH, 0), self.border_color, self.border_width)
-        draw_line((WINDOW_WIDTH, 0), (0, 0), self.border_color, self.border_width)
+        draw_line((0, 0), (0, CONSTS.WINDOW_HEIGHT), self.border_color, self.border_width)
+        draw_line((0, CONSTS.WINDOW_HEIGHT), (CONSTS.WINDOW_WIDTH, CONSTS.WINDOW_HEIGHT), self.border_color, self.border_width)
+        draw_line((CONSTS.WINDOW_WIDTH, CONSTS.WINDOW_HEIGHT), (CONSTS.WINDOW_WIDTH, 0), self.border_color, self.border_width)
+        draw_line((CONSTS.WINDOW_WIDTH, 0), (0, 0), self.border_color, self.border_width)
 
     def draw_leaderboard(self):
-        draw_quadrilateral((WINDOW_WIDTH - self.leaderboard_width, WINDOW_HEIGHT - self.leaderboard_height,
-                            WINDOW_WIDTH, WINDOW_HEIGHT - self.leaderboard_height,
-                            WINDOW_WIDTH, WINDOW_HEIGHT,
-                            WINDOW_WIDTH - self.leaderboard_width, WINDOW_HEIGHT),
+        draw_quadrilateral((CONSTS.WINDOW_WIDTH - self.leaderboard_width, CONSTS.WINDOW_HEIGHT - self.leaderboard_height,
+                            CONSTS.WINDOW_WIDTH, CONSTS.WINDOW_HEIGHT - self.leaderboard_height,
+                            CONSTS.WINDOW_WIDTH, CONSTS.WINDOW_HEIGHT,
+                            CONSTS.WINDOW_WIDTH - self.leaderboard_width, CONSTS.WINDOW_HEIGHT),
                            self.leaderboard_color)
         for label in self.labels_buffer[:self.leaderboard_rows_count]:
             label.draw()

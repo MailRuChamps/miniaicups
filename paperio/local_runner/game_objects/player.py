@@ -1,12 +1,11 @@
 from copy import copy
 from game_objects.territory import Territory
 from game_objects.bonuses import Saw
-from constants import UP, DOWN, LEFT, RIGHT, SPEED, WINDOW_HEIGHT, WINDOW_WIDTH, WIDTH
+from constants import CONSTS
 from helpers import batch_draw, draw_square
 
 
 class Player:
-    speed = SPEED
     direction = None
 
     def __init__(self, id, x, y, name, color, client):
@@ -25,31 +24,32 @@ class Player:
         self.debug_log = []
         self.client = client
         self.is_disconnected = False
+        self.speed = CONSTS.SPEED
 
     def change_direction(self, command):
-        if command == UP and self.direction != DOWN:
-            self.direction = UP
+        if command == CONSTS.UP and self.direction != CONSTS.DOWN:
+            self.direction = CONSTS.UP
 
-        if command == DOWN and self.direction != UP:
-            self.direction = DOWN
+        if command == CONSTS.DOWN and self.direction != CONSTS.UP:
+            self.direction = CONSTS.DOWN
 
-        if command == LEFT and self.direction != RIGHT:
-            self.direction = LEFT
+        if command == CONSTS.LEFT and self.direction != CONSTS.RIGHT:
+            self.direction = CONSTS.LEFT
 
-        if command == RIGHT and self.direction != LEFT:
-            self.direction = RIGHT
+        if command == CONSTS.RIGHT and self.direction != CONSTS.LEFT:
+            self.direction = CONSTS.RIGHT
 
     def move(self):
-        if self.direction == UP:
+        if self.direction == CONSTS.UP:
             self.y += self.speed
 
-        if self.direction == DOWN:
+        if self.direction == CONSTS.DOWN:
             self.y -= self.speed
 
-        if self.direction == LEFT:
+        if self.direction == CONSTS.LEFT:
             self.x -= self.speed
 
-        if self.direction == RIGHT:
+        if self.direction == CONSTS.RIGHT:
             self.x += self.speed
 
     def draw_lines(self):
@@ -93,7 +93,7 @@ class Player:
         return {
             'score': self.score,
             'direction': self.direction,
-            'territory': list(sorted(self.territory.points)),
+            'territory': list(self.territory.points),
             'lines': copy(self.lines),
             'position': (self.x, self.y),
             'bonuses': self.get_bonuses_state()
@@ -145,7 +145,7 @@ class Player:
     def _get_line(self, dx, dy):
         x, y = self.x, self.y
         points = []
-        while 0 < x < WINDOW_WIDTH and 0 < y < WINDOW_HEIGHT:
+        while 0 < x < CONSTS.WINDOW_WIDTH and 0 < y < CONSTS.WINDOW_HEIGHT:
             x += dx
             y += dy
             points.append((x, y))
@@ -153,29 +153,29 @@ class Player:
         return points
 
     def get_direction_line(self):
-        if self.direction == UP:
-            return self._get_line(0, WIDTH)
+        if self.direction == CONSTS.UP:
+            return self._get_line(0, CONSTS.WIDTH)
 
-        if self.direction == DOWN:
-            return self._get_line(0, -WIDTH)
+        if self.direction == CONSTS.DOWN:
+            return self._get_line(0, -CONSTS.WIDTH)
 
-        if self.direction == LEFT:
-            return self._get_line(-WIDTH, 0)
+        if self.direction == CONSTS.LEFT:
+            return self._get_line(-CONSTS.WIDTH, 0)
 
-        if self.direction == RIGHT:
-            return self._get_line(WIDTH, 0)
+        if self.direction == CONSTS.RIGHT:
+            return self._get_line(CONSTS.WIDTH, 0)
 
     def diff_position(self, direction, x, y, val):
-        if direction == UP:
+        if direction == CONSTS.UP:
             return x, y - val
 
-        if direction == DOWN:
+        if direction == CONSTS.DOWN:
             return x, y + val
 
-        if direction == LEFT:
+        if direction == CONSTS.LEFT:
             return x + val, y
 
-        if direction == RIGHT:
+        if direction == CONSTS.RIGHT:
             return x - val, y
 
     def get_position(self):
@@ -183,7 +183,7 @@ class Player:
             return self.x, self.y
 
         x, y = self.x, self.y
-        while not ((x - round(WIDTH / 2)) % WIDTH == 0 and (y - round(WIDTH / 2)) % WIDTH == 0):
+        while not ((x - round(CONSTS.WIDTH / 2)) % CONSTS.WIDTH == 0 and (y - round(CONSTS.WIDTH / 2)) % CONSTS.WIDTH == 0):
             x, y = self.diff_position(self.direction, x, y, self.speed)
 
         return (x, y), (x, y) != (self.x, self.y)
@@ -191,7 +191,7 @@ class Player:
     def get_prev_position(self):
         if self.direction is None:
             return self.x, self.y
-        return self.diff_position(self.direction, self.x, self.y, WIDTH)
+        return self.diff_position(self.direction, self.x, self.y, CONSTS.WIDTH)
 
     def is_ate(self, players_to_captured):
         for p, captured in players_to_captured.items():

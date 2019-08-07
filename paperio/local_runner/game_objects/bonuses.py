@@ -1,7 +1,7 @@
 import random
 
 from helpers import draw_square_with_image, get_random_coordinates, batch_draw
-from constants import WIDTH
+from constants import CONSTS
 
 
 class Bonus:
@@ -24,7 +24,7 @@ class Bonus:
     @staticmethod
     def is_available_point(x, y, players, busy_points):
         for p in players:
-            if (p.x - 2 * WIDTH <= x <= p.x + 2 * WIDTH) and (p.y - 2 * WIDTH <= y <= p.y + 2 * WIDTH):
+            if (p.x - 2 * CONSTS.WIDTH <= x <= p.x + 2 * CONSTS.WIDTH) and (p.y - 2 * CONSTS.WIDTH <= y <= p.y + 2 * CONSTS.WIDTH):
                 return False
         return (x, y) not in busy_points
 
@@ -64,15 +64,15 @@ class Nitro(Bonus):
         else:
             player.bonuses.append(self)
 
-            while player.speed < WIDTH:
+            while player.speed < CONSTS.WIDTH:
                 player.speed += 1
-                if WIDTH % player.speed == 0:
+                if CONSTS.WIDTH % player.speed == 0:
                     break
 
     def cancel(self, player):
         while player.speed > 1:
             player.speed -= 1
-            if WIDTH % player.speed == 0:
+            if CONSTS.WIDTH % player.speed == 0:
                 break
 
 
@@ -91,13 +91,13 @@ class Slowdown(Bonus):
 
             while player.speed > 1:
                 player.speed -= 1
-                if WIDTH % player.speed == 0:
+                if CONSTS.WIDTH % player.speed == 0:
                     break
 
     def cancel(self, player):
-        while player.speed < WIDTH:
+        while player.speed < CONSTS.WIDTH:
             player.speed += 1
-            if WIDTH % player.speed == 0:
+            if CONSTS.WIDTH % player.speed == 0:
                 break
 
 

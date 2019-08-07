@@ -1,5 +1,5 @@
 from helpers import in_polygon, batch_draw_territory, get_neighboring, get_vert_and_horiz
-from constants import WIDTH, LEFT, RIGHT, UP, DOWN
+from constants import CONSTS
 import networkx as nx
 
 
@@ -7,6 +7,8 @@ class Territory:
     def __init__(self, x, y, color):
         self.color = color
         self.points = {(x, y), *get_neighboring((x, y))}
+        # fro scripted_coll_8
+        # self.points = {(x, y), *get_neighboring((x, y)), (x - WIDTH, y - 3 * WIDTH), (x, y - 4 * WIDTH), (x + WIDTH, y - 3 * WIDTH)}
         self.changed = True
 
     def draw(self):
@@ -20,10 +22,12 @@ class Territory:
                 boundary.append(point)
         return boundary
 
-    def get_nearest_boundary(self, point, boundary):
+    def _get_start_points(self, point, boundary):
+        res = []
         for neighbor in [point, *get_neighboring(point)]:
             if neighbor in boundary:
-                return neighbor
+                res.append(neighbor)
+        return res
 
     def _capture(self, boundary):
         poligon_x_arr = [x for x, _ in boundary]
@@ -41,8 +45,8 @@ class Territory:
             while y > min_y:
                 if (x, y) not in self.points and in_polygon(x, y, poligon_x_arr, poligon_y_arr):
                     captured.append((x, y))
-                y -= WIDTH
-            x -= WIDTH
+                y -= CONSTS.WIDTH
+            x -= CONSTS.WIDTH
         return captured
 
     def is_siblings(self, p1, p2):
@@ -50,14 +54,15 @@ class Territory:
 
     def get_voids_between_lines_and_territory(self, lines):
         boundary = self.get_boundary()
+        graph = self.get_graph(boundary)
         voids = []
         for i_lp1, lp1 in enumerate(lines):
             for point in get_neighboring(lp1):
                 if point in boundary:
                     prev = None
                     for lp2 in lines[:i_lp1 + 1]:
-                        start_point = self.get_nearest_boundary(lp2, boundary)
-                        if start_point:
+                        start_points = self._get_start_points(lp2, boundary)
+                        for start_point in start_points:
                             if prev and (self.is_siblings(prev, start_point) or prev == start_point):
                                 prev = start_point
                                 continue
@@ -65,7 +70,7 @@ class Territory:
                             start_index = boundary.index(start_point)
 
                             try:
-                                path = self.get_path(start_index, end_index, boundary)
+                                path = nx.shortest_path(graph, end_index, start_index, weight='weight')
                             except (nx.NetworkXNoPath, nx.NodeNotFound):
                                 continue
 
@@ -76,7 +81,7 @@ class Territory:
                             lines_path = lines[lines.index(lp2):i_lp1 + 1]
 
                             voids.append(lines_path + path)
-                        prev = start_point
+                            prev = start_point
         return voids
 
     def capture_voids_between_lines(self, lines):
@@ -122,14 +127,13 @@ class Territory:
     def get_siblings(self, point, boundary):
         return [sibling for sibling in get_neighboring(point) if sibling in boundary]
 
-    def get_path(self, start_index, end_index, boundary):
+    def get_graph(self, boundary):
         graph = nx.Graph()
         for index, point in enumerate(boundary):
             siblings = self.get_siblings(point, boundary)
             for sibling in siblings:
                 graph.add_edge(index, boundary.index(sibling), weight=1)
-
-        return nx.shortest_path(graph, end_index, start_index, weight='weight')
+        return graph
 
     def split(self, line, direction, player):
         removed = []
@@ -137,7 +141,7 @@ class Territory:
 
         if any([point in self.points for point in line]):
             for point in list(self.points):
-                if direction in [UP, DOWN]:
+                if direction in [CONSTS.UP, CONSTS.DOWN]:
                     if player.x < l_point[0]:
                         if point[0] >= l_point[0]:
                             removed.append(point)
@@ -147,7 +151,7 @@ class Territory:
                             removed.append(point)
                             self.points.discard(point)
 
-                if direction in [LEFT, RIGHT]:
+                if direction in [CONSTS.LEFT, CONSTS.RIGHT]:
                     if player.y < l_point[1]:
                         if point[1] >= l_point[1]:
                             removed.append(point)

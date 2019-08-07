@@ -6,17 +6,13 @@ import gzip
 import random
 
 from helpers import is_intersect
-from constants import WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, PLAYER_COLORS, MAX_TICK_COUNT, BONUS_CHANCE, \
-    BONUSES_MAX_COUNT, X_CELLS_COUNT, Y_CELLS_COUNT, SPEED, NEUTRAL_TERRITORY_SCORE, ENEMY_TERRITORY_SCORE, \
-    LINE_KILL_SCORE, SAW_KILL_SCORE, AVAILABLE_BONUSES, SAW_SCORE
+from constants import CONSTS
 from game_objects.player import Player
 from game_objects.bonuses import Nitro, Slowdown, Bonus, Saw
 
 
 class Game:
-    available_bonuses = [b for b in [Nitro, Slowdown, Saw] if b.visio_name in AVAILABLE_BONUSES]
-
-    RESULT_LOCATION = os.environ.get('GAME_LOG_LOCATION', './result')
+    RESULT_LOCATION = os.environ.get('GAME_LOG_LOCATION', './results/result')
 
     BASE_DIR = os.path.dirname(RESULT_LOCATION)
 
@@ -35,14 +31,14 @@ class Game:
 
     def generate_bonus(self):
         if len(self.available_bonuses) > 0:
-            if random.randint(1, BONUS_CHANCE) == 1 and len(self.bonuses) < BONUSES_MAX_COUNT:
+            if random.randint(1, CONSTS.BONUS_CHANCE) == 1 and len(self.bonuses) < CONSTS.BONUSES_MAX_COUNT:
                 coors = Bonus.generate_coordinates(self.players, self.get_busy_points())
                 bonus = random.choice(self.available_bonuses)(coors)
                 self.bonuses.append(bonus)
 
     def get_coordinates(self, clients_count):
-        dx = round(X_CELLS_COUNT / 6) * WIDTH
-        dy = round(Y_CELLS_COUNT / 6) * WIDTH
+        dx = round(CONSTS.X_CELLS_COUNT / 6) * CONSTS.WIDTH
+        dy = round(CONSTS.Y_CELLS_COUNT / 6) * CONSTS.WIDTH
 
         if clients_count == 1:
             coors = [(3 * dx, 3 * dy)]
@@ -59,30 +55,30 @@ class Game:
                 (4 * dx, 4 * dy),
             ]
         else:
-            x = round(X_CELLS_COUNT / 5) * WIDTH
-            y = (WINDOW_HEIGHT + WINDOW_WIDTH - 4 * x) / 3
-            b = (WINDOW_WIDTH - 2 * x) / 2
+            x = round(CONSTS.X_CELLS_COUNT / 5) * CONSTS.WIDTH
+            y = (CONSTS.WINDOW_HEIGHT + CONSTS.WINDOW_WIDTH - 4 * x) / 3
+            b = (CONSTS.WINDOW_WIDTH - 2 * x) / 2
             a = y - b
 
             coors = [
                 (x, x + a),
-                (x, x + a + y  + WIDTH),
+                (x, x + a + y + CONSTS.WIDTH),
 
-                (round(WINDOW_WIDTH / 2), WINDOW_HEIGHT - x + WIDTH),
-                (round(WINDOW_WIDTH / 2), x),
+                (round(CONSTS.WINDOW_WIDTH / 2), CONSTS.WINDOW_HEIGHT - x + CONSTS.WIDTH),
+                (round(CONSTS.WINDOW_WIDTH / 2), x),
 
-                (WINDOW_WIDTH - x + WIDTH, x + a),
-                (WINDOW_WIDTH - x + WIDTH, x + a + y  + WIDTH),
+                (CONSTS.WINDOW_WIDTH - x + CONSTS.WIDTH, x + a),
+                (CONSTS.WINDOW_WIDTH - x + CONSTS.WIDTH, x + a + y + CONSTS.WIDTH),
             ]
 
-        coors = [(round(x / WIDTH) * WIDTH - round(WIDTH / 2),  round(y / WIDTH) * WIDTH  - round(WIDTH / 2))  for x, y in coors]
+        coors = [(round(x / CONSTS.WIDTH) * CONSTS.WIDTH - round(CONSTS.WIDTH / 2),  round(y / CONSTS.WIDTH) * CONSTS.WIDTH - round(CONSTS.WIDTH / 2)) for x, y in coors]
         yield from coors
 
     def __init__(self, clients):
         players = []
         coordinates = self.get_coordinates(len(clients))
         for index, client in enumerate(clients):
-            players.append(Player(index + 1, *next(coordinates), 'Player {}'.format(index + 1), PLAYER_COLORS[index], client))
+            players.append(Player(index + 1, *next(coordinates), 'Player {}'.format(index + 1), CONSTS.PLAYER_COLORS[index], client))
 
         self.players = players
         self.losers = []
@@ -90,6 +86,7 @@ class Game:
         self.game_log = []
         self.events = []
         self.tick = 1
+        self.available_bonuses = [b for b in [Nitro, Slowdown, Saw] if b.visio_name in CONSTS.AVAILABLE_BONUSES]
 
     def append_event(self, event, p1, p2=None):
         row = {
@@ -104,36 +101,34 @@ class Game:
     def check_loss(self, player, players):
         is_loss = False
 
-        if player.y < 0 + round(WIDTH / 2):
+        if player.y < 0 + round(CONSTS.WIDTH / 2):
             is_loss = True
             self.append_event('faced the border', player)
 
-        if player.y > WINDOW_HEIGHT - round(WIDTH / 2):
+        if player.y > CONSTS.WINDOW_HEIGHT - round(CONSTS.WIDTH / 2):
             is_loss = True
             self.append_event('faced the border', player)
 
-        if player.x < 0 + round(WIDTH / 2):
+        if player.x < 0 + round(CONSTS.WIDTH / 2):
             is_loss = True
             self.append_event('faced the border', player)
 
-        if player.x > WINDOW_WIDTH - round(WIDTH / 2):
+        if player.x > CONSTS.WINDOW_WIDTH - round(CONSTS.WIDTH / 2):
             is_loss = True
             self.append_event('faced the border', player)
 
         for p in players:
             if (p.x, p.y) in player.lines[:-1]:
                 if p != player:
-                    p.tick_score += LINE_KILL_SCORE
+                    p.tick_score += CONSTS.LINE_KILL_SCORE
                 is_loss = True
                 self.append_event('line crossed by other player', player, p)
 
-        if len(player.lines) > 0:
-            for p in players:
-                if is_intersect((player.x, player.y), (p.x, p.y)) and p != player:
-                    if len(player.lines) >= len(p.lines):
-                        is_loss = True
-                        self.append_event('faced with other player', player, p)
-                        break
+        for p in players:
+            if is_intersect((player.x, player.y), (p.x, p.y)) and p != player:
+                if len(player.lines) >= len(p.lines):
+                    is_loss = True
+                    self.append_event('faced with other player', player, p)
 
         if len(player.territory.points) == 0:
             is_loss = True
@@ -143,10 +138,10 @@ class Game:
 
     def send_game_start(self):
         start_message = {
-            'x_cells_count': X_CELLS_COUNT,
-            'y_cells_count': Y_CELLS_COUNT,
-            'speed': SPEED,
-            'width': WIDTH
+            'x_cells_count': CONSTS.X_CELLS_COUNT,
+            'y_cells_count': CONSTS.Y_CELLS_COUNT,
+            'speed': CONSTS.SPEED,
+            'width': CONSTS.WIDTH
         }
         self.game_log.append({'type': 'start_game', **start_message})
         for player in self.players:
@@ -161,7 +156,7 @@ class Game:
         for player in self.players:
             player.send_message('end_game', {})
 
-    def append_tick_to_game_log(self):
+    def send_game_tick(self):
         self.game_log.append({
             'type': 'tick',
             'players': self.get_players_states(),
@@ -170,22 +165,21 @@ class Game:
             'saw': Saw.log
         })
 
-        Saw.log = []
-
-    def send_game_tick(self):
         for player in self.players:
-            if (player.x - round(WIDTH / 2)) % WIDTH == 0 and (player.y - round(WIDTH / 2)) % WIDTH == 0:
+            if (player.x - round(CONSTS.WIDTH / 2)) % CONSTS.WIDTH == 0 and (player.y - round(CONSTS.WIDTH / 2)) % CONSTS.WIDTH == 0:
                 player.send_message('tick', {
                     'players': self.get_players_states(player),
                     'bonuses': self.get_bonuses_states(),
                     'tick_num': self.tick,
                 })
 
+        Saw.log = []
+
     async def game_loop_wrapper(self, *args, **kwargs):
         self.send_game_start()
         while True:
             is_game_over = await self.game_loop(*args, **kwargs)
-            if is_game_over or self.tick >= MAX_TICK_COUNT:
+            if is_game_over or self.tick >= CONSTS.MAX_TICK_COUNT:
                 self.send_game_end()
                 self.game_save()
                 break
@@ -217,15 +211,15 @@ class Game:
 
     async def game_loop(self, *args, **kwargs):
         self.send_game_tick()
+        # if self.tick == 2:
+        #     time.sleep(0)
 
         futures = []
         for player in self.players:
-            if (player.x - round(WIDTH / 2)) % WIDTH == 0 and (player.y - round(WIDTH / 2)) % WIDTH == 0:
+            if (player.x - round(CONSTS.WIDTH / 2)) % CONSTS.WIDTH == 0 and (player.y - round(CONSTS.WIDTH / 2)) % CONSTS.WIDTH == 0:
                 futures.append(asyncio.ensure_future(self.get_command_wrapper(player)))
         if futures:
             await asyncio.wait(futures)
-
-        self.append_tick_to_game_log()
 
         for player in self.players:
             player.move()
@@ -234,14 +228,14 @@ class Game:
         for player in self.players:
             player.remove_saw_bonus()
 
-            if (player.x - round(WIDTH / 2)) % WIDTH == 0 and (player.y - round(WIDTH / 2)) % WIDTH == 0:
+            if (player.x - round(CONSTS.WIDTH / 2)) % CONSTS.WIDTH == 0 and (player.y - round(CONSTS.WIDTH / 2)) % CONSTS.WIDTH == 0:
                 player.update_lines()
 
                 captured = player.territory.capture(player.lines)
                 players_to_captured[player] = captured
                 if len(captured) > 0:
                     player.lines.clear()
-                    player.tick_score += NEUTRAL_TERRITORY_SCORE * len(captured)
+                    player.tick_score += CONSTS.NEUTRAL_TERRITORY_SCORE * len(captured)
 
         for player in self.players:
             is_loss = self.check_loss(player, self.players)
@@ -257,7 +251,7 @@ class Game:
                 self.losers.append(player)
 
         for player in self.players:
-            if (player.x - round(WIDTH / 2)) % WIDTH == 0 and (player.y - round(WIDTH / 2)) % WIDTH == 0:
+            if (player.x - round(CONSTS.WIDTH / 2)) % CONSTS.WIDTH == 0 and (player.y - round(CONSTS.WIDTH / 2)) % CONSTS.WIDTH == 0:
                 captured = players_to_captured.get(player, set())
 
                 player.tick_action()
@@ -280,11 +274,11 @@ class Game:
                                             'loser': p.id,
                                             'killed': True
                                         })
-                                        player.tick_score += SAW_KILL_SCORE
+                                        player.tick_score += CONSTS.SAW_KILL_SCORE
                                     else:
                                         removed = p.territory.split(line, player.direction, p)
                                         if len(removed) > 0:
-                                            player.tick_score += SAW_SCORE
+                                            player.tick_score += CONSTS.SAW_SCORE
                                             Saw.append_territory(removed, p.territory.color)
                                             Saw.log.append({
                                                 'player': player.id,
@@ -297,7 +291,7 @@ class Game:
                     for p in self.players:
                         if p != player:
                             removed = p.territory.remove_points(captured)
-                            player.tick_score += (ENEMY_TERRITORY_SCORE - NEUTRAL_TERRITORY_SCORE) * len(removed)
+                            player.tick_score += (CONSTS.ENEMY_TERRITORY_SCORE - CONSTS.NEUTRAL_TERRITORY_SCORE) * len(removed)
 
         for player in self.losers:
             if player in self.players:
@@ -410,7 +404,7 @@ class LocalGame(Game):
 
         if len(self.players) == 0:
             self.scene.show_game_over()
-        elif self.timeout and self.tick >= MAX_TICK_COUNT:
+        elif self.timeout and self.tick >= CONSTS.MAX_TICK_COUNT:
             self.scene.show_game_over(timeout=True)
 
     async def game_loop(self, *args, **kwargs):

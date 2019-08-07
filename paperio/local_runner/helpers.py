@@ -1,7 +1,7 @@
 import os
 import random
 import pyglet
-from constants import WIDTH, X_CELLS_COUNT, Y_CELLS_COUNT
+from constants import CONSTS
 
 
 def show_coordinates(point):
@@ -13,7 +13,8 @@ def show_coordinates(point):
                       anchor_x='center', anchor_y='center').draw()
 
 
-def get_square_coordinates(point, width=WIDTH):
+def get_square_coordinates(point):
+    width = round(CONSTS.WIDTH / 2)
     x, y = point
     return (x - width, y - width,
             x + width, y - width,
@@ -21,7 +22,8 @@ def get_square_coordinates(point, width=WIDTH):
             x - width, y + width)
 
 
-def get_diagonals(point, width=WIDTH):
+def get_diagonals(point):
+    width = CONSTS.WIDTH
     x, y = point
 
     return [
@@ -32,7 +34,8 @@ def get_diagonals(point, width=WIDTH):
     ]
 
 
-def get_vert_and_horiz(point, width=WIDTH):
+def get_vert_and_horiz(point):
+    width = CONSTS.WIDTH
     x, y = point
 
     return [
@@ -43,10 +46,10 @@ def get_vert_and_horiz(point, width=WIDTH):
     ]
 
 
-def get_neighboring(point, width=WIDTH):
+def get_neighboring(point):
     return [
-        *get_vert_and_horiz(point, width),
-        *get_diagonals(point, width)
+        *get_vert_and_horiz(point),
+        *get_diagonals(point)
     ]
 
 
@@ -57,20 +60,21 @@ def get_territory_line(point, points):
     while p in points:
         line_points.append(p)
         x, y = p
-        p = (x - WIDTH, y)
-    start = (p[0] + WIDTH, p[1])
+        p = (x - CONSTS.WIDTH, y)
+    start = (p[0] + CONSTS.WIDTH, p[1])
 
     p = point
     while p in points:
         line_points.append(p)
         x, y = p
-        p = (x + WIDTH, y)
-    end = (p[0] - WIDTH, p[1])
+        p = (x + CONSTS.WIDTH, y)
+    end = (p[0] - CONSTS.WIDTH, p[1])
 
     return line_points, start, end
 
 
-def get_line_coordinates(start, end, width=WIDTH):
+def get_line_coordinates(start, end):
+    width = CONSTS.WIDTH
     width = round(width / 2)
     x1, y1 = start
     x2, y2 = end
@@ -85,9 +89,9 @@ def get_line_coordinates(start, end, width=WIDTH):
 TERRITORY_CACHE = {}
 
 
-def batch_draw_territory(points, color, redraw, width=WIDTH):
+def batch_draw_territory(points, color, redraw):
     if len(points) < 100:
-        batch_draw(points, color, width)
+        batch_draw(points, color)
         return
 
     if color not in TERRITORY_CACHE or redraw:
@@ -97,7 +101,7 @@ def batch_draw_territory(points, color, redraw, width=WIDTH):
             if point not in excluded:
                 line_points, start, end = get_territory_line(point, points)
                 excluded.update(line_points)
-                coors = get_line_coordinates(start, end, width)
+                coors = get_line_coordinates(start, end)
                 lines.append(coors)
         TERRITORY_CACHE[color] = [len(points), lines]
     else:
@@ -111,12 +115,11 @@ def batch_draw_territory(points, color, redraw, width=WIDTH):
     pyglet.gl.glEnd()
 
 
-def batch_draw(points, color, width=WIDTH):
-    width = round(width / 2)
+def batch_draw(points, color):
     pyglet.gl.glColor4f(*[i/255 for i in color])
     pyglet.gl.glBegin(pyglet.gl.GL_QUADS)
     for point in points:
-        square = get_square_coordinates(point, width)
+        square = get_square_coordinates(point)
         pyglet.graphics.glVertex2i(square[0], square[1])
         pyglet.graphics.glVertex2i(square[2], square[3])
         pyglet.graphics.glVertex2i(square[4], square[5])
@@ -124,9 +127,8 @@ def batch_draw(points, color, width=WIDTH):
     pyglet.gl.glEnd()
 
 
-def draw_square(point, color, width=WIDTH):
-    width = round(width / 2)
-    coordinates = get_square_coordinates(point, width)
+def draw_square(point, color):
+    coordinates = get_square_coordinates(point)
     pyglet.graphics.draw(4, pyglet.gl.GL_QUADS, ('v2i', coordinates), ('c4B', 4 * color))
 
 
@@ -134,7 +136,9 @@ def draw_quadrilateral(coordinates, color):
     pyglet.graphics.draw(4, pyglet.gl.GL_QUADS, ('v2i', coordinates), ('c4B', 4 * color))
 
 
-def draw_line(point1, point2, color, width=WIDTH):
+def draw_line(point1, point2, color, width=None):
+    if not width:
+        width = CONSTS.WIDTH
     x1, y1 = point1
     x2, y2 = point2
 
@@ -177,8 +181,9 @@ def load_image(path):
     return IMAGE_CACHE[path]
 
 
-def draw_square_with_image(point, color, image_path, width=WIDTH):
-    draw_square(point, color, width)
+def draw_square_with_image(point, color, image_path):
+    width = CONSTS.WIDTH
+    draw_square(point, color)
 
     x, y = point
 
@@ -189,12 +194,13 @@ def draw_square_with_image(point, color, image_path, width=WIDTH):
 
 
 def get_random_coordinates():
-    x = random.randint(1, X_CELLS_COUNT) * WIDTH - round(WIDTH / 2)
-    y = random.randint(1, Y_CELLS_COUNT) * WIDTH - round(WIDTH / 2)
+    x = random.randint(1, CONSTS.X_CELLS_COUNT) * CONSTS.WIDTH - round(CONSTS.WIDTH / 2)
+    y = random.randint(1, CONSTS.Y_CELLS_COUNT) * CONSTS.WIDTH - round(CONSTS.WIDTH / 2)
     return x, y
 
 
-def is_intersect(p1, p2, width=WIDTH):
+def is_intersect(p1, p2):
+    width = CONSTS.WIDTH
     x1, y1 = p1
     x2, y2 = p2
     return abs(x1 - x2) < width and abs(y1 - y2) < width
