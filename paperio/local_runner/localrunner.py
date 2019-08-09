@@ -158,7 +158,7 @@ class Runner:
         Runner.load_sprites()
         Runner.game = LocalGame(clients, scene, args.timeout == 'on')
         Runner.game.send_game_start()
-        pyglet.clock.schedule_interval(Runner.game_loop_wrapper, 1 / 40)
+        pyglet.clock.schedule_interval(Runner.game_loop_wrapper, 1 / 200)
 
 
 Runner.run_game()

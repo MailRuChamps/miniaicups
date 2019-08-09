@@ -1,3 +1,4 @@
+import random
 import asyncio
 
 from clients import TcpClient
@@ -27,6 +28,7 @@ class GameServer:
 
         game_future = None
         if clients_count == CONSTS.CLIENTS_COUNT:
+            random.shuffle(self.clients)
             game = Game(self.clients)
             game_future = asyncio.ensure_future(game.game_loop_wrapper())
 
