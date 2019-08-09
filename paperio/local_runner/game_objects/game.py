@@ -325,7 +325,7 @@ class Game:
 
     def save_visio(self):
         d = {
-            'visio_version': 2,
+            'visio_version': 3,
             'config': self.get_players_external_id(),
             'visio_info': self.game_log
         }
