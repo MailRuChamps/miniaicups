@@ -1,5 +1,5 @@
 CXXFLAGS=-std=c++17 -O3 -m64 -pipe -w -pthread
-CXX=g++-7
+CXX=g++-9
 
 SRCS = $(shell find ${SOLUTION_CODE_PATH} -type f -name '*.cpp')
 

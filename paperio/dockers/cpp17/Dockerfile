@@ -6,7 +6,7 @@ RUN \
     apt-get install -y software-properties-common && \
     add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
     apt-get update -y && \
-    apt-get install -y g++-7 make cmake
+    apt-get install -y g++-9 make cmake
 
 COPY Makefile ./
 COPY ./nlohmann ./nlohmann
