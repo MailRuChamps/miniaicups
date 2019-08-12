@@ -8,6 +8,11 @@ RUN \
     apt-get update -y && \
     apt-get install -y g++-9 make cmake
 
+RUN \
+    curl https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-latest.zip -o /libtorch.zip && \
+    ln -s /usr /libtorch && unzip /libtorch.zip "libtorch/lib/*" "libtorch/share/*" "libtorch/include/*" -d / && \
+    rm -rf /libtorch.zip /libtorch
+
 COPY Makefile ./
 COPY ./nlohmann ./nlohmann
 
