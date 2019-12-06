@@ -203,4 +203,4 @@ def is_intersect(p1, p2):
     width = CONSTS.WIDTH
     x1, y1 = p1
     x2, y2 = p2
-    return abs(x1 - x2) < width and abs(y1 - y2) < width
+    return abs(x1 - x2) + abs(y1 - y2) < width
